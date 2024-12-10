@@ -92,6 +92,43 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Brand Section */}
+      <section className="py-24 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="space-y-16">
+              {/* Frames and Lenses Section */}
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold mb-8">Frames and Lenses Available</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-gray-500">
+                  <div className="p-4">Oakley</div>
+                  <div className="p-4">Rayban</div>
+                  <div className="p-4">Armani Exchange</div>
+                  <div className="p-4">Vogue</div>
+                  <div className="p-4">Braun Buffel</div>
+                  <div className="p-4">Esprit</div>
+                  <div className="p-4">Hummer</div>
+                  <div className="p-4">Nike</div>
+                  <div className="p-4">New Balance</div>
+                  <div className="p-4 italic">and many more</div>
+                </div>
+              </div>
+
+              {/* Lens Partners Section */}
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold mb-8">Supporting Lens Partners</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-gray-500">
+                  <div className="p-4">Essilor</div>
+                  <div className="p-4">Nikon</div>
+                  <div className="p-4">Kodak Lens</div>
+                  <div className="p-4">Polycore</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Product Collection - Only show if there are products */}
       {products && products.length > 0 && (
         <section className="py-24 bg-gray-50">
