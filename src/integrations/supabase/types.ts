@@ -9,6 +9,86 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      product_variants: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          price: number | null
+          product_id: string | null
+          stock: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          price?: number | null
+          product_id?: string | null
+          stock?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number | null
+          product_id?: string | null
+          stock?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          alternative_name: string | null
+          category: string | null
+          created_at: string
+          has_variants: boolean | null
+          id: string
+          name: string
+          online_price: number | null
+          store_price: number
+          track_inventory: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alternative_name?: string | null
+          category?: string | null
+          created_at?: string
+          has_variants?: boolean | null
+          id?: string
+          name: string
+          online_price?: number | null
+          store_price: number
+          track_inventory?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alternative_name?: string | null
+          category?: string | null
+          created_at?: string
+          has_variants?: boolean | null
+          id?: string
+          name?: string
+          online_price?: number | null
+          store_price?: number
+          track_inventory?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
