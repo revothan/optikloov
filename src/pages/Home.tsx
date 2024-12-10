@@ -4,6 +4,10 @@ import { ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('id-ID').format(price);
+};
+
 const ProductCard = ({ name, price, image }: { name: string; price: string; image: string }) => (
   <div className="group cursor-pointer">
     <div className="aspect-square overflow-hidden rounded-xl bg-gray-100 mb-4">
@@ -97,7 +101,7 @@ const Home = () => {
               <ProductCard 
                 key={product.id}
                 name={product.name}
-                price={`Rp ${product.store_price}`}
+                price={`Rp ${formatPrice(product.store_price)}`}
                 image={product.image_url || "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"}
               />
             ))}
