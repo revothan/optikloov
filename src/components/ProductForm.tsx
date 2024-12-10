@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ProductImageUpload } from "./ProductImageUpload";
 import { ProductPriceInventory } from "./ProductPriceInventory";
+import { Tables } from "@/integrations/supabase/types";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama produk harus diisi"),
@@ -32,25 +33,27 @@ const formSchema = z.object({
 });
 
 interface ProductFormProps {
+  mode?: "create" | "edit";
+  product?: Tables<"products">;
   onSuccess?: () => void;
 }
 
-export function ProductForm({ onSuccess }: ProductFormProps) {
+export function ProductForm({ mode = "create", product, onSuccess }: ProductFormProps) {
   const session = useSession();
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      alternative_name: "",
-      category: "",
-      store_price: "",
-      online_price_same: true,
-      online_price: "",
-      track_inventory: false,
+      name: product?.name || "",
+      alternative_name: product?.alternative_name || "",
+      category: product?.category || "",
+      store_price: product?.store_price?.toString() || "",
+      online_price_same: product?.online_price === null || product?.online_price === product?.store_price,
+      online_price: product?.online_price?.toString() || "",
+      track_inventory: product?.track_inventory || false,
       initial_stock: "",
-      image_url: "",
+      image_url: product?.image_url || "",
     },
   });
 
@@ -61,30 +64,42 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
     }
 
     try {
-      const { data, error } = await supabase.from("products").insert([
-        {
-          name: values.name,
-          alternative_name: values.alternative_name || null,
-          category: values.category || null,
-          store_price: parseFloat(values.store_price),
-          online_price: values.online_price_same 
-            ? parseFloat(values.store_price) 
-            : values.online_price 
-              ? parseFloat(values.online_price) 
-              : null,
-          track_inventory: values.track_inventory,
-          image_url: values.image_url || null,
-          user_id: session.user.id,
-        },
-      ]);
+      const productData = {
+        name: values.name,
+        alternative_name: values.alternative_name || null,
+        category: values.category || null,
+        store_price: parseFloat(values.store_price),
+        online_price: values.online_price_same 
+          ? parseFloat(values.store_price) 
+          : values.online_price 
+            ? parseFloat(values.online_price) 
+            : null,
+        track_inventory: values.track_inventory,
+        image_url: values.image_url || null,
+        user_id: session.user.id,
+      };
 
-      if (error) throw error;
+      if (mode === "edit" && product?.id) {
+        const { error } = await supabase
+          .from("products")
+          .update(productData)
+          .eq("id", product.id);
 
-      toast.success("Produk berhasil ditambahkan");
+        if (error) throw error;
+        toast.success("Produk berhasil diperbarui");
+      } else {
+        const { error } = await supabase
+          .from("products")
+          .insert([productData]);
+
+        if (error) throw error;
+        toast.success("Produk berhasil ditambahkan");
+      }
+
       onSuccess?.();
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Gagal menambahkan produk");
+      toast.error(mode === "edit" ? "Gagal memperbarui produk" : "Gagal menambahkan produk");
     }
   }
 
@@ -93,6 +108,7 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <ProductImageUpload 
           onImageUrlChange={(url) => form.setValue("image_url", url)} 
+          defaultImageUrl={product?.image_url}
         />
 
         <FormField
@@ -139,7 +155,9 @@ export function ProductForm({ onSuccess }: ProductFormProps) {
 
         <ProductPriceInventory form={form} />
 
-        <Button type="submit" className="w-full">Tambah Produk</Button>
+        <Button type="submit" className="w-full">
+          {mode === "edit" ? "Simpan Perubahan" : "Tambah Produk"}
+        </Button>
       </form>
     </Form>
   );

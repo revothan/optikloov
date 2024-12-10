@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { ProductDialog } from "@/components/ProductDialog";
-import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Pencil } from "lucide-react";
 
 const Admin = () => {
   const session = useSession();
@@ -109,8 +110,21 @@ const Admin = () => {
                     />
                   </div>
                 )}
-                <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                <p className="text-gray-600">Rp {product.store_price}</p>
+                <div className="flex justify-between items-start gap-4">
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
+                    <p className="text-gray-600">Rp {product.store_price}</p>
+                  </div>
+                  <ProductDialog 
+                    mode="edit" 
+                    product={product}
+                    trigger={
+                      <Button variant="ghost" size="icon">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    }
+                  />
+                </div>
               </CardContent>
             </Card>
           ))}
