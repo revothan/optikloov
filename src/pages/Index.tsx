@@ -105,7 +105,7 @@ const Index = () => {
           
           <div className="space-y-4">
             <Button
-              className="w-full bg-green-600/80 hover:bg-green-600 text-white transition-all duration-300"
+              className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all duration-300"
               onClick={() => window.open("https://api.whatsapp.com/send?phone=6281283335568", "_blank")}
             >
               <MessageCircle className="mr-2 h-4 w-4" />
@@ -113,7 +113,7 @@ const Index = () => {
             </Button>
 
             <Button
-              className="w-full bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-600 hover:to-pink-600 text-white transition-all duration-300"
+              className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all duration-300"
               onClick={() => window.open("https://www.instagram.com/optikloov", "_blank")}
             >
               <Instagram className="mr-2 h-4 w-4" />
@@ -121,7 +121,7 @@ const Index = () => {
             </Button>
 
             <Button
-              className="w-full bg-blue-600/80 hover:bg-blue-600 text-white transition-all duration-300"
+              className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all duration-300"
               onClick={() => window.open("https://www.facebook.com/people/Optik-Loov/61568572959018/", "_blank")}
             >
               <Facebook className="mr-2 h-4 w-4" />
