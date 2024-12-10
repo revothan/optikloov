@@ -1,8 +1,45 @@
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('id-ID').format(price);
+};
+
+const ProductCard = ({ name, price, image }: { name: string; price: string; image: string }) => (
+  <div className="group cursor-pointer">
+    <div className="aspect-square overflow-hidden rounded-xl bg-gray-100 mb-4">
+      <img 
+        src={image} 
+        alt={name}
+        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+      />
+    </div>
+    <h3 className="font-medium text-lg">{name}</h3>
+    <p className="text-gray-600">{price}</p>
+  </div>
+);
 
 const Home = () => {
+  const { data: products } = useQuery({
+    queryKey: ["featured-products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .limit(3)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <div className="min-h-screen bg-white">
+      {/* Navigation */}
       <nav className="fixed top-0 left-0 w-full bg-white/80 backdrop-blur-sm border-b z-50">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-12">
@@ -26,65 +63,55 @@ const Home = () => {
         </div>
       </nav>
 
-      <div className="pt-32 pb-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-6">Welcome to Optik LOOV</h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Your trusted destination for quality eyewear and professional eye care services.
+      {/* Hero Section */}
+      <div className="relative min-h-screen flex items-center pt-20">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,.03)_1px,transparent_0),linear-gradient(180deg,rgba(0,0,0,.03)_1px,transparent_0)] bg-[size:4rem_4rem]" />
+        <div className="absolute right-0 top-20 w-72 h-72 bg-black/5 rounded-full blur-3xl" />
+        <div className="absolute left-20 bottom-20 w-96 h-96 bg-black/5 rounded-full blur-3xl" />
+
+        <div className="container mx-auto px-4 relative">
+          <div className="max-w-3xl">
+            <h1 className="text-6xl md:text-8xl font-bold text-black mb-6 leading-tight">
+              <span className="block animate-in fade-in slide-in-from-left duration-700">LOOV</span>
+              <span className="block animate-in fade-in slide-in-from-right duration-700 delay-300">your eyes</span>
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-xl animate-in fade-in slide-in-from-bottom duration-700 delay-500">
+              Experience precision crafted eyewear that combines style with comfort. 
+              Visit our new store in Gading Serpong.
             </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto space-y-16">
-            <div className="space-y-8">
-              <h2 className="text-2xl font-semibold text-gray-900">
-                Frames and Lenses Available
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
-                {['Oakley', 'Rayban', 'Armani Exchange', 'Vogue', 'Braun Buffel', 
-                  'Esprit', 'Hummer', 'Nike', 'New Balance'].map((brand) => (
-                  <div 
-                    key={brand}
-                    className="flex items-center justify-center p-4 bg-white rounded-lg border border-gray-200"
-                  >
-                    <span className="text-gray-400 font-medium text-sm md:text-base text-center">
-                      {brand}
-                    </span>
-                  </div>
-                ))}
-                <div className="flex items-center justify-center p-4 bg-white rounded-lg border border-gray-200">
-                  <span className="text-gray-400 font-medium text-sm md:text-base text-center">
-                    And many more...
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-8">
-              <h2 className="text-2xl font-semibold text-gray-900">
-                Supporting Lens Partners
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                {['Essilor', 'Nikon', 'Kodak Lens', 'Polycore'].map((partner) => (
-                  <div 
-                    key={partner}
-                    className="flex items-center justify-center p-4 bg-white rounded-lg border border-gray-200"
-                  >
-                    <span className="text-gray-400 font-medium text-sm md:text-base text-center">
-                      {partner}
-                    </span>
-                  </div>
-                ))}
-              </div>
+            <div className="animate-in fade-in slide-in-from-bottom duration-700 delay-700">
+              <Button 
+                className="bg-black text-white hover:bg-black/90 text-lg px-8 py-6 rounded-full"
+                onClick={() => window.open("https://maps.app.goo.gl/hcD6zrygFpeKo2Nn6", "_blank")}
+              >
+                Visit Store <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Product Collection - Only show if there are products */}
+      {products && products.length > 0 && (
+        <section className="py-24 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold mb-12 text-center">Featured Collection</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {products.map((product) => (
+                <ProductCard 
+                  key={product.id}
+                  name={product.name}
+                  price={`Rp ${formatPrice(product.store_price)}`}
+                  image={product.image_url || "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Footer */}
       <footer className="bg-black text-white py-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

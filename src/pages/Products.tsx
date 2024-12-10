@@ -46,6 +46,57 @@ const Products = () => {
         </div>
       </div>
 
+      {/* Brands Section */}
+      <div className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto space-y-16">
+            {/* Frames and Lenses Section */}
+            <div className="space-y-8">
+              <h2 className="text-2xl font-semibold text-gray-900">
+                Frames and Lenses Available
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+                {['Oakley', 'Rayban', 'Armani Exchange', 'Vogue', 'Braun Buffel', 
+                  'Esprit', 'Hummer', 'Nike', 'New Balance'].map((brand) => (
+                  <div 
+                    key={brand}
+                    className="flex items-center justify-center p-4 bg-white rounded-lg border border-gray-200"
+                  >
+                    <span className="text-gray-400 font-medium text-sm md:text-base text-center">
+                      {brand}
+                    </span>
+                  </div>
+                ))}
+                <div className="flex items-center justify-center p-4 bg-white rounded-lg border border-gray-200">
+                  <span className="text-gray-400 font-medium text-sm md:text-base text-center">
+                    And many more...
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Lens Partners Section */}
+            <div className="space-y-8">
+              <h2 className="text-2xl font-semibold text-gray-900">
+                Supporting Lens Partners
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                {['Essilor', 'Nikon', 'Kodak Lens', 'Polycore'].map((partner) => (
+                  <div 
+                    key={partner}
+                    className="flex items-center justify-center p-4 bg-white rounded-lg border border-gray-200"
+                  >
+                    <span className="text-gray-400 font-medium text-sm md:text-base text-center">
+                      {partner}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Footer */}
       <footer className="bg-black text-white py-16">
         <div className="container mx-auto px-4">
