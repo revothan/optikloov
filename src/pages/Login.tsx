@@ -30,8 +30,6 @@ const Login = () => {
         toast.info("Signed out");
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session);
-      } else if (event === "USER_DELETED") {
-        toast.error("User account deleted");
       }
     });
 
