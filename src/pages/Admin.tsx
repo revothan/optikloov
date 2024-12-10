@@ -4,7 +4,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import { ProductForm } from "@/components/ProductForm";
+import { ProductDialog } from "@/components/ProductDialog";
 
 const Admin = () => {
   const session = useSession();
@@ -87,8 +87,10 @@ const Admin = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-semibold mb-6">Tambah Produk Baru</h2>
-        <ProductForm />
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold">Produk</h2>
+          <ProductDialog />
+        </div>
       </div>
     </div>
   );

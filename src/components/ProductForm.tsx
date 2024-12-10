@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { ProductImageUpload } from "./ProductImageUpload";
+import { ProductPriceInventory } from "./ProductPriceInventory";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama produk harus diisi"),
@@ -24,8 +25,10 @@ const formSchema = z.object({
   category: z.string().optional(),
   store_price: z.string().min(1, "Harga jual di toko harus diisi"),
   online_price_same: z.boolean().default(true),
+  online_price: z.string().optional(),
   track_inventory: z.boolean().default(false),
-  has_variants: z.boolean().default(false),
+  initial_stock: z.string().optional(),
+  image_url: z.string().optional(),
 });
 
 export function ProductForm() {
@@ -40,8 +43,10 @@ export function ProductForm() {
       category: "",
       store_price: "",
       online_price_same: true,
+      online_price: "",
       track_inventory: false,
-      has_variants: false,
+      initial_stock: "",
+      image_url: "",
     },
   });
 
@@ -58,9 +63,13 @@ export function ProductForm() {
           alternative_name: values.alternative_name || null,
           category: values.category || null,
           store_price: parseFloat(values.store_price),
-          online_price: values.online_price_same ? parseFloat(values.store_price) : null,
+          online_price: values.online_price_same 
+            ? parseFloat(values.store_price) 
+            : values.online_price 
+              ? parseFloat(values.online_price) 
+              : null,
           track_inventory: values.track_inventory,
-          has_variants: values.has_variants,
+          image_url: values.image_url || null,
           user_id: session.user.id,
         },
       ]);
@@ -78,6 +87,10 @@ export function ProductForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <ProductImageUpload 
+          onImageUrlChange={(url) => form.setValue("image_url", url)} 
+        />
+
         <FormField
           control={form.control}
           name="name"
@@ -120,93 +133,7 @@ export function ProductForm() {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="store_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Harga Jual di Toko</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5">Rp</span>
-                  <Input
-                    type="number"
-                    className="pl-12"
-                    placeholder="0"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="online_price_same"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">
-                  Harga jual online sama dengan harga jual toko
-                </FormLabel>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="track_inventory"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">
-                  Lacak Inventori
-                </FormLabel>
-                <p className="text-sm text-muted-foreground">
-                  Jika anda mengaktifkan lacak inventori, sistem akan mengecek ketersediaan stok barang sebelum menjual ke pembeli
-                </p>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="has_variants"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">
-                  Variant
-                </FormLabel>
-                <p className="text-sm text-muted-foreground">
-                  Aktifkan jika produk memiliki varian misalnya variasi, warna atau ukuran
-                </p>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+        <ProductPriceInventory form={form} />
 
         <Button type="submit" className="w-full">Tambah Produk</Button>
       </form>

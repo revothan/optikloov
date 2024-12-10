@@ -54,6 +54,7 @@ export type Database = {
           created_at: string
           has_variants: boolean | null
           id: string
+          image_url: string | null
           name: string
           online_price: number | null
           store_price: number
@@ -67,6 +68,7 @@ export type Database = {
           created_at?: string
           has_variants?: boolean | null
           id?: string
+          image_url?: string | null
           name: string
           online_price?: number | null
           store_price: number
@@ -80,6 +82,7 @@ export type Database = {
           created_at?: string
           has_variants?: boolean | null
           id?: string
+          image_url?: string | null
           name?: string
           online_price?: number | null
           store_price?: number
