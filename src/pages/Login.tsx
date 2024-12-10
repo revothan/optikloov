@@ -30,6 +30,8 @@ const Login = () => {
         toast.info("Signed out");
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session);
+      } else if (event === "USER_DELETED") {
+        toast.error("User account deleted");
       }
     });
 
@@ -60,10 +62,6 @@ const Login = () => {
           }}
           theme="light"
           providers={[]}
-          onError={(error) => {
-            console.error("Auth error:", error);
-            toast.error(error.message);
-          }}
         />
       </div>
     </div>
