@@ -14,39 +14,55 @@ const Admin = () => {
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
+      if (!session?.user?.id) return null;
+      
+      console.log("Fetching profile for user:", session.user.id);
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", session?.user?.id)
+        .eq("id", session.user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching profile:", error);
+        throw error;
+      }
+      
+      console.log("Profile data:", data);
       return data;
     },
     enabled: !!session?.user?.id,
   });
 
   useEffect(() => {
-    // If there's no session, redirect to login
     if (!session) {
+      console.log("No session, redirecting to login");
       navigate("/login");
       return;
     }
 
-    // Only redirect if we're not loading and the profile is not admin
-    if (!isLoading && profile && profile.role !== "admin") {
-      console.log("User is not admin, redirecting", { profile });
-      navigate("/");
+    if (!isLoading && profile) {
+      console.log("Profile loaded:", profile);
+      if (profile.role !== 'admin') {
+        console.log("User is not admin, redirecting to home");
+        navigate("/");
+      }
     }
   }, [session, profile, navigate, isLoading]);
 
   // Show loading state while checking admin status
-  if (isLoading) {
-    return <div className="container mx-auto p-8">Loading...</div>;
+  if (isLoading || !profile) {
+    return (
+      <div className="container mx-auto p-8">
+        <div className="flex items-center justify-center">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </div>
+    );
   }
 
   // Only render admin content if user is confirmed as admin
-  if (!profile || profile.role !== "admin") {
+  if (profile.role !== 'admin') {
     return null;
   }
 
