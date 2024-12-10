@@ -101,11 +101,6 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
-              <img 
-                src="https://ucarecdn.com/f1e8a0de-f654-46bd-83f6-771d47116b66/-/preview/1000x1000/" 
-                alt="Optik LOOV Logo" 
-                className="w-16 h-16 object-contain mb-6 brightness-0 invert"
-              />
               <h3 className="text-xl font-bold mb-2">Optik LOOV</h3>
               <p className="text-gray-400 mb-1">PT. Loovindo Optima Vision</p>
               <p className="text-gray-400 mb-4 max-w-md">
