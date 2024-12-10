@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProductDialog } from "@/components/ProductDialog";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const formatPrice = (price: number) => {
@@ -37,7 +37,7 @@ const Admin = () => {
     enabled: !!session?.user?.id,
   });
 
-  // Fetch products
+  // Fetch products with automatic background updates
   const { data: products, isLoading: productsLoading } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
@@ -49,6 +49,8 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
+    // Enable automatic background updates
+    refetchInterval: 5000,
   });
 
   const handleDeleteProduct = async (productId: string) => {
@@ -61,6 +63,7 @@ const Admin = () => {
       if (error) throw error;
 
       toast.success("Produk berhasil dihapus");
+      // Invalidate and refetch products after deletion
       queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -86,9 +89,10 @@ const Admin = () => {
 
   if (profileLoading || productsLoading) {
     return (
-      <div className="container mx-auto p-8">
-        <div className="flex items-center justify-center">
-          <div className="text-lg">Loading...</div>
+      <div className="container mx-auto p-8 flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span className="text-lg">Loading...</span>
         </div>
       </div>
     );

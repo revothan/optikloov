@@ -5,6 +5,8 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
 import {
   Form,
@@ -19,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { ProductImageUpload } from "./ProductImageUpload";
 import { ProductPriceInventory } from "./ProductPriceInventory";
 import { Tables } from "@/integrations/supabase/types";
+import { useState } from "react";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nama produk harus diisi"),
@@ -41,6 +44,8 @@ interface ProductFormProps {
 export function ProductForm({ mode = "create", product, onSuccess }: ProductFormProps) {
   const session = useSession();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,6 +67,8 @@ export function ProductForm({ mode = "create", product, onSuccess }: ProductForm
       toast.error("Anda harus login terlebih dahulu");
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const productData = {
@@ -96,10 +103,14 @@ export function ProductForm({ mode = "create", product, onSuccess }: ProductForm
         toast.success("Produk berhasil ditambahkan");
       }
 
+      // Invalidate and refetch products after successful submission
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       onSuccess?.();
     } catch (error) {
       console.error("Error:", error);
       toast.error(mode === "edit" ? "Gagal memperbarui produk" : "Gagal menambahkan produk");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -155,8 +166,15 @@ export function ProductForm({ mode = "create", product, onSuccess }: ProductForm
 
         <ProductPriceInventory form={form} />
 
-        <Button type="submit" className="w-full">
-          {mode === "edit" ? "Simpan Perubahan" : "Tambah Produk"}
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>{mode === "edit" ? "Menyimpan..." : "Menambahkan..."}</span>
+            </div>
+          ) : (
+            mode === "edit" ? "Simpan Perubahan" : "Tambah Produk"
+          )}
         </Button>
       </form>
     </Form>
