@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Mail, Facebook, Instagram, WhatsApp, ArrowLeft } from "lucide-react";
+import { Mail, Facebook, Instagram, MessageSquare, ArrowLeft } from "lucide-react";
 
 const Contact = () => {
   return (
@@ -49,7 +49,7 @@ const Contact = () => {
               rel="noopener noreferrer"
               className="flex items-center p-6 bg-white rounded-xl border hover:border-green-500 transition-colors group"
             >
-              <WhatsApp className="w-8 h-8 text-green-500 mr-4" />
+              <MessageSquare className="w-8 h-8 text-green-500 mr-4" />
               <div>
                 <h3 className="text-lg font-semibold group-hover:text-green-500 transition-colors">WhatsApp</h3>
                 <p className="text-gray-600">+62 812-8333-5568</p>
