@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin } from "lucide-react";
+import { MapPin, Facebook, Instagram, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -67,7 +67,7 @@ const Index = () => {
       </Card>
 
       {/* Location Section with glass morphism */}
-      <Card className="bg-black/40 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl w-full max-w-2xl animate-fade-in">
+      <Card className="bg-black/40 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl w-full max-w-2xl mb-12 animate-fade-in">
         <div className="space-y-6">
           <div className="text-center">
             <h2 className="text-sm uppercase tracking-[0.2em] text-gray-400 mb-4">
@@ -91,6 +91,43 @@ const Index = () => {
             <MapPin className="mr-2 h-4 w-4" />
             Open in Google Maps
           </Button>
+        </div>
+      </Card>
+
+      {/* Social Media Links Section */}
+      <Card className="bg-black/40 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl w-full max-w-2xl animate-fade-in">
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-sm uppercase tracking-[0.2em] text-gray-400 mb-4">
+              Connect With Us
+            </h2>
+          </div>
+          
+          <div className="space-y-4">
+            <Button
+              className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all duration-300"
+              onClick={() => window.open("https://api.whatsapp.com/send?phone=6281283335568", "_blank")}
+            >
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Chat on WhatsApp
+            </Button>
+
+            <Button
+              className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all duration-300"
+              onClick={() => window.open("https://www.instagram.com/optikloov", "_blank")}
+            >
+              <Instagram className="mr-2 h-4 w-4" />
+              Follow on Instagram
+            </Button>
+
+            <Button
+              className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all duration-300"
+              onClick={() => window.open("https://www.facebook.com/people/Optik-Loov/61568572959018/", "_blank")}
+            >
+              <Facebook className="mr-2 h-4 w-4" />
+              Follow on Facebook
+            </Button>
+          </div>
         </div>
       </Card>
     </div>
