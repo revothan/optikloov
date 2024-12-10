@@ -11,7 +11,7 @@ const Admin = () => {
   const navigate = useNavigate();
 
   // Fetch user profile to check role
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -27,15 +27,28 @@ const Admin = () => {
   });
 
   useEffect(() => {
+    // If there's no session, redirect to login
     if (!session) {
       navigate("/login");
       return;
     }
 
-    if (profile && profile.role !== "admin") {
+    // Only redirect if we're not loading and the profile is not admin
+    if (!isLoading && profile && profile.role !== "admin") {
+      console.log("User is not admin, redirecting", { profile });
       navigate("/");
     }
-  }, [session, profile, navigate]);
+  }, [session, profile, navigate, isLoading]);
+
+  // Show loading state while checking admin status
+  if (isLoading) {
+    return <div className="container mx-auto p-8">Loading...</div>;
+  }
+
+  // Only render admin content if user is confirmed as admin
+  if (!profile || profile.role !== "admin") {
+    return null;
+  }
 
   return (
     <div className="container mx-auto p-8">
