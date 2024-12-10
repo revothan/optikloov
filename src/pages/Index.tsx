@@ -31,11 +31,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 md:p-8">
-      {/* Logo Placeholder with glass morphism effect */}
-      <div className="w-48 h-48 mb-12 flex items-center justify-center backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl">
-        <div className="text-2xl font-light">
-          [Your Logo Here]
-        </div>
+      {/* Animated Welcome Message */}
+      <div className="mb-12 text-4xl md:text-6xl font-thin tracking-wider animate-fade-in">
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-300 to-white animate-pulse">
+          Hey, Gading Serpong!
+        </span>
+      </div>
+
+      {/* Logo with glass morphism effect */}
+      <div className="w-48 h-48 mb-12 flex items-center justify-center backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4">
+        <img 
+          src="https://ucarecdn.com/f1e8a0de-f654-46bd-83f6-771d47116b66/-/preview/1000x1000/" 
+          alt="Optik LOOV Logo" 
+          className="w-full h-full object-contain"
+        />
       </div>
 
       {/* Countdown Section with glass morphism */}
