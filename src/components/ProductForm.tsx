@@ -31,7 +31,11 @@ const formSchema = z.object({
   image_url: z.string().optional(),
 });
 
-export function ProductForm() {
+interface ProductFormProps {
+  onSuccess?: () => void;
+}
+
+export function ProductForm({ onSuccess }: ProductFormProps) {
   const session = useSession();
   const navigate = useNavigate();
 
@@ -77,7 +81,7 @@ export function ProductForm() {
       if (error) throw error;
 
       toast.success("Produk berhasil ditambahkan");
-      navigate("/admin");
+      onSuccess?.();
     } catch (error) {
       console.error("Error:", error);
       toast.error("Gagal menambahkan produk");

@@ -5,12 +5,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { ProductForm } from "./ProductForm";
+import { useState } from "react";
 
 export function ProductDialog() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>Tambah Produk</Button>
       </DialogTrigger>
@@ -18,7 +22,12 @@ export function ProductDialog() {
         <DialogHeader>
           <DialogTitle>Tambah Produk Baru</DialogTitle>
         </DialogHeader>
-        <ProductForm />
+        <ProductForm onSuccess={() => setOpen(false)} />
+        <DialogClose asChild>
+          <Button variant="outline" className="mt-4">
+            Batal
+          </Button>
+        </DialogClose>
       </DialogContent>
     </Dialog>
   );

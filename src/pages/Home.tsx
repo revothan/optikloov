@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const ProductCard = ({ name, price, image }: { name: string; price: string; image: string }) => (
   <div className="group cursor-pointer">
@@ -17,6 +19,20 @@ const ProductCard = ({ name, price, image }: { name: string; price: string; imag
 );
 
 const Home = () => {
+  const { data: products } = useQuery({
+    queryKey: ["featured-products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .limit(3)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -77,21 +93,14 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-12 text-center">Featured Collection</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <ProductCard 
-              name="Classic Aviator"
-              price="Rp 1.500.000"
-              image="https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
-            />
-            <ProductCard 
-              name="Modern Round"
-              price="Rp 1.800.000"
-              image="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
-            />
-            <ProductCard 
-              name="Square Elegance"
-              price="Rp 2.000.000"
-              image="https://images.unsplash.com/photo-1508296695146-257a814070b4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
-            />
+            {products?.map((product) => (
+              <ProductCard 
+                key={product.id}
+                name={product.name}
+                price={`Rp ${product.store_price}`}
+                image={product.image_url || "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"}
+              />
+            ))}
           </div>
         </div>
       </section>

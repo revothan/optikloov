@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { ProductDialog } from "@/components/ProductDialog";
+import { X } from "lucide-react";
 
 const Admin = () => {
   const session = useSession();
@@ -12,30 +13,35 @@ const Admin = () => {
   const location = useLocation();
 
   // Fetch user profile to check role
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
-      if (!session?.user?.id) {
-        console.log("No user ID available");
-        return null;
-      }
+      if (!session?.user?.id) return null;
       
-      console.log("Fetching profile for user:", session.user.id);
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", session.user.id)
         .single();
 
-      if (error) {
-        console.error("Error fetching profile:", error);
-        throw error;
-      }
-      
-      console.log("Profile data:", data);
+      if (error) throw error;
       return data;
     },
     enabled: !!session?.user?.id,
+  });
+
+  // Fetch products
+  const { data: products, isLoading: productsLoading } = useQuery({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
   });
 
   useEffect(() => {
@@ -45,17 +51,16 @@ const Admin = () => {
       return;
     }
 
-    if (!isLoading && profile !== undefined) {
+    if (!profileLoading && profile !== undefined) {
       console.log("Profile loaded:", profile);
       if (profile?.role !== 'admin') {
         console.log("User is not admin, redirecting to home");
         navigate("/");
       }
     }
-  }, [session, profile, navigate, isLoading, location]);
+  }, [session, profile, navigate, profileLoading, location]);
 
-  // Show loading state while checking admin status
-  if (isLoading || profile === undefined) {
+  if (profileLoading || productsLoading) {
     return (
       <div className="container mx-auto p-8">
         <div className="flex items-center justify-center">
@@ -65,7 +70,6 @@ const Admin = () => {
     );
   }
 
-  // Only render admin content if user is confirmed as admin
   if (!profile || profile.role !== 'admin') {
     return null;
   }
@@ -80,7 +84,7 @@ const Admin = () => {
             <CardTitle>Products</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold">0</p>
+            <p className="text-2xl font-semibold">{products?.length || 0}</p>
             <p className="text-gray-500">Total Products</p>
           </CardContent>
         </Card>
@@ -90,6 +94,26 @@ const Admin = () => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">Produk</h2>
           <ProductDialog />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products?.map((product) => (
+            <Card key={product.id}>
+              <CardContent className="p-4">
+                {product.image_url && (
+                  <div className="aspect-square overflow-hidden rounded-lg mb-4">
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                )}
+                <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
+                <p className="text-gray-600">Rp {product.store_price}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </div>
