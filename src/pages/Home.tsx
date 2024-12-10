@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, UserPlus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import BrandSection from "@/components/BrandSection";
@@ -24,6 +24,7 @@ const ProductCard = ({ name, price, image }: { name: string; price: string; imag
 );
 
 const Home = () => {
+  const navigate = useNavigate();
   const { data: products } = useQuery({
     queryKey: ["featured-products"],
     queryFn: async () => {
@@ -61,6 +62,14 @@ const Home = () => {
               </Link>
             </div>
           </div>
+          <Button 
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={() => navigate('/login')}
+          >
+            <UserPlus className="w-4 h-4" />
+            Member
+          </Button>
         </div>
       </nav>
 
