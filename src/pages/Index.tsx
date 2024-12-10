@@ -30,26 +30,26 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black flex flex-col items-center justify-center p-4 md:p-8">
-      {/* Logo Placeholder - We'll add the actual logo once you upload it */}
-      <div className="w-48 h-48 mb-12 flex items-center justify-center">
-        <div className="text-2xl font-light text-black dark:text-white">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 md:p-8">
+      {/* Logo Placeholder with glass morphism effect */}
+      <div className="w-48 h-48 mb-12 flex items-center justify-center backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl">
+        <div className="text-2xl font-light">
           [Your Logo Here]
         </div>
       </div>
 
-      {/* Countdown Section */}
-      <Card className="bg-white/80 dark:bg-black/80 backdrop-blur-lg border border-gray-200 dark:border-gray-800 p-8 rounded-2xl mb-12 w-full max-w-2xl">
-        <h2 className="text-sm uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-2 text-center">
+      {/* Countdown Section with glass morphism */}
+      <Card className="bg-black/40 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl mb-12 w-full max-w-2xl animate-fade-in">
+        <h2 className="text-sm uppercase tracking-[0.2em] text-gray-400 mb-2 text-center">
           Soft Opening
         </h2>
         <div className="grid grid-cols-4 gap-4 mb-8">
           {Object.entries(timeLeft).map(([unit, value]) => (
             <div key={unit} className="text-center">
-              <div className="text-4xl md:text-5xl font-light mb-2">
+              <div className="text-4xl md:text-6xl font-extralight mb-2 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
                 {String(value).padStart(2, '0')}
               </div>
-              <div className="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400">
+              <div className="text-xs uppercase tracking-[0.2em] text-gray-400">
                 {unit}
               </div>
             </div>
@@ -57,14 +57,14 @@ const Index = () => {
         </div>
       </Card>
 
-      {/* Location Section */}
-      <Card className="bg-white/80 dark:bg-black/80 backdrop-blur-lg border border-gray-200 dark:border-gray-800 p-8 rounded-2xl w-full max-w-2xl">
+      {/* Location Section with glass morphism */}
+      <Card className="bg-black/40 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl w-full max-w-2xl animate-fade-in">
         <div className="space-y-6">
           <div className="text-center">
-            <h2 className="text-sm uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-4">
+            <h2 className="text-sm uppercase tracking-[0.2em] text-gray-400 mb-4">
               Location
             </h2>
-            <p className="text-black dark:text-white text-lg leading-relaxed">
+            <p className="text-lg leading-relaxed text-gray-200">
               Ruko Downtown Drive Gading Serpong Blok DDBLV No. 016,
               <br />
               Kel. Medang, Kec. Pagedangan,
@@ -76,7 +76,7 @@ const Index = () => {
           </div>
 
           <Button
-            className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-gray-900 dark:hover:bg-gray-100 transition-all duration-300"
+            className="w-full bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/20 transition-all duration-300"
             onClick={() => window.open("https://maps.app.goo.gl/hcD6zrygFpeKo2Nn6", "_blank")}
           >
             <MapPin className="mr-2 h-4 w-4" />
