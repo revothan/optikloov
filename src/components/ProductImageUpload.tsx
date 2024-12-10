@@ -1,15 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface ProductImageUploadProps {
   onImageUrlChange: (url: string) => void;
+  defaultImageUrl?: string | null;
 }
 
-export function ProductImageUpload({ onImageUrlChange }: ProductImageUploadProps) {
+export function ProductImageUpload({ onImageUrlChange, defaultImageUrl }: ProductImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>("");
+
+  useEffect(() => {
+    if (defaultImageUrl) {
+      setPreviewUrl(defaultImageUrl);
+    }
+  }, [defaultImageUrl]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
