@@ -3,15 +3,17 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProductDialog } from "@/components/ProductDialog";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 const Admin = () => {
   const session = useSession();
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   // Fetch user profile to check role
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -44,6 +46,23 @@ const Admin = () => {
       return data;
     },
   });
+
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", productId);
+
+      if (error) throw error;
+
+      toast.success("Produk berhasil dihapus");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast.error("Gagal menghapus produk");
+    }
+  };
 
   useEffect(() => {
     if (!session) {
@@ -115,15 +134,24 @@ const Admin = () => {
                     <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
                     <p className="text-gray-600">Rp {product.store_price}</p>
                   </div>
-                  <ProductDialog 
-                    mode="edit" 
-                    product={product}
-                    trigger={
-                      <Button variant="ghost" size="icon">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    }
-                  />
+                  <div className="flex gap-2">
+                    <ProductDialog 
+                      mode="edit" 
+                      product={product}
+                      trigger={
+                        <Button variant="ghost" size="icon">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      }
+                    />
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => handleDeleteProduct(product.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
