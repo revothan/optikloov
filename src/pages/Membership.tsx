@@ -1,4 +1,4 @@
-import { Star, Award, Crown, Percent, Coins, Clock, Gift, Sparkles, Tool, Glasses } from "lucide-react";
+import { Star, Award, Crown, Percent, Coins, Clock, Gift, Sparkles, Wrench, Glasses } from "lucide-react";
 
 const MembershipTier = ({ 
   name, 
@@ -128,7 +128,7 @@ const Membership = () => {
               title="Free Eyewear Cleaning: Complimentary eyewear cleaning service"
             />
             <BenefitItem
-              icon={Tool}
+              icon={Wrench}
               title="Free Minor Repairs: Complimentary minor eyewear repairs"
             />
           </div>
