@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,12 +9,16 @@ import { ProductForm } from "@/components/ProductForm";
 const Admin = () => {
   const session = useSession();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Fetch user profile to check role
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
-      if (!session?.user?.id) return null;
+      if (!session?.user?.id) {
+        console.log("No user ID available");
+        return null;
+      }
       
       console.log("Fetching profile for user:", session.user.id);
       const { data, error } = await supabase
@@ -37,21 +41,21 @@ const Admin = () => {
   useEffect(() => {
     if (!session) {
       console.log("No session, redirecting to login");
-      navigate("/login");
+      navigate("/login", { state: { from: location.pathname } });
       return;
     }
 
-    if (!isLoading && profile) {
+    if (!isLoading && profile !== undefined) {
       console.log("Profile loaded:", profile);
-      if (profile.role !== 'admin') {
+      if (profile?.role !== 'admin') {
         console.log("User is not admin, redirecting to home");
         navigate("/");
       }
     }
-  }, [session, profile, navigate, isLoading]);
+  }, [session, profile, navigate, isLoading, location]);
 
   // Show loading state while checking admin status
-  if (isLoading || !profile) {
+  if (isLoading || profile === undefined) {
     return (
       <div className="container mx-auto p-8">
         <div className="flex items-center justify-center">
@@ -62,7 +66,7 @@ const Admin = () => {
   }
 
   // Only render admin content if user is confirmed as admin
-  if (profile.role !== 'admin') {
+  if (!profile || profile.role !== 'admin') {
     return null;
   }
 

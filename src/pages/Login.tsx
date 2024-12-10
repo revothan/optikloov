@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,13 +9,16 @@ import { toast } from "sonner";
 const Login = () => {
   const session = useSession();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (session) {
-      console.log("Session exists, redirecting to home", session);
-      navigate("/");
+      // Check if the user was trying to access the admin page
+      const intendedPath = location.state?.from || "/";
+      console.log("Session exists, redirecting to:", intendedPath);
+      navigate(intendedPath);
     }
-  }, [session, navigate]);
+  }, [session, navigate, location]);
 
   // Listen for auth state changes
   useEffect(() => {
