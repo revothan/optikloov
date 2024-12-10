@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, Facebook, Instagram, MessageCircle } from "lucide-react";
+import { MapPin, Facebook, Instagram, MessageCircle, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -28,6 +28,18 @@ const Index = () => {
 
     return () => clearInterval(timer);
   }, []);
+
+  const handleAddToCalendar = () => {
+    const event = {
+      text: 'Optik LOOV Soft Opening',
+      dates: '20241212T000000/20241212T235959',
+      location: 'Ruko Downtown Drive Gading Serpong Blok DDBLV No. 016, Kel. Medang, Kec. Pagedangan, Kabupaten Tangerang, Banten 15334, Indonesia',
+      details: 'Join us for the soft opening of Optik LOOV in Gading Serpong!'
+    };
+
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.text)}&dates=${event.dates}&location=${encodeURIComponent(event.location)}&details=${encodeURIComponent(event.details)}`;
+    window.open(googleCalendarUrl, '_blank');
+  };
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center p-4 md:p-8">
@@ -64,6 +76,13 @@ const Index = () => {
             </div>
           ))}
         </div>
+        <Button
+          className="w-full bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/20 transition-all duration-300"
+          onClick={handleAddToCalendar}
+        >
+          <Calendar className="mr-2 h-4 w-4" />
+          Add to Calendar
+        </Button>
       </Card>
 
       {/* Location Section with glass morphism */}
