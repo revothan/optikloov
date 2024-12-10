@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('id-ID').format(price);
+};
+
 const Admin = () => {
   const session = useSession();
   const navigate = useNavigate();
@@ -132,7 +136,7 @@ const Admin = () => {
                 <div className="flex justify-between items-start gap-4">
                   <div>
                     <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                    <p className="text-gray-600">Rp {product.store_price}</p>
+                    <p className="text-gray-600">Rp {formatPrice(product.store_price)}</p>
                   </div>
                   <div className="flex gap-2">
                     <ProductDialog 
