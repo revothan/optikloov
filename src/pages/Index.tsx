@@ -30,16 +30,9 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 md:p-8">
-      {/* Animated Welcome Message */}
-      <div className="mb-12 text-4xl md:text-6xl font-thin tracking-wider animate-fade-in">
-        <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-300 to-white animate-pulse">
-          Hey, Gading Serpong!
-        </span>
-      </div>
-
-      {/* Logo with glass morphism effect */}
-      <div className="w-48 h-48 mb-12 flex items-center justify-center backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center p-4 md:p-8">
+      {/* Logo with glass morphism effect - moved to top and made smaller */}
+      <div className="w-24 h-24 mb-8 flex items-center justify-center backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-2">
         <img 
           src="https://ucarecdn.com/f1e8a0de-f654-46bd-83f6-771d47116b66/-/preview/1000x1000/" 
           alt="Optik LOOV Logo" 
@@ -47,7 +40,14 @@ const Index = () => {
         />
       </div>
 
-      {/* Countdown Section with glass morphism */}
+      {/* Animated Welcome Message */}
+      <div className="mb-12 text-4xl md:text-6xl font-thin tracking-wider animate-fade-in">
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-300 to-white animate-pulse">
+          Hey, Gading Serpong!
+        </span>
+      </div>
+
+      {/* Countdown Section with glass morphism - improved mobile responsiveness */}
       <Card className="bg-black/40 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl mb-12 w-full max-w-2xl animate-fade-in">
         <h2 className="text-sm uppercase tracking-[0.2em] text-gray-400 mb-2 text-center">
           Soft Opening
@@ -55,10 +55,10 @@ const Index = () => {
         <div className="grid grid-cols-4 gap-4 mb-8">
           {Object.entries(timeLeft).map(([unit, value]) => (
             <div key={unit} className="text-center">
-              <div className="text-4xl md:text-6xl font-extralight mb-2 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
+              <div className="text-2xl md:text-6xl font-extralight mb-2 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
                 {String(value).padStart(2, '0')}
               </div>
-              <div className="text-xs uppercase tracking-[0.2em] text-gray-400">
+              <div className="text-[10px] md:text-xs uppercase tracking-[0.2em] text-gray-400">
                 {unit}
               </div>
             </div>
