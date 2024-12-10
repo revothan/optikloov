@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, UserPlus } from "lucide-react";
+import { ArrowRight, UserPlus, Menu } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import BrandSection from "@/components/BrandSection";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useState } from "react";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('id-ID').format(price);
@@ -25,6 +27,9 @@ const ProductCard = ({ name, price, image }: { name: string; price: string; imag
 
 const Home = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
   const { data: products } = useQuery({
     queryKey: ["featured-products"],
     queryFn: async () => {
@@ -50,27 +55,78 @@ const Home = () => {
               alt="Optik LOOV Logo" 
               className="w-12 h-12 object-contain"
             />
-            <div className="flex gap-8">
-              <Link to="/" className="text-black hover:text-gray-600 transition-colors">
-                Home
-              </Link>
-              <Link to="/products" className="text-black hover:text-gray-600 transition-colors">
-                Produk
-              </Link>
-              <Link to="/contact" className="text-black hover:text-gray-600 transition-colors">
-                Contact Us
-              </Link>
-            </div>
+            {isMobile ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="md:hidden"
+              >
+                <Menu className="h-6 w-6" />
+              </Button>
+            ) : (
+              <div className="hidden md:flex gap-8">
+                <Link to="/" className="text-black hover:text-gray-600 transition-colors">
+                  Home
+                </Link>
+                <Link to="/products" className="text-black hover:text-gray-600 transition-colors">
+                  Produk
+                </Link>
+                <Link to="/contact" className="text-black hover:text-gray-600 transition-colors">
+                  Contact Us
+                </Link>
+              </div>
+            )}
           </div>
           <Button 
             variant="outline"
-            className="flex items-center gap-2"
+            className="hidden md:flex items-center gap-2"
             onClick={() => navigate('/login')}
           >
             <UserPlus className="w-4 h-4" />
             Member
           </Button>
         </div>
+        
+        {/* Mobile Menu */}
+        {isMobile && isMenuOpen && (
+          <div className="md:hidden bg-white border-b animate-in slide-in-from-top">
+            <div className="container mx-auto px-6 py-4 flex flex-col gap-4">
+              <Link 
+                to="/" 
+                className="text-black hover:text-gray-600 transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link 
+                to="/products" 
+                className="text-black hover:text-gray-600 transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Produk
+              </Link>
+              <Link 
+                to="/contact" 
+                className="text-black hover:text-gray-600 transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contact Us
+              </Link>
+              <Button 
+                variant="outline"
+                className="flex items-center gap-2 w-full justify-center"
+                onClick={() => {
+                  navigate('/login');
+                  setIsMenuOpen(false);
+                }}
+              >
+                <UserPlus className="w-4 h-4" />
+                Member
+              </Button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
