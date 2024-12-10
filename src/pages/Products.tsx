@@ -21,6 +21,9 @@ const Products = () => {
               <Link to="/products" className="text-black hover:text-gray-600 transition-colors">
                 Produk
               </Link>
+              <Link to="/membership" className="text-black hover:text-gray-600 transition-colors">
+                Membership
+              </Link>
               <Link to="/contact" className="text-black hover:text-gray-600 transition-colors">
                 Contact Us
               </Link>

@@ -11,6 +11,7 @@ import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import Contact from "./pages/Contact";
 import Products from "./pages/Products";
+import Membership from "./pages/Membership";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/products" element={<Products />} />
+            <Route path="/membership" element={<Membership />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
