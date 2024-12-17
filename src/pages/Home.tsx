@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Menu } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import BrandSection from "@/components/BrandSection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
+import Navbar from "@/components/Navbar"; // Import the Navbar component
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID").format(price);
@@ -54,47 +55,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 w-full bg-white/80 backdrop-blur-sm border-b z-50">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-12">
-            <img
-              src="https://ucarecdn.com/f1e8a0de-f654-46bd-83f6-771d47116b66/-/preview/1000x1000/"
-              alt="Optik LOOV Logo"
-              className="w-12 h-12 object-contain"
-            />
-            {isMobile ? (
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden"
-                aria-label="Toggle Menu"
-              >
-                <Menu className="h-6 w-6" />
-              </button>
-            ) : (
-              <div className="hidden md:flex gap-8">
-                <Link
-                  to="/"
-                  className="text-black hover:text-gray-600 transition-colors"
-                >
-                  Home
-                </Link>
-                <Link
-                  to="/products"
-                  className="text-black hover:text-gray-600 transition-colors"
-                >
-                  Produk
-                </Link>
-                <Link
-                  to="/contact"
-                  className="text-black hover:text-gray-600 transition-colors"
-                >
-                  Contact Us
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Minimal Hero Section */}
       <div className="relative flex flex-col items-center justify-center min-h-screen text-center bg-gray-50">
