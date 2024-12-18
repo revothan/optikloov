@@ -9,6 +9,7 @@ import {
   Sparkles,
   Wrench,
   Glasses,
+  Cake,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -68,10 +69,8 @@ const BenefitItem = ({
 const Membership = () => {
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
       <Navbar />
 
-      {/* Hero Section */}
       <div className="pt-24 pb-8 text-center">
         <h1 className="text-4xl font-bold mb-4">LOOVERS MEMBERSHIP</h1>
         <p className="text-gray-600 max-w-2xl mx-auto">
@@ -80,14 +79,13 @@ const Membership = () => {
         </p>
       </div>
 
-      {/* Membership Tiers */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <MembershipTier
             name="Classic"
             icon={Star}
             discount="5% discount on frames and lenses"
-            points="Earn loyalty points on every purchase (1 point = Rp1)"
+            points="Earn 5% loyalty points from total spending"
           />
           <MembershipTier
             name="Premium"
@@ -104,7 +102,6 @@ const Membership = () => {
             requirement="Minimum spending of Rp 25,000,000 within 3 years"
           />
         </div>
-        {/* Sign Up Button */}
         <div className="text-center mt-8">
           <a
             href="https://optikloov.myolsera.com/account/sign-in"
@@ -117,13 +114,12 @@ const Membership = () => {
         </div>
       </div>
 
-      {/* All Member Benefits */}
       <div className="bg-gray-50 py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold text-center mb-12">
             All Members Benefits
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             <BenefitItem
               icon={Gift}
               title="Priority Promo: Early access to special promotions"
@@ -139,6 +135,10 @@ const Membership = () => {
             <BenefitItem
               icon={Wrench}
               title="Free Minor Repairs: Complimentary minor eyewear repairs"
+            />
+            <BenefitItem
+              icon={Cake}
+              title="Up to 40% Birthday Discount Every Year"
             />
           </div>
         </div>
