@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import BrandSection from "@/components/BrandSection";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -61,7 +61,7 @@ const Home = () => {
     },
   });
 
-  const plugin = AutoPlay({ delay: 3500 });
+  const plugin = AutoPlay({ delay: 6000 }); // Changed from 3500 to 6000 milliseconds
 
   return (
     <div className="min-h-screen bg-white">
