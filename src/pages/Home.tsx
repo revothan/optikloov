@@ -1,12 +1,20 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import BrandSection from "@/components/BrandSection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
-import Navbar from "@/components/Navbar"; // Import the Navbar component
-import Footer from "@/components/Footer"; // Import the Footer component
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Button } from "@/components/ui/button";
+import AutoPlay from "embla-carousel-autoplay";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID").format(price);
@@ -53,29 +61,55 @@ const Home = () => {
     },
   });
 
+  const plugin = AutoPlay({ delay: 6000 }); // Changed from 3500 to 6000 milliseconds
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
       <Navbar />
 
-      {/* Minimal Hero Section */}
-      <div className="relative flex flex-col items-center justify-center min-h-screen text-center bg-gray-50">
-        <div className="container px-4">
-          <h1 className="text-5xl md:text-7xl font-bold text-black mb-4 leading-snug">
-            LOOV <span className="text-gray-500">Your Eyes</span>
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
-            Precision-crafted eyewear. Minimal, stylish, and comfortable.
-          </p>
-          <a
-            href="https://maps.app.goo.gl/osfSzvUxA8taRMKW8"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition"
-          >
-            Visit Us on Google Maps
-          </a>
-        </div>
+      {/* Hero Carousel Section */}
+      <div className="w-full max-w-[1920px] mx-auto pt-16">
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          plugins={[plugin]}
+          className="w-full"
+        >
+          <CarouselContent>
+            <CarouselItem>
+              <div className="relative">
+                <img
+                  src="https://ucarecdn.com/1555baca-5e35-4376-9354-a6fad135de06/-/preview/1000x562/"
+                  alt="Carousel Image 1"
+                  className="w-full h-auto object-cover"
+                />
+                <div className="absolute bottom-8 left-8">
+                  <Button variant="secondary" size="lg">
+                    Shop Now
+                  </Button>
+                </div>
+              </div>
+            </CarouselItem>
+            <CarouselItem>
+              <div className="relative">
+                <img
+                  src="https://ucarecdn.com/1f1db06f-fe1e-4bb3-8fce-fae4482c0beb/-/preview/1000x562/"
+                  alt="Carousel Image 2"
+                  className="w-full h-auto object-cover"
+                />
+                <div className="absolute bottom-8 left-8">
+                  <Button variant="secondary" size="lg">
+                    Learn More
+                  </Button>
+                </div>
+              </div>
+            </CarouselItem>
+          </CarouselContent>
+          <CarouselPrevious className="left-4" />
+          <CarouselNext className="right-4" />
+        </Carousel>
       </div>
 
       {/* Brand Section */}
@@ -105,7 +139,6 @@ const Home = () => {
         </section>
       )}
 
-      {/* Footer */}
       <Footer />
     </div>
   );
