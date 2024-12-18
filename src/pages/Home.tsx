@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import BrandSection from "@/components/BrandSection";
@@ -15,7 +14,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
-import Autoplay from "embla-carousel-autoplay";
+import AutoPlay from "embla-carousel-autoplay";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID").format(price);
@@ -62,7 +61,7 @@ const Home = () => {
     },
   });
 
-  const plugin = Autoplay({ delay: 3500 });
+  const plugin = AutoPlay({ delay: 3500 });
 
   return (
     <div className="min-h-screen bg-white">
