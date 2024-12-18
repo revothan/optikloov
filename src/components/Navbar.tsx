@@ -97,7 +97,7 @@ const NavigationBar = () => {
         )}
       </nav>
       {/* Add space below the navbar */}
-      <div className="h-16 md:h-20"></div>
+      <div className="h-2 md:h-2"></div>
     </>
   );
 };
