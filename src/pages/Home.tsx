@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+// src/pages/Home.tsx
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import BrandSection from "@/components/BrandSection";
@@ -6,15 +6,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import { Button } from "@/components/ui/button";
-import AutoPlay from "embla-carousel-autoplay";
+import HeroCarousel from "@/components/HeroCarousel";
+import Maps from "@/components/Maps";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID").format(price);
@@ -43,10 +36,6 @@ const ProductCard = ({
 );
 
 const Home = () => {
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const { data: products } = useQuery({
     queryKey: ["featured-products"],
     queryFn: async () => {
@@ -61,60 +50,15 @@ const Home = () => {
     },
   });
 
-  const plugin = AutoPlay({ delay: 6000 }); // Changed from 3500 to 6000 milliseconds
-
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-
-      {/* Hero Carousel Section */}
-      <div className="w-full max-w-[1920px] mx-auto pt-16">
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          plugins={[plugin]}
-          className="w-full"
-        >
-          <CarouselContent>
-            <CarouselItem>
-              <div className="relative">
-                <img
-                  src="https://ucarecdn.com/1555baca-5e35-4376-9354-a6fad135de06/-/preview/1000x562/"
-                  alt="Carousel Image 1"
-                  className="w-full h-auto object-cover"
-                />
-                <div className="absolute bottom-8 left-8">
-                  <Button variant="secondary" size="lg">
-                    Shop Now
-                  </Button>
-                </div>
-              </div>
-            </CarouselItem>
-            <CarouselItem>
-              <div className="relative">
-                <img
-                  src="https://ucarecdn.com/1f1db06f-fe1e-4bb3-8fce-fae4482c0beb/-/preview/1000x562/"
-                  alt="Carousel Image 2"
-                  className="w-full h-auto object-cover"
-                />
-                <div className="absolute bottom-8 left-8">
-                  <Button variant="secondary" size="lg">
-                    Learn More
-                  </Button>
-                </div>
-              </div>
-            </CarouselItem>
-          </CarouselContent>
-          <CarouselPrevious className="left-4" />
-          <CarouselNext className="right-4" />
-        </Carousel>
-      </div>
-
+      {/* Hero Section */}
+      <HeroCarousel /> {/* Use the HeroCarousel component */}
+      {/* Map */}
+      <Maps />
       {/* Brand Section */}
       <BrandSection />
-
       {/* Product Collection */}
       {products && products.length > 0 && (
         <section className="py-16">
@@ -138,7 +82,6 @@ const Home = () => {
           </div>
         </section>
       )}
-
       <Footer />
     </div>
   );
