@@ -6,6 +6,7 @@ import BrandSection from "@/components/BrandSection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import Navbar from "@/components/Navbar"; // Import the Navbar component
+import Footer from "@/components/Footer"; // Import the Footer component
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID").format(price);
@@ -105,13 +106,7 @@ const Home = () => {
       )}
 
       {/* Footer */}
-      <footer className="bg-black text-white py-8">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-gray-400">
-            &copy; 2024 Optik LOOV. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

@@ -50,6 +50,12 @@ const NavigationBar = () => {
           >
             Contact Us
           </Link>
+          <Link
+            to="/membership"
+            className="text-black hover:text-gray-600 transition-colors"
+          >
+            Memberships
+          </Link>
         </div>
       </div>
 
