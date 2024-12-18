@@ -11,7 +11,9 @@ const HeroCarousel = () => {
   const plugin = AutoPlay({ delay: 6000 });
 
   return (
-    <div className="w-full max-w-[1920px] mx-auto pt-8 md:pt-16">
+    <div className="w-full max-w-[1920px] mx-auto mt-16">
+      {" "}
+      {/* Removed pt-8/pt-16, added mt-16 for navbar space */}
       <Carousel
         opts={{ align: "start", loop: true }}
         plugins={[plugin]}
@@ -19,20 +21,20 @@ const HeroCarousel = () => {
       >
         <CarouselContent>
           <CarouselItem>
-            <div className="relative">
+            <div className="relative w-full aspect-[16/9]">
               <img
                 src="https://ucarecdn.com/1555baca-5e35-4376-9354-a6fad135de06/-/preview/1000x562/"
                 alt="Carousel Image 1"
-                className="w-full h-[300px] sm:h-[400px] md:h-[500px] object-cover"
+                className="w-full h-full object-contain md:object-cover"
               />
             </div>
           </CarouselItem>
           <CarouselItem>
-            <div className="relative">
+            <div className="relative w-full aspect-[16/9]">
               <img
                 src="https://ucarecdn.com/1f1db06f-fe1e-4bb3-8fce-fae4482c0beb/-/preview/1000x562/"
                 alt="Carousel Image 2"
-                className="w-full h-[300px] sm:h-[400px] md:h-[500px] object-cover"
+                className="w-full h-full object-contain md:object-cover"
               />
             </div>
           </CarouselItem>
