@@ -57,6 +57,12 @@ const NavigationBar = () => {
             >
               Memberships
             </Link>
+            <Link
+              to="/visiontest"
+              className="text-black hover:text-gray-600 transition-colors"
+            >
+              Vision Test
+            </Link>
           </div>
         </div>
 
@@ -91,6 +97,12 @@ const NavigationBar = () => {
                 className="text-black hover:text-gray-600 transition-colors"
               >
                 Memberships
+              </Link>
+              <Link
+                to="/visiontest"
+                className="text-black hover:text-gray-600 transition-colors"
+              >
+                Vision Test
               </Link>
             </div>
           </div>
