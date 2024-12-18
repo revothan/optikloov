@@ -31,19 +31,19 @@ const MembershipTier = ({
     <div className="mb-6 inline-block rounded-lg bg-black/5 p-3">
       <Icon className="h-6 w-6" />
     </div>
-    <h3 className="mb-2 text-xl font-semibold">{name}</h3>
+    <h3 className="mb-4 text-xl font-semibold">{name}</h3>
     <div className="space-y-4 text-gray-600">
-      <div className="flex items-start gap-2">
-        <Percent className="mt-1 h-4 w-4 shrink-0" />
+      <div className="flex items-center gap-2">
+        <Percent className="h-4 w-4" />
         <span>{discount}</span>
       </div>
-      <div className="flex items-start gap-2">
-        <Coins className="mt-1 h-4 w-4 shrink-0" />
+      <div className="flex items-center gap-2">
+        <Coins className="h-4 w-4" />
         <span>{points}</span>
       </div>
       {requirement && (
-        <div className="flex items-start gap-2">
-          <Clock className="mt-1 h-4 w-4 shrink-0" />
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4" />
           <span className="text-sm">{requirement}</span>
         </div>
       )}
@@ -71,7 +71,7 @@ const Membership = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      <div className="pt-24 pb-8 text-center">
+      <div className="pt-24 pb-8 text-center px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-bold mb-4">LOOVERS MEMBERSHIP</h1>
         <p className="text-gray-600 max-w-2xl mx-auto">
           Join our exclusive membership program and enjoy premium benefits,
@@ -115,11 +115,11 @@ const Membership = () => {
       </div>
 
       <div className="bg-gray-50 py-16">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-center mb-12">
             All Members Benefits
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <BenefitItem
               icon={Gift}
               title="Priority Promo: Early access to special promotions"
@@ -143,6 +143,7 @@ const Membership = () => {
           </div>
         </div>
       </div>
+
       <Footer />
     </div>
   );
