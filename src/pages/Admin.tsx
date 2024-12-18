@@ -8,9 +8,10 @@ import { ProductDialog } from "@/components/ProductDialog";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import LogoutButton from "@/components/LogoutButton";
 
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('id-ID').format(price);
+  return new Intl.NumberFormat("id-ID").format(price);
 };
 
 const Admin = () => {
@@ -24,7 +25,7 @@ const Admin = () => {
     queryKey: ["profile"],
     queryFn: async () => {
       if (!session?.user?.id) return null;
-      
+
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -80,7 +81,7 @@ const Admin = () => {
 
     if (!profileLoading && profile !== undefined) {
       console.log("Profile loaded:", profile);
-      if (profile?.role !== 'admin') {
+      if (profile?.role !== "admin") {
         console.log("User is not admin, redirecting to home");
         navigate("/");
       }
@@ -98,14 +99,16 @@ const Admin = () => {
     );
   }
 
-  if (!profile || profile.role !== 'admin') {
+  if (!profile || profile.role !== "admin") {
     return null;
   }
 
   return (
     <div className="container mx-auto p-8">
-      <h1 className="text-4xl font-bold mb-8">Admin Dashboard</h1>
-      
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-4xl font-bold">Admin Dashboard</h1>
+        <LogoutButton /> {/* Positioned on the right side */}
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader>
@@ -117,7 +120,6 @@ const Admin = () => {
           </CardContent>
         </Card>
       </div>
-
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">Produk</h2>
@@ -139,12 +141,16 @@ const Admin = () => {
                 )}
                 <div className="flex justify-between items-start gap-4">
                   <div>
-                    <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                    <p className="text-gray-600">Rp {formatPrice(product.store_price)}</p>
+                    <h3 className="font-semibold text-lg mb-2">
+                      {product.name}
+                    </h3>
+                    <p className="text-gray-600">
+                      Rp {formatPrice(product.store_price)}
+                    </p>
                   </div>
                   <div className="flex gap-2">
-                    <ProductDialog 
-                      mode="edit" 
+                    <ProductDialog
+                      mode="edit"
                       product={product}
                       trigger={
                         <Button variant="ghost" size="icon">
@@ -152,8 +158,8 @@ const Admin = () => {
                         </Button>
                       }
                     />
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => handleDeleteProduct(product.id)}
                     >
