@@ -69,38 +69,39 @@ const NavigationBar = () => {
         {/* Mobile Dropdown Menu */}
         {isMobile && isMenuOpen && (
           <div className="md:hidden bg-white border-t">
-            <div className="flex flex-col items-start gap-4 p-4">
+            <div className="flex flex-col w-full">
               <Link
                 to="/"
-                className="text-black hover:text-gray-600 transition-colors"
+                className="w-full p-4 text-black hover:bg-gray-50 transition-colors flex justify-center items-center"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
               </Link>
               <Link
                 to="/products"
-                className="text-black hover:text-gray-600 transition-colors"
+                className="w-full p-4 text-black hover:bg-gray-50 transition-colors flex justify-center items-center"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Produk
               </Link>
               <Link
                 to="/contact"
-                className="text-black hover:text-gray-600 transition-colors"
+                className="w-full p-4 text-black hover:bg-gray-50 transition-colors flex justify-center items-center"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contact Us
               </Link>
-
               <Link
                 to="/membership"
-                className="text-black hover:text-gray-600 transition-colors"
+                className="w-full p-4 text-black hover:bg-gray-50 transition-colors flex justify-center items-center"
+                onClick={() => setIsMenuOpen(false)}
               >
                 Memberships
               </Link>
               <Link
                 to="/visiontest"
-                className="text-black hover:text-gray-600 transition-colors"
+                className="w-full p-4 text-black hover:bg-gray-50 transition-colors flex justify-center items-center"
+                onClick={() => setIsMenuOpen(false)}
               >
                 Vision Test
               </Link>
