@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
+import LuckyAngpau from "./pages/LuckyAngpau";
 import Contact from "./pages/Contact";
 import Products from "./pages/Products";
 import Membership from "./pages/Membership";
@@ -53,16 +54,12 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/store" element={<Home />} />
-              <Route
-                path="/admin"
-                element={
-                    <Admin />
-                }
-              />
+              <Route path="/admin" element={<Admin />} />
               <Route path="/login" element={<Login />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/products" element={<Products />} />
               <Route path="/membership" element={<Membership />} />
+              <Route path="/luckyangpau" element={<LuckyAngpau />} />
               <Route path="/visiontest" element={<EyeCheckPage />} />
             </Routes>
           </BrowserRouter>

@@ -1,4 +1,3 @@
-// src/pages/Home.tsx
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import BrandSection from "@/components/BrandSection";
@@ -44,44 +43,57 @@ const Home = () => {
         .select("*")
         .limit(3)
         .order("created_at", { ascending: false });
-
       if (error) throw error;
       return data;
     },
   });
 
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
-      {/* Hero Section */}
-      <HeroCarousel /> {/* Use the HeroCarousel component */}
-      {/* Map */}
-      <Maps />
-      {/* Brand Section */}
-      <BrandSection />
-      {/* Product Collection */}
-      {products && products.length > 0 && (
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold mb-8 text-center">
-              Featured Collection
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  name={product.name}
-                  price={`Rp ${formatPrice(product.store_price)}`}
-                  image={
-                    product.image_url ||
-                    "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
-                  }
-                />
-              ))}
+    <div className="flex flex-col min-h-screen bg-white">
+      <header className="fixed top-0 left-0 right-0 z-50">
+        <Navbar />
+      </header>
+
+      {/* Main content wrapper with top padding to account for fixed navbar */}
+      <main className="flex-grow">
+        {/* Hero Section */}
+        <div className="mt-[64px]">
+          {" "}
+          {/* Adjust this value based on your navbar height */}
+          <HeroCarousel />
+        </div>
+
+        {/* Map */}
+        <Maps />
+
+        {/* Brand Section */}
+        <BrandSection />
+
+        {/* Product Collection */}
+        {products && products.length > 0 && (
+          <section className="py-16">
+            <div className="container mx-auto px-4">
+              <h2 className="text-3xl font-bold mb-8 text-center">
+                Featured Collection
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    name={product.name}
+                    price={`Rp ${formatPrice(product.store_price)}`}
+                    image={
+                      product.image_url ||
+                      "https://images.unsplash.com/photo-1511499767150-a48a237f0083?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
+                    }
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
+      </main>
+
       <Footer />
     </div>
   );
