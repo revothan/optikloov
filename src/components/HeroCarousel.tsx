@@ -16,7 +16,7 @@ const slides = [
     title: "Lucky Angpao",
     subtitle: "Buy minimum Rp 1 million & receive 1 Angpao",
     cta: "Learn More",
-    ctaLink: "/luckyangpau",
+    ctaLink: "/luckyangpao",
     tag: "01-31 JANUARY 2025",
   },
   {

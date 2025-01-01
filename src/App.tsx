@@ -59,7 +59,7 @@ const App = () => {
               <Route path="/contact" element={<Contact />} />
               <Route path="/products" element={<Products />} />
               <Route path="/membership" element={<Membership />} />
-              <Route path="/luckyangpau" element={<LuckyAngpau />} />
+              <Route path="/luckyangpao" element={<LuckyAngpau />} />
               <Route path="/visiontest" element={<EyeCheckPage />} />
             </Routes>
           </BrowserRouter>

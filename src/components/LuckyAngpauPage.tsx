@@ -51,14 +51,14 @@ const LuckyAngpauPage = () => {
         <div className="container mx-auto px-4 relative z-30">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white">
-              <span className="text-yellow-400">Lucky Angpau 2025</span>
+              <span className="text-yellow-400">Lucky Angpao 2025</span>
               <br />
               Temukan Keberuntunganmu di Tahun Baru!
             </h1>
 
             <p className="text-xl md:text-2xl text-white/90">
               Rayakan Imlek bersama Optik LOOV dan dapatkan hadiah menarik dari
-              angpau spesial kami!
+              angpao spesial kami!
             </p>
 
             <a
@@ -66,7 +66,7 @@ const LuckyAngpauPage = () => {
               target="blank"
               className="inline-flex items-center gap-2 bg-yellow-500 text-black px-8 py-4 rounded-full font-semibold text-lg hover:bg-yellow-400 transition-all duration-300"
             >
-              Belanja Sekarang & Dapatkan Angpau
+              Belanja Sekarang & Dapatkan Angpao
               <ArrowRight className="w-5 h-5" />
             </a>
           </div>
@@ -78,12 +78,12 @@ const LuckyAngpauPage = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-12">
             <h2 className="text-3xl md:text-5xl font-bold text-red-800">
-              Apa Itu Program Lucky Angpau?
+              Apa Itu Program Lucky Angpao?
             </h2>
 
             <p className="text-xl text-gray-700">
               Dari 1 hingga 31 Januari 2025, setiap pembelian minimum Rp 1 juta
-              di Optik LOOV akan mendapatkan 1 angpau keberuntungan. Dalam
+              di Optik LOOV akan mendapatkan 1 angpao keberuntungan. Dalam
               setiap angpao, ada hadiah menarik yang menanti Anda!
             </p>
 
@@ -136,7 +136,7 @@ const LuckyAngpauPage = () => {
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-5xl font-bold text-center mb-12">
               Cara Ikutan Program{" "}
-              <span className="text-yellow-400">Lucky Angpau</span>
+              <span className="text-yellow-400">Lucky Angpao</span>
             </h2>
 
             <div className="grid md:grid-cols-3 gap-8">
@@ -154,9 +154,9 @@ const LuckyAngpauPage = () => {
                 },
                 {
                   icon: Gift,
-                  title: "Ambil Angpau",
+                  title: "Ambil Angpao",
                   description:
-                    "Ambil 1 angpau keberuntungan Anda dan rasakan keberuntungannya!",
+                    "Ambil 1 angpao keberuntungan Anda dan rasakan keberuntungannya!",
                 },
               ].map((step, index) => (
                 <div key={index} className="text-center space-y-4">
