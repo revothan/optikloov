@@ -6,14 +6,14 @@ const CalendarBooking = () => {
   const CAL_LINK = "optikloov/periksa-mata";
 
   const calConfig = {
-    layout: "month_view",
-    theme: "light",
-    cssVarsPerTheme: {
+    layout: "month_view" as const,
+    theme: "light" as const,
+    styles: {
       light: {
-        "cal-brand": "#000000",
+        brandColor: "#000000",
       },
       dark: {
-        "cal-brand": "#ffffff",
+        brandColor: "#ffffff",
       },
     },
     hideEventTypeDetails: true,
