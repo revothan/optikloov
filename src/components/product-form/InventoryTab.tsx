@@ -1,12 +1,10 @@
+import { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { UseFormReturn } from "react-hook-form";
-import * as z from "zod";
-import { formSchema } from "./schema";
 
 interface InventoryTabProps {
-  form: UseFormReturn<z.infer<typeof formSchema>>;
+  form: UseFormReturn<any>;
 }
 
 export function InventoryTab({ form }: InventoryTabProps) {
