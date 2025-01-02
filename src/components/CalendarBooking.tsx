@@ -1,17 +1,15 @@
 import Cal, { getCalApi } from "@calcom/embed-react";
 import { useEffect } from "react";
 
-export function CalendarBooking() {
+const CalendarBooking = () => {
   const CAL_LINK = "optikloov/periksa-mata";
 
   const calConfig = {
     layout: "month_view" as const,
     theme: "light" as const,
-    hideEventTypeDetails: "1", // Convert boolean to string for type compatibility
+    hideEventTypeDetails: false,
     styles: {
-      branding: {
-        brandColor: "#000000"
-      }
+      brandColor: "#000000"
     }
   };
 
@@ -31,4 +29,6 @@ export function CalendarBooking() {
       />
     </div>
   );
-}
+};
+
+export default CalendarBooking;
