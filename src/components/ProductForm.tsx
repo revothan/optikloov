@@ -841,7 +841,7 @@ export function ProductForm({ mode = "create", product, onSuccess }: ProductForm
                           checked={field.value}
                           onCheckedChange={field.onChange}
                         />
-                      </Control>
+                      </FormControl>
                     </FormItem>
                   )}
                 />
