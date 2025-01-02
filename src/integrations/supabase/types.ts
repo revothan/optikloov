@@ -50,45 +50,156 @@ export type Database = {
       products: {
         Row: {
           alternative_name: string | null
+          alternative_variant_names: string | null
+          barcode: string | null
+          brand: string | null
+          buy_price: number | null
           category: string | null
+          classification_id: number | null
+          collections: string | null
+          comission: number | null
+          condition_id: string | null
           created_at: string
+          description: string | null
           has_variants: boolean | null
+          hold_qty: number | null
           id: string
           image_url: string | null
+          low_stock_alert: number | null
+          loyalty_points: number | null
+          market_price: number | null
           name: string
+          notes: string | null
           online_price: number | null
-          store_price: number
+          photo_1: string | null
+          photo_10: string | null
+          photo_2: string | null
+          photo_3: string | null
+          photo_4: string | null
+          photo_5: string | null
+          photo_6: string | null
+          photo_7: string | null
+          photo_8: string | null
+          photo_9: string | null
+          pos_hidden: boolean | null
+          pos_sell_price: number | null
+          pos_sell_price_dynamic: boolean | null
+          published: boolean | null
+          qty_fast_moving: number | null
+          sell_price: number | null
+          sku: string | null
+          stock_qty: number | null
+          store_price: number | null
+          tax_free_item: boolean | null
           track_inventory: boolean | null
+          uom: string | null
           updated_at: string
           user_id: string
+          variant_label: string | null
+          variant_names: string | null
+          weight_kg: number | null
         }
         Insert: {
           alternative_name?: string | null
+          alternative_variant_names?: string | null
+          barcode?: string | null
+          brand?: string | null
+          buy_price?: number | null
           category?: string | null
+          classification_id?: number | null
+          collections?: string | null
+          comission?: number | null
+          condition_id?: string | null
           created_at?: string
+          description?: string | null
           has_variants?: boolean | null
+          hold_qty?: number | null
           id?: string
           image_url?: string | null
+          low_stock_alert?: number | null
+          loyalty_points?: number | null
+          market_price?: number | null
           name: string
+          notes?: string | null
           online_price?: number | null
-          store_price: number
+          photo_1?: string | null
+          photo_10?: string | null
+          photo_2?: string | null
+          photo_3?: string | null
+          photo_4?: string | null
+          photo_5?: string | null
+          photo_6?: string | null
+          photo_7?: string | null
+          photo_8?: string | null
+          photo_9?: string | null
+          pos_hidden?: boolean | null
+          pos_sell_price?: number | null
+          pos_sell_price_dynamic?: boolean | null
+          published?: boolean | null
+          qty_fast_moving?: number | null
+          sell_price?: number | null
+          sku?: string | null
+          stock_qty?: number | null
+          store_price?: number | null
+          tax_free_item?: boolean | null
           track_inventory?: boolean | null
+          uom?: string | null
           updated_at?: string
           user_id: string
+          variant_label?: string | null
+          variant_names?: string | null
+          weight_kg?: number | null
         }
         Update: {
           alternative_name?: string | null
+          alternative_variant_names?: string | null
+          barcode?: string | null
+          brand?: string | null
+          buy_price?: number | null
           category?: string | null
+          classification_id?: number | null
+          collections?: string | null
+          comission?: number | null
+          condition_id?: string | null
           created_at?: string
+          description?: string | null
           has_variants?: boolean | null
+          hold_qty?: number | null
           id?: string
           image_url?: string | null
+          low_stock_alert?: number | null
+          loyalty_points?: number | null
+          market_price?: number | null
           name?: string
+          notes?: string | null
           online_price?: number | null
-          store_price?: number
+          photo_1?: string | null
+          photo_10?: string | null
+          photo_2?: string | null
+          photo_3?: string | null
+          photo_4?: string | null
+          photo_5?: string | null
+          photo_6?: string | null
+          photo_7?: string | null
+          photo_8?: string | null
+          photo_9?: string | null
+          pos_hidden?: boolean | null
+          pos_sell_price?: number | null
+          pos_sell_price_dynamic?: boolean | null
+          published?: boolean | null
+          qty_fast_moving?: number | null
+          sell_price?: number | null
+          sku?: string | null
+          stock_qty?: number | null
+          store_price?: number | null
+          tax_free_item?: boolean | null
           track_inventory?: boolean | null
+          uom?: string | null
           updated_at?: string
           user_id?: string
+          variant_label?: string | null
+          variant_names?: string | null
+          weight_kg?: number | null
         }
         Relationships: []
       }

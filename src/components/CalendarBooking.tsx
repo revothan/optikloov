@@ -1,52 +1,34 @@
 import Cal, { getCalApi } from "@calcom/embed-react";
 import { useEffect } from "react";
 
-const CalendarBooking = () => {
-  const NAMESPACE = "periksa-mata";
+export function CalendarBooking() {
   const CAL_LINK = "optikloov/periksa-mata";
 
   const calConfig = {
-    layout: "month_view",
-    theme: "light",
-    cssVarsPerTheme: {
-      light: {
-        "cal-brand": "#000000",
-      },
-      dark: {
-        "cal-brand": "#ffffff",
-      },
-    },
-    hideEventTypeDetails: true,
+    layout: "month_view" as const,
+    theme: "light" as const,
+    hideEventTypeDetails: "1", // Convert boolean to string for type compatibility
+    styles: {
+      branding: {
+        brandColor: "#000000"
+      }
+    }
   };
 
   useEffect(() => {
-    const initializeCal = async () => {
-      try {
-        const cal = await getCalApi({ namespace: NAMESPACE });
-        cal("ui", calConfig);
-      } catch (error) {
-        console.error("Failed to initialize Cal:", error);
-      }
-    };
-
-    initializeCal();
+    (async function () {
+      const cal = await getCalApi();
+      cal("ui", calConfig);
+    })();
   }, []);
 
   return (
-    <div className="w-full h-screen">
+    <div className="w-full">
       <Cal
-        namespace={NAMESPACE}
         calLink={CAL_LINK}
+        style={{ width: "100%", height: "100%", overflow: "hidden" }}
         config={calConfig}
-        className="w-full h-full"
-        style={{
-          width: "100%",
-          height: "100%",
-          overflow: "auto",
-        }}
       />
     </div>
   );
-};
-
-export default CalendarBooking;
+}
