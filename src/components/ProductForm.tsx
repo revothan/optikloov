@@ -1,11 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
 import { useSession } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, Package, DollarSign, BarChart, Box, ShoppingCart, Info, Image, Tag, Bookmark } from "lucide-react";
+import { Loader2, Package, DollarSign, Box, Info } from "lucide-react";
 
 import {
   Form,
@@ -14,79 +13,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ProductImageUpload } from "./ProductImageUpload";
 import { Tables } from "@/integrations/supabase/types";
 import { useState } from "react";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-const formSchema = z.object({
-  // Basic Information
-  name: z.string().min(1, "Nama produk harus diisi"),
-  alternative_name: z.string().optional(),
-  description: z.string().optional(),
-  category: z.string().optional(),
-  brand: z.string().optional(),
-  sku: z.string().optional(),
-  barcode: z.string().optional(),
-  uom: z.string().optional(),
-  
-  // Pricing
-  store_price: z.string().min(1, "Harga jual di toko harus diisi"),
-  online_price: z.string().optional(),
-  buy_price: z.string().optional(),
-  market_price: z.string().optional(),
-  sell_price: z.string().optional(),
-  pos_sell_price: z.string().optional(),
-  pos_sell_price_dynamic: z.boolean().optional(),
-  comission: z.string().optional(),
-  
-  // Inventory
-  track_inventory: z.boolean().default(false),
-  stock_qty: z.string().optional(),
-  hold_qty: z.string().optional(),
-  low_stock_alert: z.string().optional(),
-  qty_fast_moving: z.string().optional(),
-  
-  // Product Details
-  weight_kg: z.string().optional(),
-  loyalty_points: z.string().optional(),
-  published: z.boolean().optional(),
-  pos_hidden: z.boolean().optional(),
-  tax_free_item: z.boolean().optional(),
-  has_variants: z.boolean().optional(),
-  
-  // Variants
-  variant_label: z.string().optional(),
-  variant_names: z.string().optional(),
-  alternative_variant_names: z.string().optional(),
-  
-  // Additional Info
-  collections: z.string().optional(),
-  condition_id: z.string().optional(),
-  classification_id: z.string().optional(),
-  notes: z.string().optional(),
-  
-  // Images
-  image_url: z.string().optional(),
-  photo_1: z.string().optional(),
-  photo_2: z.string().optional(),
-  photo_3: z.string().optional(),
-  photo_4: z.string().optional(),
-  photo_5: z.string().optional(),
-  photo_6: z.string().optional(),
-  photo_7: z.string().optional(),
-  photo_8: z.string().optional(),
-  photo_9: z.string().optional(),
-  photo_10: z.string().optional(),
-});
+import { BasicInfoTab } from "./product-form/BasicInfoTab";
+import { PricingTab } from "./product-form/PricingTab";
+import { InventoryTab } from "./product-form/InventoryTab";
+import { formSchema } from "./product-form/schema";
+import * as z from "zod";
 
 interface ProductFormProps {
   mode?: "create" | "edit";
@@ -240,87 +177,106 @@ export function ProductForm({ mode = "create", product, onSuccess }: ProductForm
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <ScrollArea className="h-[600px] pr-4">
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
-              <TabsTrigger value="basic">
-                <Package className="w-4 h-4 mr-2" />
-                Informasi Dasar
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-6">
+              <TabsTrigger value="basic" className="gap-2">
+                <Package className="w-4 h-4" />
+                <span>Informasi Dasar</span>
               </TabsTrigger>
-              <TabsTrigger value="pricing">
-                <DollarSign className="w-4 h-4 mr-2" />
-                Harga
+              <TabsTrigger value="pricing" className="gap-2">
+                <DollarSign className="w-4 h-4" />
+                <span>Harga</span>
               </TabsTrigger>
-              <TabsTrigger value="inventory">
-                <Box className="w-4 h-4 mr-2" />
-                Inventori
+              <TabsTrigger value="inventory" className="gap-2">
+                <Box className="w-4 h-4" />
+                <span>Inventori</span>
               </TabsTrigger>
-              <TabsTrigger value="additional">
-                <Info className="w-4 h-4 mr-2" />
-                Info Tambahan
+              <TabsTrigger value="additional" className="gap-2">
+                <Info className="w-4 h-4" />
+                <span>Info Tambahan</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="basic" className="space-y-6">
-              <div className="space-y-4">
-                <ProductImageUpload 
-                  onImageUrlChange={(url) => form.setValue("image_url", url)} 
-                  defaultImageUrl={product?.image_url}
-                />
+            <div className="mt-4 space-y-6">
+              <TabsContent value="basic">
+                <BasicInfoTab form={form} product={product} />
+              </TabsContent>
 
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nama Produk</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Masukkan Nama Produk" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <TabsContent value="pricing">
+                <PricingTab form={form} />
+              </TabsContent>
 
-                <FormField
-                  control={form.control}
-                  name="alternative_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nama Produk Alternatif</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Masukkan Nama Produk Alternatif" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <TabsContent value="inventory">
+                <InventoryTab form={form} />
+              </TabsContent>
 
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Deskripsi</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Masukkan deskripsi produk"
-                          className="resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <TabsContent value="additional">
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="weight_kg"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Berat (kg)</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.1" placeholder="0.0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="loyalty_points"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Poin Loyalitas</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="classification_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>ID Klasifikasi</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="condition_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>ID Kondisi</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Masukkan ID Kondisi" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
                   <FormField
                     control={form.control}
-                    name="category"
+                    name="collections"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Kategori</FormLabel>
+                        <FormLabel>Koleksi</FormLabel>
                         <FormControl>
-                          <Input placeholder="Masukkan Kategori" {...field} />
+                          <Input placeholder="Masukkan koleksi" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -329,524 +285,24 @@ export function ProductForm({ mode = "create", product, onSuccess }: ProductForm
 
                   <FormField
                     control={form.control}
-                    name="brand"
+                    name="notes"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Merek</FormLabel>
+                        <FormLabel>Catatan</FormLabel>
                         <FormControl>
-                          <Input placeholder="Masukkan Merek" {...field} />
+                          <Textarea 
+                            placeholder="Masukkan catatan tambahan"
+                            className="resize-none"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="sku"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>SKU</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Masukkan SKU" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="barcode"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Barcode</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Masukkan Barcode" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="pricing" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="store_price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Harga Jual di Toko</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2.5">Rp</span>
-                          <Input
-                            type="number"
-                            className="pl-12"
-                            placeholder="0"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="online_price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Harga Online</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2.5">Rp</span>
-                          <Input
-                            type="number"
-                            className="pl-12"
-                            placeholder="0"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="buy_price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Harga Beli</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2.5">Rp</span>
-                          <Input
-                            type="number"
-                            className="pl-12"
-                            placeholder="0"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="market_price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Harga Pasar</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2.5">Rp</span>
-                          <Input
-                            type="number"
-                            className="pl-12"
-                            placeholder="0"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="pos_sell_price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Harga Jual POS</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2.5">Rp</span>
-                          <Input
-                            type="number"
-                            className="pl-12"
-                            placeholder="0"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="comission"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Komisi</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2.5">Rp</span>
-                          <Input
-                            type="number"
-                            className="pl-12"
-                            placeholder="0"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="pos_sell_price_dynamic"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">
-                        Harga Jual POS Dinamis
-                      </FormLabel>
-                      <FormDescription>
-                        Aktifkan untuk mengizinkan perubahan harga di POS
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </TabsContent>
-
-            <TabsContent value="inventory" className="space-y-6">
-              <FormField
-                control={form.control}
-                name="track_inventory"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">
-                        Lacak Inventori
-                      </FormLabel>
-                      <FormDescription>
-                        Aktifkan untuk melacak stok produk
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="stock_qty"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Jumlah Stok</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="hold_qty"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Jumlah Hold</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="low_stock_alert"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Peringatan Stok Rendah</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="qty_fast_moving"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Jumlah Fast Moving</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="has_variants"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">
-                        Memiliki Varian
-                      </FormLabel>
-                      <FormDescription>
-                        Aktifkan jika produk memiliki beberapa varian
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              {form.watch("has_variants") && (
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="variant_label"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Label Varian</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Contoh: Ukuran, Warna" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="variant_names"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nama Varian</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Contoh: S, M, L atau Merah, Biru" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="alternative_variant_names"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nama Varian Alternatif</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nama varian alternatif" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="additional" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="weight_kg"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Berat (kg)</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.1" placeholder="0.0" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="loyalty_points"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Poin Loyalitas</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="classification_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ID Klasifikasi</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="0" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="condition_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ID Kondisi</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Masukkan ID Kondisi" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="collections"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Koleksi</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Masukkan koleksi" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Catatan</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Masukkan catatan tambahan"
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="published"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">
-                          Publikasikan
-                        </FormLabel>
-                        <FormDescription>
-                          Produk akan ditampilkan di website
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="pos_hidden"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">
-                          Sembunyikan di POS
-                        </FormLabel>
-                        <FormDescription>
-                          Produk tidak akan muncul di POS
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="tax_free_item"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">
-                          Bebas Pajak
-                        </FormLabel>
-                        <FormDescription>
-                          Produk tidak dikenakan pajak
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </TabsContent>
+              </TabsContent>
+            </div>
           </Tabs>
         </ScrollArea>
 
