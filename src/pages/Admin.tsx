@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import LogoutButton from "@/components/LogoutButton";
+import { CustomerTable } from "@/components/CustomerList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID").format(price);
@@ -50,7 +52,6 @@ const Admin = () => {
       if (error) throw error;
       return data;
     },
-    // Enable automatic background updates
     refetchInterval: 5000,
   });
 
@@ -64,7 +65,6 @@ const Admin = () => {
       if (error) throw error;
 
       toast.success("Produk berhasil dihapus");
-      // Invalidate and refetch products after deletion
       queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -74,15 +74,12 @@ const Admin = () => {
 
   useEffect(() => {
     if (!session) {
-      console.log("No session, redirecting to login");
       navigate("/login", { state: { from: location.pathname } });
       return;
     }
 
     if (!profileLoading && profile !== undefined) {
-      console.log("Profile loaded:", profile);
       if (profile?.role !== "admin") {
-        console.log("User is not admin, redirecting to home");
         navigate("/");
       }
     }
@@ -107,8 +104,9 @@ const Admin = () => {
     <div className="container mx-auto p-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-4xl font-bold">Admin Dashboard</h1>
-        <LogoutButton /> {/* Positioned on the right side */}
+        <LogoutButton />
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader>
@@ -120,58 +118,72 @@ const Admin = () => {
           </CardContent>
         </Card>
       </div>
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">Produk</h2>
-          <ProductDialog />
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products?.map((product) => (
-            <Card key={product.id}>
-              <CardContent className="p-4">
-                {product.image_url && (
-                  <div className="aspect-square overflow-hidden rounded-lg mb-4">
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                )}
-                <div className="flex justify-between items-start gap-4">
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">
-                      {product.name}
-                    </h3>
-                    <p className="text-gray-600">
-                      Rp {formatPrice(product.store_price)}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <ProductDialog
-                      mode="edit"
-                      product={product}
-                      trigger={
-                        <Button variant="ghost" size="icon">
-                          <Pencil className="h-4 w-4" />
+      <Tabs defaultValue="products" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="customers">Customers</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="products">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold">Products</h2>
+              <ProductDialog />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products?.map((product) => (
+                <Card key={product.id}>
+                  <CardContent className="p-4">
+                    {product.image_url && (
+                      <div className="aspect-square overflow-hidden rounded-lg mb-4">
+                        <img
+                          src={product.image_url}
+                          alt={product.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex justify-between items-start gap-4">
+                      <div>
+                        <h3 className="font-semibold text-lg mb-2">
+                          {product.name}
+                        </h3>
+                        <p className="text-gray-600">
+                          Rp {formatPrice(product.store_price)}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <ProductDialog
+                          mode="edit"
+                          product={product}
+                          trigger={
+                            <Button variant="ghost" size="icon">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          }
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteProduct(product.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
-                      }
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteProduct(product.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="customers">
+          <CustomerTable />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
