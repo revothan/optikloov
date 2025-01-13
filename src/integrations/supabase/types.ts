@@ -9,6 +9,105 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      customers: {
+        Row: {
+          address: string | null
+          birth_date: string | null
+          city: string | null
+          code: string | null
+          country: string | null
+          created_at: string | null
+          credit_limit: number | null
+          deposit: number | null
+          email: string | null
+          expired_date: string | null
+          gender: string | null
+          id: number
+          is_active: boolean | null
+          join_date: string | null
+          loyalty_points: number | null
+          membership_type: string | null
+          name: string
+          phone: string | null
+          postal_code: string | null
+          state: string | null
+          subdistrict: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          birth_date?: string | null
+          city?: string | null
+          code?: string | null
+          country?: string | null
+          created_at?: string | null
+          credit_limit?: number | null
+          deposit?: number | null
+          email?: string | null
+          expired_date?: string | null
+          gender?: string | null
+          id: number
+          is_active?: boolean | null
+          join_date?: string | null
+          loyalty_points?: number | null
+          membership_type?: string | null
+          name: string
+          phone?: string | null
+          postal_code?: string | null
+          state?: string | null
+          subdistrict?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          birth_date?: string | null
+          city?: string | null
+          code?: string | null
+          country?: string | null
+          created_at?: string | null
+          credit_limit?: number | null
+          deposit?: number | null
+          email?: string | null
+          expired_date?: string | null
+          gender?: string | null
+          id?: number
+          is_active?: boolean | null
+          join_date?: string | null
+          loyalty_points?: number | null
+          membership_type?: string | null
+          name?: string
+          phone?: string | null
+          postal_code?: string | null
+          state?: string | null
+          subdistrict?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      message_templates: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       product_variants: {
         Row: {
           created_at: string
