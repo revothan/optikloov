@@ -8,7 +8,10 @@ interface ProductImageUploadProps {
   defaultImageUrl?: string | null;
 }
 
-export function ProductImageUpload({ onImageUrlChange, defaultImageUrl }: ProductImageUploadProps) {
+export function ProductImageUpload({
+  onImageUrlChange,
+  defaultImageUrl,
+}: ProductImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>("");
 
@@ -18,35 +21,47 @@ export function ProductImageUpload({ onImageUrlChange, defaultImageUrl }: Produc
     }
   }, [defaultImageUrl]);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
       setIsUploading(true);
-      
+
       // Create a preview URL
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
 
       // Upload to Supabase Storage
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random()}.${fileExt}`;
-      const { data, error } = await supabase.storage
-        .from('products')
+
+      // First upload the file
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("products")
         .upload(fileName, file);
 
-      if (error) throw error;
+      if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('products')
-        .getPublicUrl(fileName);
+      // Then get the public URL
+      const {
+        data: { publicUrl },
+        error: urlError,
+      } = await supabase.storage.from("products").getPublicUrl(fileName);
 
+      if (urlError) throw urlError;
+
+      // Log the URL for debugging
+      console.log("Uploaded image URL:", publicUrl);
+
+      // Update the form
       onImageUrlChange(publicUrl);
+
       toast.success("Gambar berhasil diunggah");
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error("Error uploading file:", error);
       toast.error("Gagal mengunggah gambar");
     } finally {
       setIsUploading(false);
@@ -81,8 +96,8 @@ export function ProductImageUpload({ onImageUrlChange, defaultImageUrl }: Produc
                 />
               </svg>
               <p className="mb-2 text-sm text-gray-500">
-                <span className="font-semibold">Klik untuk unggah</span> atau drag
-                and drop
+                <span className="font-semibold">Klik untuk unggah</span> atau
+                drag and drop
               </p>
               <p className="text-xs text-gray-500">PNG, JPG (MAX. 2MB)</p>
             </div>
@@ -100,3 +115,4 @@ export function ProductImageUpload({ onImageUrlChange, defaultImageUrl }: Produc
     </div>
   );
 }
+

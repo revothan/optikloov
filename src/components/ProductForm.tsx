@@ -5,7 +5,14 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Package, DollarSign, Box, Info } from "lucide-react";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -16,7 +23,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { BasicInfoTab } from "./product-form/BasicInfoTab";
 import { PricingTab } from "./product-form/PricingTab";
 import { InventoryTab } from "./product-form/InventoryTab";
-import { formSchema } from "./product-form/schema";
+import { createSchema, editSchema } from "./product-form/schema";
 import * as z from "zod";
 
 interface ProductFormProps {
@@ -25,13 +32,20 @@ interface ProductFormProps {
   onSuccess?: () => void;
 }
 
-export function ProductForm({ mode = "create", product, onSuccess }: ProductFormProps) {
+export function ProductForm({
+  mode = "create",
+  product,
+  onSuccess,
+}: ProductFormProps) {
   const session = useSession();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  // Use different schema based on mode
+  const schema = mode === "create" ? createSchema : editSchema;
+
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
     defaultValues: {
       name: product?.name || "",
       alternative_name: product?.alternative_name || "",
@@ -81,7 +95,7 @@ export function ProductForm({ mode = "create", product, onSuccess }: ProductForm
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof schema>) {
     if (!session?.user?.id) {
       toast.error("Anda harus login terlebih dahulu");
       return;
@@ -90,77 +104,161 @@ export function ProductForm({ mode = "create", product, onSuccess }: ProductForm
     setIsSubmitting(true);
 
     try {
-      const productData = {
-        name: values.name,
-        alternative_name: values.alternative_name || null,
-        description: values.description || null,
-        category: values.category || null,
-        brand: values.brand || null,
-        sku: values.sku || null,
-        barcode: values.barcode || null,
-        uom: values.uom || null,
-        store_price: values.store_price ? parseFloat(values.store_price) : null,
-        online_price: values.online_price ? parseFloat(values.online_price) : null,
-        buy_price: values.buy_price ? parseFloat(values.buy_price) : null,
-        market_price: values.market_price ? parseFloat(values.market_price) : null,
-        sell_price: values.sell_price ? parseFloat(values.sell_price) : null,
-        pos_sell_price: values.pos_sell_price ? parseFloat(values.pos_sell_price) : null,
-        pos_sell_price_dynamic: values.pos_sell_price_dynamic || false,
-        comission: values.comission ? parseFloat(values.comission) : null,
-        track_inventory: values.track_inventory || false,
-        stock_qty: values.stock_qty ? parseInt(values.stock_qty) : null,
-        hold_qty: values.hold_qty ? parseInt(values.hold_qty) : null,
-        low_stock_alert: values.low_stock_alert ? parseInt(values.low_stock_alert) : null,
-        qty_fast_moving: values.qty_fast_moving ? parseInt(values.qty_fast_moving) : null,
-        weight_kg: values.weight_kg ? parseFloat(values.weight_kg) : null,
-        loyalty_points: values.loyalty_points ? parseInt(values.loyalty_points) : null,
-        published: values.published || false,
-        pos_hidden: values.pos_hidden || false,
-        tax_free_item: values.tax_free_item || false,
-        has_variants: values.has_variants || false,
-        variant_label: values.variant_label || null,
-        variant_names: values.variant_names || null,
-        alternative_variant_names: values.alternative_variant_names || null,
-        collections: values.collections || null,
-        condition_id: values.condition_id || null,
-        classification_id: values.classification_id ? parseInt(values.classification_id) : null,
-        notes: values.notes || null,
-        image_url: values.image_url || null,
-        photo_1: values.photo_1 || null,
-        photo_2: values.photo_2 || null,
-        photo_3: values.photo_3 || null,
-        photo_4: values.photo_4 || null,
-        photo_5: values.photo_5 || null,
-        photo_6: values.photo_6 || null,
-        photo_7: values.photo_7 || null,
-        photo_8: values.photo_8 || null,
-        photo_9: values.photo_9 || null,
-        photo_10: values.photo_10 || null,
+      // Create a base product data object with only the fields that have values
+      const productData: Record<string, any> = {
         user_id: session.user.id,
       };
 
+      // Helper function to add field if it has a value
+      const addIfValue = (key: string, value: any) => {
+        if (value !== undefined && value !== null && value !== "") {
+          productData[key] = value;
+        }
+      };
+
+      // Add string fields
+      addIfValue("name", values.name);
+      addIfValue("alternative_name", values.alternative_name);
+      addIfValue("description", values.description);
+      addIfValue("category", values.category);
+      addIfValue("brand", values.brand);
+      addIfValue("sku", values.sku);
+      addIfValue("barcode", values.barcode);
+      addIfValue("uom", values.uom);
+      addIfValue("variant_label", values.variant_label);
+      addIfValue("variant_names", values.variant_names);
+      addIfValue("alternative_variant_names", values.alternative_variant_names);
+      addIfValue("collections", values.collections);
+      addIfValue("condition_id", values.condition_id);
+      addIfValue("notes", values.notes);
+      addIfValue("image_url", values.image_url);
+
+      // Add numeric fields with conversion
+      addIfValue(
+        "store_price",
+        values.store_price ? parseFloat(values.store_price) : null,
+      );
+      addIfValue(
+        "online_price",
+        values.online_price ? parseFloat(values.online_price) : null,
+      );
+      addIfValue(
+        "buy_price",
+        values.buy_price ? parseFloat(values.buy_price) : null,
+      );
+      addIfValue(
+        "market_price",
+        values.market_price ? parseFloat(values.market_price) : null,
+      );
+      addIfValue(
+        "sell_price",
+        values.sell_price ? parseFloat(values.sell_price) : null,
+      );
+      addIfValue(
+        "pos_sell_price",
+        values.pos_sell_price ? parseFloat(values.pos_sell_price) : null,
+      );
+      addIfValue(
+        "comission",
+        values.comission ? parseFloat(values.comission) : null,
+      );
+      addIfValue(
+        "stock_qty",
+        values.stock_qty ? parseInt(values.stock_qty) : null,
+      );
+      addIfValue(
+        "hold_qty",
+        values.hold_qty ? parseInt(values.hold_qty) : null,
+      );
+      addIfValue(
+        "low_stock_alert",
+        values.low_stock_alert ? parseInt(values.low_stock_alert) : null,
+      );
+      addIfValue(
+        "qty_fast_moving",
+        values.qty_fast_moving ? parseInt(values.qty_fast_moving) : null,
+      );
+      addIfValue(
+        "weight_kg",
+        values.weight_kg ? parseFloat(values.weight_kg) : null,
+      );
+      addIfValue(
+        "loyalty_points",
+        values.loyalty_points ? parseInt(values.loyalty_points) : null,
+      );
+      addIfValue(
+        "classification_id",
+        values.classification_id ? parseInt(values.classification_id) : null,
+      );
+
+      // Add boolean fields
+      addIfValue("pos_sell_price_dynamic", values.pos_sell_price_dynamic);
+      addIfValue("track_inventory", values.track_inventory);
+      addIfValue("published", values.published);
+      addIfValue("pos_hidden", values.pos_hidden);
+      addIfValue("tax_free_item", values.tax_free_item);
+      addIfValue("has_variants", values.has_variants);
+
+      // Add photo fields
+      for (let i = 1; i <= 10; i++) {
+        const photoKey = `photo_${i}` as keyof typeof values;
+        addIfValue(photoKey, values[photoKey]);
+      }
+
       if (mode === "edit" && product?.id) {
-        const { error } = await supabase
+        console.log("Updating product with data:", productData);
+
+        // Ensure image_url is included in the update
+        const updateData = {
+          ...productData,
+          image_url: values.image_url || null,
+          updated_at: new Date().toISOString(),
+        };
+
+        console.log("Final update data:", updateData);
+
+        // First, update the product
+        const { error: updateError } = await supabase
           .from("products")
-          .update(productData)
+          .update(updateData)
           .eq("id", product.id);
 
-        if (error) throw error;
+        if (updateError) {
+          console.error("Update error:", updateError);
+          throw updateError;
+        }
+
+        // Then, fetch the updated product to verify changes
+        const { data: updatedProduct, error: fetchError } = await supabase
+          .from("products")
+          .select("*")
+          .eq("id", product.id)
+          .single();
+
+        if (fetchError) {
+          console.error("Fetch error:", fetchError);
+          throw fetchError;
+        }
+
+        console.log("Updated product:", updatedProduct);
         toast.success("Produk berhasil diperbarui");
       } else {
-        const { error } = await supabase
-          .from("products")
-          .insert([productData]);
+        const { error } = await supabase.from("products").insert([productData]);
 
         if (error) throw error;
         toast.success("Produk berhasil ditambahkan");
       }
 
+      // Refresh the products list in the UI
       queryClient.invalidateQueries({ queryKey: ["products"] });
       onSuccess?.();
     } catch (error) {
       console.error("Error:", error);
-      toast.error(mode === "edit" ? "Gagal memperbarui produk" : "Gagal menambahkan produk");
+      toast.error(
+        mode === "edit"
+          ? "Gagal memperbarui produk"
+          : "Gagal menambahkan produk",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -213,7 +311,12 @@ export function ProductForm({ mode = "create", product, onSuccess }: ProductForm
                         <FormItem>
                           <FormLabel>Berat (kg)</FormLabel>
                           <FormControl>
-                            <Input type="number" step="0.1" placeholder="0.0" {...field} />
+                            <Input
+                              type="number"
+                              step="0.1"
+                              placeholder="0.0"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -255,7 +358,10 @@ export function ProductForm({ mode = "create", product, onSuccess }: ProductForm
                         <FormItem>
                           <FormLabel>ID Kondisi</FormLabel>
                           <FormControl>
-                            <Input placeholder="Masukkan ID Kondisi" {...field} />
+                            <Input
+                              placeholder="Masukkan ID Kondisi"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -284,7 +390,7 @@ export function ProductForm({ mode = "create", product, onSuccess }: ProductForm
                       <FormItem>
                         <FormLabel>Catatan</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <Textarea
                             placeholder="Masukkan catatan tambahan"
                             className="resize-none"
                             {...field}
@@ -306,8 +412,10 @@ export function ProductForm({ mode = "create", product, onSuccess }: ProductForm
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>{mode === "edit" ? "Menyimpan..." : "Menambahkan..."}</span>
             </div>
+          ) : mode === "edit" ? (
+            "Simpan Perubahan"
           ) : (
-            mode === "edit" ? "Simpan Perubahan" : "Tambah Produk"
+            "Tambah Produk"
           )}
         </Button>
       </form>
