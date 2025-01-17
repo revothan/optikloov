@@ -41,6 +41,7 @@ export function ProductImageUpload({
         }
       });
       setAdditionalImages(cleanedImages);
+      console.log("Setting additional images:", cleanedImages); // Debug log
     }
   }, [defaultImageUrl, defaultAdditionalImages]);
 
@@ -153,7 +154,7 @@ export function ProductImageUpload({
       <div className="grid grid-cols-3 gap-4">
         {[1, 2, 3].map((index) => {
           const imageKey = `photo_${index}`;
-          const imageUrl = additionalImages[imageKey];
+          const imageUrl = additionalImages[imageKey] || defaultAdditionalImages?.[imageKey];
 
           return (
             <div key={imageKey} className="relative">

@@ -6,10 +6,9 @@ const CalendarBooking = () => {
 
   const calConfig = {
     layout: "month_view",
-    theme: "light",
-    hideEventTypeDetails: false, // Changed from string to boolean
+    theme: "light" as const,
+    hideEventTypeDetails: false,
     styles: {
-      // Removed nested branding object to match expected type
       brandColor: "#000000"
     }
   };
