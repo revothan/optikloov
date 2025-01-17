@@ -3,16 +3,15 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
+// Slides data with just filenames
 const slides = [
   {
-    image:
-      "https://vdnbihrqujhmmgnshhhn.supabase.co/storage/v1/object/public/products/Lucky%20Angpao%20(Website).png",
+    image: "luckyangpau.png",
     title: "Lucky Angpao",
     subtitle: "Buy minimum Rp 1 million & receive 1 Angpao",
     cta: "Learn More",
@@ -20,8 +19,7 @@ const slides = [
     tag: "01-31 JANUARY 2025",
   },
   {
-    image:
-      "https://vdnbihrqujhmmgnshhhn.supabase.co/storage/v1/object/public/products/Membership.png",
+    image: "memberships.png",
     title: "Join the LOOVers Club",
     subtitle:
       "Elevate your eyewear experience with exclusive perks, early access to new collections, and special member pricing.",
@@ -35,14 +33,39 @@ const HeroCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [api, setApi] = useState(null);
+  const [imageUrls, setImageUrls] = useState({});
+
+  // Helper function to get image URL using Supabase client
+  const getImageUrl = async (filename) => {
+    try {
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("promotions").getPublicUrl(filename);
+      return publicUrl;
+    } catch (error) {
+      console.error("Error getting image URL:", error);
+      return "";
+    }
+  };
+
+  // Load all image URLs on component mount
+  useEffect(() => {
+    const loadImageUrls = async () => {
+      const urls = {};
+      for (const slide of slides) {
+        urls[slide.image] = await getImageUrl(slide.image);
+      }
+      setImageUrls(urls);
+    };
+
+    loadImageUrls();
+  }, []);
 
   useEffect(() => {
     if (!api) return;
-
     api.on("select", () => {
       setCurrentSlide(api.selectedScrollSnap());
     });
-
     api.on("settle", () => {
       setIsAnimating(false);
     });
@@ -71,7 +94,7 @@ const HeroCarousel = () => {
             <CarouselItem key={index} className="relative">
               <div className="relative w-full min-h-[400px] sm:min-h-[500px] md:min-h-[600px] lg:min-h-[700px] overflow-hidden group">
                 <img
-                  src={slide.image}
+                  src={imageUrls[slide.image]}
                   alt={`Slide ${index + 1}`}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                 />
@@ -120,7 +143,7 @@ const HeroCarousel = () => {
           ))}
         </CarouselContent>
 
-        {/* Desktop Navigation */}
+        {/* Navigation Controls */}
         <div className="hidden sm:block">
           <button
             onClick={() => api?.scrollPrev()}
@@ -142,48 +165,7 @@ const HeroCarousel = () => {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
-        <div className="sm:hidden absolute bottom-8 left-0 right-0 px-4 flex justify-between items-center z-10">
-          <div className="flex gap-3">
-            <button
-              onClick={() => api?.scrollPrev()}
-              className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/90 transition-all duration-150"
-              aria-label="Previous slide"
-            >
-              <ChevronLeft className="w-4 h-4 text-white hover:text-black" />
-            </button>
-            <button
-              onClick={() => api?.scrollNext()}
-              className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/90 transition-all duration-150"
-              aria-label="Next slide"
-            >
-              <ChevronRight className="w-4 h-4 text-white hover:text-black" />
-            </button>
-          </div>
-
-          {/* Pagination dots */}
-          <div className="flex gap-2">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => handleSlideChange(index)}
-                className="group relative"
-                aria-label={`Go to slide ${index + 1}`}
-              >
-                <div
-                  className={cn(
-                    "h-1 rounded-full transition-all duration-150",
-                    currentSlide === index
-                      ? "w-8 bg-white"
-                      : "w-4 bg-white/40 group-hover:bg-white/60",
-                  )}
-                />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Desktop Pagination */}
+        {/* Pagination */}
         <div className="hidden sm:flex absolute bottom-8 left-0 right-0 justify-center gap-3 z-10">
           {slides.map((_, index) => (
             <button

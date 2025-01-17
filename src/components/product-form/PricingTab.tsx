@@ -1,22 +1,26 @@
-import { UseFormReturn } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
+import React from "react";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { UseFormReturn } from "react-hook-form";
 
-interface PricingTabProps {
-  form: UseFormReturn<any>;
-}
-
-export function PricingTab({ form }: PricingTabProps) {
+export function PricingTab({ form }: { form: UseFormReturn<any> }) {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Store Price */}
         <FormField
           control={form.control}
           name="store_price"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Harga Jual di Toko</FormLabel>
+              <FormLabel>Store Price</FormLabel>
               <FormControl>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5">Rp</span>
@@ -33,34 +37,59 @@ export function PricingTab({ form }: PricingTabProps) {
           )}
         />
 
+        {/* Sell Price */}
         <FormField
           control={form.control}
-          name="online_price_same"
+          name="sell_price"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">
-                  Harga jual online sama dengan harga jual toko
-                </FormLabel>
-              </div>
+            <FormItem>
+              <FormLabel>Sell Price</FormLabel>
               <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5">Rp</span>
+                  <Input
+                    type="number"
+                    className="pl-12"
+                    placeholder="0"
+                    {...field}
+                  />
+                </div>
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
-      </div>
 
-      {!form.watch("online_price_same") && (
+        {/* Buy Price */}
+        <FormField
+          control={form.control}
+          name="buy_price"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Buy Price</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5">Rp</span>
+                  <Input
+                    type="number"
+                    className="pl-12"
+                    placeholder="0"
+                    {...field}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Online Price */}
         <FormField
           control={form.control}
           name="online_price"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Harga Jual Online</FormLabel>
+              <FormLabel>Online Price</FormLabel>
               <FormControl>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5">Rp</span>
@@ -76,50 +105,95 @@ export function PricingTab({ form }: PricingTabProps) {
             </FormItem>
           )}
         />
-      )}
 
-      <FormField
-        control={form.control}
-        name="track_inventory"
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5">
-              <FormLabel className="text-base">
-                Lacak Inventori
-              </FormLabel>
-              <p className="text-sm text-muted-foreground">
-                Jika anda mengaktifkan lacak inventori, sistem akan mengecek ketersediaan stok barang sebelum menjual ke pembeli
-              </p>
-            </div>
-            <FormControl>
-              <Switch
-                checked={field.value}
-                onCheckedChange={field.onChange}
-              />
-            </FormControl>
-          </FormItem>
-        )}
-      />
-
-      {form.watch("track_inventory") && (
+        {/* Market Price */}
         <FormField
           control={form.control}
-          name="initial_stock"
+          name="market_price"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Stok Awal</FormLabel>
+              <FormLabel>Market Price</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  {...field}
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5">Rp</span>
+                  <Input
+                    type="number"
+                    className="pl-12"
+                    placeholder="0"
+                    {...field}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-      )}
+
+        {/* POS Sell Price */}
+        <FormField
+          control={form.control}
+          name="pos_sell_price"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>POS Sell Price</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5">Rp</span>
+                  <Input
+                    type="number"
+                    className="pl-12"
+                    placeholder="0"
+                    {...field}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {/* Dynamic POS Price Toggle */}
+      <FormField
+        control={form.control}
+        name="pos_sell_price_dynamic"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <FormLabel className="text-base">Dynamic POS Pricing</FormLabel>
+              <p className="text-sm text-muted-foreground">
+                Enable dynamic pricing for POS transactions
+              </p>
+            </div>
+            <FormControl>
+              <Switch checked={field.value} onCheckedChange={field.onChange} />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+
+      {/* Commission */}
+      <FormField
+        control={form.control}
+        name="comission"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Commission</FormLabel>
+            <FormControl>
+              <div className="relative">
+                <span className="absolute left-3 top-2.5">Rp</span>
+                <Input
+                  type="number"
+                  className="pl-12"
+                  placeholder="0"
+                  {...field}
+                />
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }
