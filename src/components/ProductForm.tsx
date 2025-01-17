@@ -166,40 +166,24 @@ export function ProductForm({
     setError(null);
 
     try {
-      // Process form data
+      // Process form data and convert string values to numbers
       const productData: Partial<ProductType> = {
         ...values,
+        store_price: values.store_price ? parseFloat(values.store_price) : null,
+        online_price: values.online_price ? parseFloat(values.online_price) : null,
+        buy_price: values.buy_price ? parseFloat(values.buy_price) : null,
+        market_price: values.market_price ? parseFloat(values.market_price) : null,
+        sell_price: values.sell_price ? parseFloat(values.sell_price) : null,
+        pos_sell_price: values.pos_sell_price ? parseFloat(values.pos_sell_price) : null,
+        comission: values.comission ? parseFloat(values.comission) : null,
+        stock_qty: values.stock_qty ? parseInt(values.stock_qty) : null,
+        hold_qty: values.hold_qty ? parseInt(values.hold_qty) : null,
+        low_stock_alert: values.low_stock_alert ? parseInt(values.low_stock_alert) : null,
+        qty_fast_moving: values.qty_fast_moving ? parseInt(values.qty_fast_moving) : null,
+        weight_kg: values.weight_kg ? parseFloat(values.weight_kg) : null,
+        loyalty_points: values.loyalty_points ? parseInt(values.loyalty_points) : null,
+        classification_id: values.classification_id ? parseInt(values.classification_id) : null,
       };
-
-      // Convert string numbers to actual numbers
-      const numberFields = [
-        "store_price",
-        "online_price",
-        "buy_price",
-        "market_price",
-        "sell_price",
-        "pos_sell_price",
-        "comission",
-        "stock_qty",
-        "hold_qty",
-        "low_stock_alert",
-        "qty_fast_moving",
-        "weight_kg",
-        "loyalty_points",
-        "classification_id",
-      ] as const;
-
-      numberFields.forEach((field) => {
-        const value = values[field];
-        if (value) {
-          productData[field] =
-            field.includes("qty") ||
-            field.includes("loyalty") ||
-            field.includes("classification")
-              ? parseInt(value)
-              : parseFloat(value);
-        }
-      });
 
       if (mode === "edit" && product?.id) {
         console.log("Updating product with data:", productData);
@@ -217,10 +201,14 @@ export function ProductForm({
         }
         toast.success("Product updated successfully");
       } else {
-        // For new products, include the user_id
+        // For new products, include the user_id and ensure required fields
         const { error: insertError } = await supabase
           .from("products")
-          .insert([{ ...productData, user_id: session.user.id }]);
+          .insert({
+            ...productData,
+            name: values.name, // Ensure required field is included
+            user_id: session.user.id
+          });
 
         if (insertError) throw insertError;
         toast.success("Product added successfully");
@@ -230,13 +218,10 @@ export function ProductForm({
       onSuccess?.();
     } catch (err) {
       console.error("Form submission error:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "An error occurred";
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
       setError(errorMessage);
       onError?.(err instanceof Error ? err : new Error(errorMessage));
-      toast.error(
-        mode === "edit" ? "Failed to update product" : "Failed to add product",
-      );
+      toast.error(mode === "edit" ? "Failed to update product" : "Failed to add product");
     } finally {
       setIsSubmitting(false);
     }

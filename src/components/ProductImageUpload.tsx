@@ -1,4 +1,3 @@
-// ProductImageUpload.tsx
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,19 +41,16 @@ export function ProductImageUpload({
       const fileName = `${session?.user?.id}/${Date.now()}-${Math.random()}.${fileExt}`;
 
       // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("products")
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
       // Get the public URL
-      const {
-        data: { publicUrl },
-        error: urlError,
-      } = await supabase.storage.from("products").getPublicUrl(fileName);
-
-      if (urlError) throw urlError;
+      const publicUrl = supabase.storage
+        .from("products")
+        .getPublicUrl(fileName).data.publicUrl;
 
       console.log("Upload successful, public URL:", publicUrl);
 
@@ -127,4 +123,3 @@ export function ProductImageUpload({
     </div>
   );
 }
-

@@ -5,11 +5,11 @@ const CalendarBooking = () => {
   const CAL_LINK = "optikloov/periksa-mata";
 
   const calConfig = {
-    layout: "month_view" as const,
-    theme: "light" as const,
-    hideEventTypeDetails: false,
+    layout: "month_view",
+    theme: "light",
+    hideEventTypeDetails: "false", // Changed to string to match type
     styles: {
-      brandColor: "#000000"
+      branding: { brandColor: "#000000" } // Updated to match Cal.com's type
     }
   };
 
