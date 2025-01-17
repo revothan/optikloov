@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useSession } from "@supabase/auth-helpers-react";
@@ -172,17 +172,6 @@ export function ProductForm({
         ...values,
       };
 
-      // Handle image upload if it's a File
-      if (values.image_url instanceof File) {
-        try {
-          productData.image_url = await handleImageUpload(values.image_url);
-        } catch (error) {
-          console.error("Image upload error:", error);
-          toast.error("Failed to upload image");
-          return;
-        }
-      }
-
       // Convert string numbers to actual numbers
       const numberFields = [
         "store_price",
@@ -214,15 +203,20 @@ export function ProductForm({
       });
 
       if (mode === "edit" && product?.id) {
+        // Use upsert for update to ensure proper handling
         const { error: updateError } = await supabase
           .from("products")
-          .update({
+          .upsert({
+            id: product.id, // Include the ID for upsert
             ...productData,
             updated_at: new Date().toISOString(),
           })
-          .eq("id", product.id);
+          .select();
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error("Update error:", updateError);
+          throw updateError;
+        }
         toast.success("Product updated successfully");
       } else {
         const { error: insertError } = await supabase
@@ -236,6 +230,7 @@ export function ProductForm({
       queryClient.invalidateQueries({ queryKey: ["products"] });
       onSuccess?.();
     } catch (err) {
+      console.error("Form submission error:", err);
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
       setError(errorMessage);
