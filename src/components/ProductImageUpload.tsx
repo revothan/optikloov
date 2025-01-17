@@ -34,7 +34,13 @@ export function ProductImageUpload({
       setPreviewUrl(defaultImageUrl);
     }
     if (defaultAdditionalImages) {
-      setAdditionalImages(defaultAdditionalImages);
+      const cleanedImages: { [key: string]: string } = {};
+      Object.entries(defaultAdditionalImages).forEach(([key, value]) => {
+        if (value) {
+          cleanedImages[key] = value;
+        }
+      });
+      setAdditionalImages(cleanedImages);
     }
   }, [defaultImageUrl, defaultAdditionalImages]);
 
