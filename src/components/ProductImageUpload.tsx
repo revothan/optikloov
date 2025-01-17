@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSession } from "@supabase/auth-helpers-react";
 
 interface ProductImageUploadProps {
   onImageUrlChange: (url: string) => void;
@@ -12,6 +13,7 @@ export function ProductImageUpload({
   onImageUrlChange,
   defaultImageUrl,
 }: ProductImageUploadProps) {
+  const session = useSession();
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>("");
 
@@ -34,35 +36,32 @@ export function ProductImageUpload({
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
 
-      // Upload to Supabase Storage
+      // Generate a unique filename with user ID prefix
       const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const fileName = `${session?.user?.id}/${Date.now()}-${Math.random()}.${fileExt}`;
 
-      // First upload the file
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
         .from("products")
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      // Then get the public URL
-      const {
-        data: { publicUrl },
-        error: urlError,
-      } = await supabase.storage.from("products").getPublicUrl(fileName);
+      // Get the public URL
+      const publicUrl = supabase.storage
+        .from("products")
+        .getPublicUrl(fileName).data.publicUrl;
 
-      if (urlError) throw urlError;
+      console.log("Upload successful, public URL:", publicUrl);
 
-      // Log the URL for debugging
-      console.log("Uploaded image URL:", publicUrl);
-
-      // Update the form
+      // Update the form with the public URL
       onImageUrlChange(publicUrl);
-
-      toast.success("Gambar berhasil diunggah");
+      toast.success("Image uploaded successfully");
     } catch (error) {
       console.error("Error uploading file:", error);
-      toast.error("Gagal mengunggah gambar");
+      toast.error("Failed to upload image");
+      // Reset preview on error
+      setPreviewUrl(defaultImageUrl || "");
     } finally {
       setIsUploading(false);
     }
@@ -73,11 +72,18 @@ export function ProductImageUpload({
       <div className="flex items-center justify-center w-full">
         <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
           {previewUrl ? (
-            <img
-              src={previewUrl}
-              alt="Preview"
-              className="w-full h-full object-contain"
-            />
+            <div className="relative w-full h-full">
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="w-full h-full object-contain"
+              />
+              {!isUploading && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50">
+                  <p className="text-white">Click to change image</p>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
               <svg
@@ -96,8 +102,8 @@ export function ProductImageUpload({
                 />
               </svg>
               <p className="mb-2 text-sm text-gray-500">
-                <span className="font-semibold">Klik untuk unggah</span> atau
-                drag and drop
+                <span className="font-semibold">Click to upload</span> or drag
+                and drop
               </p>
               <p className="text-xs text-gray-500">PNG, JPG (MAX. 2MB)</p>
             </div>
@@ -111,8 +117,9 @@ export function ProductImageUpload({
           />
         </label>
       </div>
-      {isUploading && <p className="text-center">Mengunggah...</p>}
+      {isUploading && (
+        <div className="text-center text-sm text-gray-500">Uploading...</div>
+      )}
     </div>
   );
 }
-
