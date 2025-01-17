@@ -168,7 +168,6 @@ export function ProductForm({
     try {
       // Process form data
       const productData: Partial<ProductType> = {
-        user_id: session.user.id,
         ...values,
       };
 
@@ -203,15 +202,14 @@ export function ProductForm({
       });
 
       if (mode === "edit" && product?.id) {
-        // Use upsert for update to ensure proper handling
+        console.log("Updating product with data:", productData);
         const { error: updateError } = await supabase
           .from("products")
-          .upsert({
-            id: product.id, // Include the ID for upsert
+          .update({
             ...productData,
             updated_at: new Date().toISOString(),
           })
-          .select();
+          .eq('id', product.id);
 
         if (updateError) {
           console.error("Update error:", updateError);
@@ -219,9 +217,10 @@ export function ProductForm({
         }
         toast.success("Product updated successfully");
       } else {
+        // For new products, include the user_id
         const { error: insertError } = await supabase
           .from("products")
-          .insert([productData]);
+          .insert([{ ...productData, user_id: session.user.id }]);
 
         if (insertError) throw insertError;
         toast.success("Product added successfully");
