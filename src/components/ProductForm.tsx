@@ -84,6 +84,9 @@ const baseSchema = z.object({
   condition_id: z.string().optional(),
   classification_id: z.string().optional(),
   notes: z.string().optional(),
+  photo_1: z.string().nullable().optional(),
+  photo_2: z.string().nullable().optional(),
+  photo_3: z.string().nullable().optional(),
 });
 
 type FormData = z.infer<typeof baseSchema>;
@@ -137,6 +140,9 @@ export function ProductForm({
       condition_id: product?.condition_id || "",
       classification_id: product?.classification_id?.toString() || "",
       notes: product?.notes || "",
+      photo_1: product?.photo_1 || "",
+      photo_2: product?.photo_2 || "",
+      photo_3: product?.photo_3 || "",
     },
   });
 
@@ -166,7 +172,6 @@ export function ProductForm({
     setError(null);
 
     try {
-      // Process form data and convert string values to numbers
       const productData: Partial<ProductType> = {
         ...values,
         store_price: values.store_price ? parseFloat(values.store_price) : null,
@@ -183,6 +188,9 @@ export function ProductForm({
         weight_kg: values.weight_kg ? parseFloat(values.weight_kg) : null,
         loyalty_points: values.loyalty_points ? parseInt(values.loyalty_points) : null,
         classification_id: values.classification_id ? parseInt(values.classification_id) : null,
+        photo_1: values.photo_1 || null,
+        photo_2: values.photo_2 || null,
+        photo_3: values.photo_3 || null,
       };
 
       if (mode === "edit" && product?.id) {
@@ -201,12 +209,11 @@ export function ProductForm({
         }
         toast.success("Product updated successfully");
       } else {
-        // For new products, include the user_id and ensure required fields
         const { error: insertError } = await supabase
           .from("products")
           .insert({
             ...productData,
-            name: values.name, // Ensure required field is included
+            name: values.name,
             user_id: session.user.id
           });
 

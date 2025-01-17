@@ -48,24 +48,20 @@ export function ProductImageUpload({
     try {
       setIsUploading(true);
 
-      // Generate a unique filename with user ID prefix
       const fileExt = file.name.split(".").pop();
       const fileName = `${session?.user?.id}/${Date.now()}-${Math.random()}.${fileExt}`;
 
-      // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from("products")
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from("products")
         .getPublicUrl(fileName);
 
       if (imageKey) {
-        // Handle additional image
         const newAdditionalImages = {
           ...additionalImages,
           [imageKey]: publicUrl,
@@ -74,7 +70,6 @@ export function ProductImageUpload({
         onAdditionalImagesChange?.(newAdditionalImages);
         toast.success(`Additional image ${imageKey} uploaded successfully`);
       } else {
-        // Handle main image
         setPreviewUrl(publicUrl);
         onImageUrlChange(publicUrl);
         toast.success("Main image uploaded successfully");
