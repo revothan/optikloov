@@ -1,13 +1,13 @@
-import Cal, { getCalApi } from "@calcom/embed-react";
 import { useEffect } from "react";
+import Cal, { getCalApi } from "@calcom/embed-react";
+
+const CAL_LINK = "optikloov/30min";
 
 const CalendarBooking = () => {
-  const CAL_LINK = "optikloov/periksa-mata";
-
   const calConfig = {
     layout: "month_view",
-    theme: "light",
-    hideEventTypeDetails: false, // Changed from "false" to false
+    theme: "light" as const,
+    hideEventTypeDetails: false,
     styles: {
       branding: {
         brandColor: "#000000"
@@ -19,25 +19,24 @@ const CalendarBooking = () => {
     (async function () {
       const cal = await getCalApi();
       cal("ui", {
+        layout: calConfig.layout,
         theme: calConfig.theme,
         hideEventTypeDetails: calConfig.hideEventTypeDetails,
-        styles: {
-          branding: {
-            brandColor: calConfig.styles.branding.brandColor
-          }
-        }
+        styles: calConfig.styles
       });
     })();
   }, []);
 
   return (
-    <div className="w-full">
+    <div className="w-full h-[600px]">
       <Cal
         calLink={CAL_LINK}
         style={{ width: "100%", height: "100%", overflow: "hidden" }}
         config={{
+          layout: calConfig.layout,
           theme: calConfig.theme,
-          hideEventTypeDetails: calConfig.hideEventTypeDetails
+          hideEventTypeDetails: calConfig.hideEventTypeDetails,
+          styles: calConfig.styles
         }}
       />
     </div>
