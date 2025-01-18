@@ -41,7 +41,7 @@ export function ProductImageUpload({
         }
       });
       setAdditionalImages(cleanedImages);
-      console.log("Setting additional images:", cleanedImages); // Debug log
+      console.log("Initial additional images:", cleanedImages);
     }
   }, [defaultImageUrl, defaultAdditionalImages]);
 
