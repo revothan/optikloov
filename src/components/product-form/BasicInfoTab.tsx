@@ -51,9 +51,9 @@ export function BasicInfoTab({ form, product }: BasicInfoTabProps) {
                 onAdditionalImagesChange={handleAdditionalImagesChange}
                 defaultImageUrl={field.value || product?.image_url}
                 defaultAdditionalImages={{
-                  photo_1: product?.photo_1 || null,
-                  photo_2: product?.photo_2 || null,
-                  photo_3: product?.photo_3 || null,
+                  photo_1: form.watch("photo_1") || "",
+                  photo_2: form.watch("photo_2") || "",
+                  photo_3: form.watch("photo_3") || "",
                 }}
               />
             </FormControl>
