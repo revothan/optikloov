@@ -154,7 +154,6 @@ const Admin = () => {
   const location = useLocation();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // Fetch user profile to check role
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -217,23 +216,26 @@ const Admin = () => {
     }
   };
 
-  // Filter products based on search query AND category
+  // Filter products based on search query
   const filteredProducts = products.filter(
-    (product) => {
-      const matchesSearch = 
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.barcode?.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesCategory = 
-        selectedCategory === "all" || 
-        product.category === selectedCategory;
-
-      return matchesSearch && matchesCategory;
-    }
+    (product) =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.barcode?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const categories = ["all", "Frame", "Lensa", "Softlens"];
+  // Calculate statistics
+  const totalProducts = products?.length || 0;
+  const totalValue =
+    products?.reduce((sum, product) => sum + (product.store_price || 0), 0) ||
+    0;
+  const lowStockProducts =
+    products?.filter(
+      (product) =>
+        product.track_inventory &&
+        (product.stock_qty || 0) <= (product.low_stock_alert || 0),
+    ).length || 0;
+  const totalCustomers = customers?.length || 0;
 
   useEffect(() => {
     if (!session) {
@@ -275,19 +277,19 @@ const Admin = () => {
         <StatsCard
           icon={Package}
           title="Total Products"
-          value={products.length}
+          value={totalProducts}
           description="Active products in inventory"
         />
         <StatsCard
           icon={DollarSign}
           title="Total Inventory Value"
-          value={formatPrice(products.reduce((sum, product) => sum + (product.store_price || 0), 0))}
+          value={formatPrice(totalValue)}
           description="Based on store prices"
         />
         <StatsCard
           icon={Users}
           title="Total Customers"
-          value={customers.length}
+          value={totalCustomers}
           description="Registered customers"
         />
       </div>
@@ -303,17 +305,6 @@ const Admin = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
               <div className="flex items-center gap-4 w-full md:w-auto">
                 <SearchBar onSearch={setSearchQuery} />
-                <select
-                  className="border rounded-md px-3 py-2"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category === "all" ? "All Categories" : category}
-                    </option>
-                  ))}
-                </select>
                 <ProductDialog />
               </div>
             </div>
