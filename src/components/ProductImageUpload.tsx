@@ -29,14 +29,12 @@ export function ProductImageUpload({
     [key: string]: string;
   }>({});
 
-  // Only run this effect once when the component mounts
   useEffect(() => {
     if (defaultImageUrl) {
       setPreviewUrl(defaultImageUrl);
     }
 
-    // Initialize additional images only if we don't have any yet
-    if (defaultAdditionalImages && Object.keys(additionalImages).length === 0) {
+    if (defaultAdditionalImages) {
       const cleanedImages: { [key: string]: string } = {};
       Object.entries(defaultAdditionalImages).forEach(([key, value]) => {
         if (value) {
@@ -44,8 +42,9 @@ export function ProductImageUpload({
         }
       });
       setAdditionalImages(cleanedImages);
+      console.log("Initial additional images:", cleanedImages);
     }
-  }, []); // Empty dependency array means this only runs once
+  }, [defaultImageUrl, defaultAdditionalImages]);
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -157,7 +156,7 @@ export function ProductImageUpload({
       <div className="grid grid-cols-3 gap-4">
         {[1, 2, 3].map((index) => {
           const imageKey = `photo_${index}`;
-          const imageUrl = additionalImages[imageKey];
+          const imageUrl = additionalImages[imageKey] || defaultAdditionalImages?.[imageKey as keyof typeof defaultAdditionalImages];
 
           return (
             <div key={imageKey} className="relative">
@@ -207,4 +206,3 @@ export function ProductImageUpload({
     </div>
   );
 }
-
