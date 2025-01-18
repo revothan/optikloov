@@ -29,11 +29,14 @@ export function ProductImageUpload({
     [key: string]: string;
   }>({});
 
+  // Only run this effect once when the component mounts
   useEffect(() => {
     if (defaultImageUrl) {
       setPreviewUrl(defaultImageUrl);
     }
-    if (defaultAdditionalImages) {
+
+    // Initialize additional images only if we don't have any yet
+    if (defaultAdditionalImages && Object.keys(additionalImages).length === 0) {
       const cleanedImages: { [key: string]: string } = {};
       Object.entries(defaultAdditionalImages).forEach(([key, value]) => {
         if (value) {
@@ -41,13 +44,12 @@ export function ProductImageUpload({
         }
       });
       setAdditionalImages(cleanedImages);
-      console.log("Initial additional images:", cleanedImages);
     }
-  }, [defaultImageUrl, defaultAdditionalImages]);
+  }, []); // Empty dependency array means this only runs once
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
-    imageKey?: string
+    imageKey?: string,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -64,9 +66,9 @@ export function ProductImageUpload({
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("products")
-        .getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("products").getPublicUrl(fileName);
 
       if (imageKey) {
         const newAdditionalImages = {
@@ -135,7 +137,8 @@ export function ProductImageUpload({
                 />
               </svg>
               <p className="mb-2 text-sm text-gray-500">
-                <span className="font-semibold">Click to upload</span> or drag and drop
+                <span className="font-semibold">Click to upload</span> or drag
+                and drop
               </p>
               <p className="text-xs text-gray-500">PNG, JPG (MAX. 2MB)</p>
             </div>
@@ -154,7 +157,7 @@ export function ProductImageUpload({
       <div className="grid grid-cols-3 gap-4">
         {[1, 2, 3].map((index) => {
           const imageKey = `photo_${index}`;
-          const imageUrl = additionalImages[imageKey] || defaultAdditionalImages?.[imageKey];
+          const imageUrl = additionalImages[imageKey];
 
           return (
             <div key={imageKey} className="relative">
@@ -204,3 +207,4 @@ export function ProductImageUpload({
     </div>
   );
 }
+
