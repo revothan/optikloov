@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HeroCarousel from "@/components/HeroCarousel";
 import Maps from "@/components/Maps";
+import TestimonialSection from "@/components/TestimonialSection";
 
 const Home = () => {
   return (
@@ -15,19 +16,15 @@ const Home = () => {
         <Navbar />
       </header>
 
-      {/* Main content wrapper with top padding to account for fixed navbar */}
       <main className="flex-grow">
-        {/* Hero Section */}
         <div className="mt-[64px]">
-          {" "}
-          {/* Adjust this value based on your navbar height */}
           <HeroCarousel />
         </div>
 
-        {/* Map */}
+        <TestimonialSection />
+        
         <Maps />
-
-        {/* Brand Section */}
+        
         <BrandSection />
       </main>
 

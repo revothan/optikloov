@@ -1,1 +1,8 @@
 project_id = "vdnbihrqujhmmgnshhhn"
+
+[api]
+enabled = true
+url = "https://vdnbihrqujhmmgnshhhn.supabase.co"
+
+[functions.getGoogleReviews]
+verify_jwt = false
