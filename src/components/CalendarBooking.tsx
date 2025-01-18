@@ -9,7 +9,6 @@ const CalendarBooking = () => {
     email: 'optikloov@gmail.com',
     notes: 'Eye examination appointment',
     guests: [],
-    theme: 'light',
   };
 
   useEffect(() => {
