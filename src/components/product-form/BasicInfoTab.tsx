@@ -1,4 +1,3 @@
-// BasicInfoTab.tsx
 import { UseFormReturn } from "react-hook-form";
 import {
   FormField,
@@ -26,10 +25,16 @@ export function BasicInfoTab({ form, product }: BasicInfoTabProps) {
       shouldTouch: true,
       shouldValidate: true,
     });
+  };
 
-    // Verify the form value was set
-    const currentValue = form.getValues("image_url");
-    console.log("Form image_url value after setting:", currentValue);
+  const handleAdditionalImagesChange = (urls: { [key: string]: string }) => {
+    Object.entries(urls).forEach(([key, value]) => {
+      form.setValue(key, value, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+    });
   };
 
   return (
@@ -39,11 +44,17 @@ export function BasicInfoTab({ form, product }: BasicInfoTabProps) {
         name="image_url"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Gambar Produk</FormLabel>
+            <FormLabel>Product Images</FormLabel>
             <FormControl>
               <ProductImageUpload
                 onImageUrlChange={handleImageChange}
+                onAdditionalImagesChange={handleAdditionalImagesChange}
                 defaultImageUrl={field.value || product?.image_url}
+                defaultAdditionalImages={{
+                  photo_1: form.watch("photo_1") || "",
+                  photo_2: form.watch("photo_2") || "",
+                  photo_3: form.watch("photo_3") || "",
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -284,4 +295,3 @@ export function BasicInfoTab({ form, product }: BasicInfoTabProps) {
     </div>
   );
 }
-

@@ -7,9 +7,11 @@ const CalendarBooking = () => {
   const calConfig = {
     layout: "month_view",
     theme: "light",
-    hideEventTypeDetails: "false", // Changed to string to match type
+    hideEventTypeDetails: "false",
     styles: {
-      branding: { brandColor: "#000000" } // Updated to match Cal.com's type
+      branding: {
+        brandColor: "#000000"
+      }
     }
   };
 
