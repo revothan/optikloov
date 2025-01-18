@@ -36,7 +36,7 @@ const TestimonialSection = () => {
   if (isLoading) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
-        <div className="animate-pulse text-gray-400">Memuat ulasan...</div>
+        <div className="animate-pulse text-gray-400">Loading testimonials...</div>
       </div>
     );
   }
@@ -45,7 +45,7 @@ const TestimonialSection = () => {
     console.error("Error in TestimonialSection:", error);
     return (
       <div className="min-h-[400px] flex items-center justify-center">
-        <div className="text-red-500">Gagal memuat ulasan</div>
+        <div className="text-red-500">Failed to load testimonials</div>
       </div>
     );
   }
@@ -53,20 +53,20 @@ const TestimonialSection = () => {
   if (!reviews || reviews.length === 0) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
-        <div className="text-gray-500">Belum ada ulasan</div>
+        <div className="text-gray-500">No reviews available</div>
       </div>
     );
   }
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-16 bg-gray-50">
       <div className="container px-4 mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Apa Kata Mereka?
+            What Our Customers Say
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Pengalaman pelanggan kami yang telah mempercayakan kesehatan mata mereka kepada Optik LOOV
+            Read genuine reviews from our valued customers about their experience with Optik LOOV
           </p>
         </div>
 
@@ -117,11 +117,7 @@ const TestimonialSection = () => {
                     <div>
                       <p className="font-semibold">{review.author_name}</p>
                       <p className="text-sm text-gray-500">
-                        {new Date(review.time * 1000).toLocaleDateString('id-ID', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
+                        {new Date(review.time * 1000).toLocaleDateString()}
                       </p>
                     </div>
                   </div>

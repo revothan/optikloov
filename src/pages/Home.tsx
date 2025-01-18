@@ -11,9 +11,9 @@ const Home = () => {
       <Navbar />
       <main>
         <HeroCarousel />
+        <BrandSection />
         <TestimonialSection />
         <Map />
-        <BrandSection />
       </main>
       <Footer />
     </div>
