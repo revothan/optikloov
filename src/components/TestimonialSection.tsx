@@ -5,6 +5,8 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
 
@@ -73,25 +75,20 @@ const TestimonialSection = () => {
             align: "start",
             loop: true,
           }}
-          className="w-full max-w-5xl mx-auto"
+          className="w-full max-w-5xl mx-auto relative"
         >
           <CarouselContent>
             {reviews?.map((review, index) => (
               <CarouselItem
                 key={index}
-                className="md:basis-1/2 lg:basis-1/3 pl-4"
+                className="md:basis-1/2 lg:basis-1/3"
               >
                 <div
                   className={cn(
-                    "bg-white p-6 rounded-xl shadow-lg",
+                    "bg-white p-6 rounded-xl shadow-lg h-full",
                     "transform transition-all duration-300 hover:scale-105",
-                    "opacity-0 animate-fade-in",
                     "border border-gray-100"
                   )}
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                    animationFillMode: "forwards",
-                  }}
                 >
                   <Quote className="w-8 h-8 text-primary mb-4 opacity-20" />
                   
@@ -111,7 +108,7 @@ const TestimonialSection = () => {
 
                   <p className="text-gray-600 mb-4 line-clamp-4">{review.text}</p>
 
-                  <div className="flex items-center">
+                  <div className="flex items-center mt-auto">
                     <img
                       src={review.profile_photo_url}
                       alt={review.author_name}
@@ -128,6 +125,8 @@ const TestimonialSection = () => {
               </CarouselItem>
             ))}
           </CarouselContent>
+          <CarouselPrevious className="absolute -left-12 top-1/2" />
+          <CarouselNext className="absolute -right-12 top-1/2" />
         </Carousel>
       </div>
     </section>
