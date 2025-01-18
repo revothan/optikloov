@@ -17,11 +17,16 @@ interface Review {
 }
 
 const TestimonialSection = () => {
-  const { data: reviews, isLoading } = useQuery({
+  const { data: reviews, isLoading, error } = useQuery({
     queryKey: ["googleReviews"],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("getGoogleReviews");
-      if (error) throw error;
+      console.log("Fetching Google reviews...");
+      const { data, error } = await supabase.functions.invoke("getgooglereviews");
+      if (error) {
+        console.error("Error fetching reviews:", error);
+        throw error;
+      }
+      console.log("Reviews data:", data);
       return data.result.reviews as Review[];
     },
   });
@@ -30,6 +35,23 @@ const TestimonialSection = () => {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
         <div className="animate-pulse text-gray-400">Loading testimonials...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error("Error in TestimonialSection:", error);
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <div className="text-red-500">Failed to load testimonials</div>
+      </div>
+    );
+  }
+
+  if (!reviews || reviews.length === 0) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <div className="text-gray-500">No reviews available</div>
       </div>
     );
   }
