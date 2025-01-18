@@ -73,7 +73,7 @@ const TestimonialSection = () => {
             What Our Customers Say
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-base leading-relaxed">
-            Real experiences shared by our valued customers who have trusted LOOV Optik for their eyewear needs
+            Real experiences shared by our valued customers who have trusted Optik LOOV for their eyewear needs
           </p>
         </div>
 
