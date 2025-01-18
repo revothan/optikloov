@@ -7,7 +7,7 @@ const CalendarBooking = () => {
   const calConfig = {
     layout: "month_view",
     theme: "light",
-    hideEventTypeDetails: "false",
+    hideEventTypeDetails: false, // Changed from "false" to false
     styles: {
       branding: {
         brandColor: "#000000"
@@ -18,7 +18,15 @@ const CalendarBooking = () => {
   useEffect(() => {
     (async function () {
       const cal = await getCalApi();
-      cal("ui", calConfig);
+      cal("ui", {
+        theme: calConfig.theme,
+        hideEventTypeDetails: calConfig.hideEventTypeDetails,
+        styles: {
+          branding: {
+            brandColor: calConfig.styles.branding.brandColor
+          }
+        }
+      });
     })();
   }, []);
 
@@ -27,7 +35,10 @@ const CalendarBooking = () => {
       <Cal
         calLink={CAL_LINK}
         style={{ width: "100%", height: "100%", overflow: "hidden" }}
-        config={calConfig}
+        config={{
+          theme: calConfig.theme,
+          hideEventTypeDetails: calConfig.hideEventTypeDetails
+        }}
       />
     </div>
   );

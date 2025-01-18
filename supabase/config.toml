@@ -1,8 +1,9 @@
 project_id = "vdnbihrqujhmmgnshhhn"
 
 [api]
-enabled = true
-url = "https://vdnbihrqujhmmgnshhhn.supabase.co"
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
 
+[functions]
 [functions.getGoogleReviews]
 verify_jwt = false
