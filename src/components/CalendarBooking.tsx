@@ -5,20 +5,20 @@ const CAL_LINK = "optikloov/30min";
 
 const CalendarBooking = () => {
   const calConfig = {
-    layout: "month_view" as const,
-    theme: "light" as const,
-    hideEventTypeDetails: false,
-    styles: {
-      branding: {
-        brandColor: "#000000"
-      }
-    }
+    name: 'Optik LOOV',
+    email: 'optikloov@gmail.com',
+    notes: 'Eye examination appointment',
+    guests: [],
+    theme: 'light',
   };
 
   useEffect(() => {
     (async function () {
       const cal = await getCalApi();
-      cal("ui", calConfig);
+      cal("ui", {
+        theme: "light",
+        styles: { branding: { brandColor: "#000000" } },
+      });
     })();
   }, []);
 
