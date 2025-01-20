@@ -67,7 +67,6 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
     if (product) {
       form.setValue(`items.${index}.price`, product.store_price || 0);
       form.setValue(`items.${index}.product_id`, product.id);
-      // Reset prescription fields when product changes
       form.setValue(`items.${index}.left_eye`, null);
       form.setValue(`items.${index}.right_eye`, null);
     }
@@ -138,9 +137,9 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value
-                          ? products?.find((product) => product.id === field.value)
-                              ?.name
+                        {field.value && products
+                          ? products.find((product) => product.id === field.value)
+                              ?.name || "Select product"
                           : "Select product"}
                       </Button>
                     </FormControl>
@@ -527,10 +526,6 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                 />
               </div>
             </div>
-          </div>
-
-          <div className="col-span-full text-right text-sm text-muted-foreground">
-            Total: {formatPrice(calculateItemTotal(index))}
           </div>
         </div>
       ))}
