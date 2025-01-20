@@ -221,7 +221,14 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                     <FormLabel>Eye Side</FormLabel>
                     <Select
                       value={field.value || ""}
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        // Only set the value if it's one of the valid options
+                        if (value === "left" || value === "right") {
+                          field.onChange(value);
+                        } else {
+                          field.onChange(null);
+                        }
+                      }}
                     >
                       <FormControl>
                         <SelectTrigger>
