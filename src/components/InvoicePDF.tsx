@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet, PDFViewer } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { format } from "date-fns";
 
 const styles = StyleSheet.create({
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   table: {
-    display: "table",
+    display: "flex",
     width: "100%",
     marginBottom: 20,
   },

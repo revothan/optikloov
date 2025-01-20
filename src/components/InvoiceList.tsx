@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { WhatsAppButton } from "./admin/WhatsAppButton";
 import { Database } from "@/integrations/supabase/types";
 import { InvoicePDF } from "./InvoicePDF";
-import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
+import { PDFDownloadLink, PDFViewer, pdf } from "@react-pdf/renderer";
 import {
   Dialog,
   DialogContent,
