@@ -17,12 +17,20 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Plus, Trash2 } from "lucide-react";
-import { UseFieldArrayReturn, UseFormReturn } from "react-hook-form";
+import { UseFormReturn } from "react-hook-form";
 import { formatPrice } from "@/lib/utils";
 
 interface InvoiceItemFormProps {
   form: UseFormReturn<any>;
-  itemFields: UseFieldArrayReturn<any, "items", "id">;
+  itemFields: {
+    fields: any[];
+    append: (...items: any[]) => void;
+    prepend: (...items: any[]) => void;
+    remove: (index: number) => void;
+    swap: (indexA: number, indexB: number) => void;
+    move: (from: number, to: number) => void;
+    insert: (index: number, value: any) => void;
+  };
 }
 
 export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {

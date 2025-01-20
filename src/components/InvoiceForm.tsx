@@ -71,7 +71,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, swap, move, insert, prepend } = useFieldArray({
     name: "items",
     control: form.control,
   });
@@ -253,7 +253,15 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
         <InvoiceItemForm
           form={form}
-          itemFields={{ fields, append, remove }}
+          itemFields={{
+            fields,
+            append,
+            remove,
+            swap,
+            move,
+            insert,
+            prepend,
+          }}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
