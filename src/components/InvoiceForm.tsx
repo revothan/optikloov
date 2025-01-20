@@ -62,9 +62,19 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
     try {
       const { error } = await supabase.from("invoices").insert({
-        ...values,
+        invoice_number: values.invoice_number,
+        sale_date: values.sale_date,
+        customer_name: values.customer_name,
+        customer_phone: values.customer_phone,
+        customer_address: values.customer_address,
+        payment_type: values.payment_type,
         down_payment: parseFloat(values.down_payment || "0"),
+        acknowledged_by: values.acknowledged_by,
+        received_by: values.received_by,
         user_id: session.user.id,
+        total_amount: 0, // Required by schema
+        discount_amount: 0, // Required by schema
+        grand_total: 0, // Required by schema
       });
 
       if (error) throw error;
