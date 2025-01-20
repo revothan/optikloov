@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
@@ -22,7 +22,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProductCard } from "@/components/ProductCard";
-import { Loader2 } from "lucide-react";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -32,17 +31,21 @@ export default function ProductsPage() {
   const [selectedBrand, setSelectedBrand] = useState("all");
   const [sortBy, setSortBy] = useState("latest");
   const [page, setPage] = useState(0);
-  const [allProducts, setAllProducts] = useState([]);
   const { ref: loadMoreRef, inView } = useInView();
 
-  // Fetch products with filters
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ["products", searchQuery, selectedType, selectedBrand, sortBy],
+  // Fetch products with optimized query
+  const {
+    data: products = [],
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: ["products", searchQuery, selectedType, selectedBrand, sortBy, page],
     queryFn: async () => {
       let query = supabase
         .from("products")
-        .select("*")
-        .not("image_url", "is", null);
+        .select("id, name, brand, image_url, online_price, category")
+        .not("image_url", "is", null)
+        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
 
       if (searchQuery) {
         query = query.ilike("name", `%${searchQuery}%`);
@@ -67,34 +70,19 @@ export default function ProductsPage() {
       const { data, error } = await query;
 
       if (error) throw error;
-
-      setAllProducts(data || []);
       return data || [];
     },
+    keepPreviousData: true,
   });
 
-  // Get paginated products
-  const paginatedProducts = allProducts.slice(0, (page + 1) * ITEMS_PER_PAGE);
-  const hasMore = paginatedProducts.length < allProducts.length;
-
-  useEffect(() => {
-    if (inView && hasMore) {
-      setPage((prev) => prev + 1);
-    }
-  }, [inView, hasMore]);
-
-  // Reset pagination when filters change
-  useEffect(() => {
-    setPage(0);
-  }, [searchQuery, selectedType, selectedBrand, sortBy]);
-
-  // Fetch unique brands for filter
+  // Fetch unique brands with optimized query
   const { data: brands = [] } = useQuery({
     queryKey: ["brands"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
         .select("brand")
+        .not("brand", "is", null)
         .not("image_url", "is", null);
 
       if (error) throw error;
@@ -106,21 +94,16 @@ export default function ProductsPage() {
     },
   });
 
-  const handleSearch = (value: string) => {
-    setSearchQuery(value);
-  };
+  useEffect(() => {
+    if (inView && !isLoading && !isFetching && products.length === ITEMS_PER_PAGE) {
+      setPage((prev) => prev + 1);
+    }
+  }, [inView, isLoading, isFetching, products.length]);
 
-  const handleTypeChange = (value: string) => {
-    setSelectedType(value);
-  };
-
-  const handleBrandChange = (value: string) => {
-    setSelectedBrand(value);
-  };
-
-  const handleSortChange = (value: string) => {
-    setSortBy(value);
-  };
+  // Reset pagination when filters change
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery, selectedType, selectedBrand, sortBy]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -135,7 +118,7 @@ export default function ProductsPage() {
                 placeholder="Search products..."
                 className="pl-10"
                 value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
 
@@ -155,7 +138,10 @@ export default function ProductsPage() {
                     <label className="text-sm font-medium">Product Type</label>
                     <Select
                       value={selectedType}
-                      onValueChange={handleTypeChange}
+                      onValueChange={(value) => {
+                        setSelectedType(value);
+                        setPage(0);
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="All Types" />
@@ -173,7 +159,10 @@ export default function ProductsPage() {
                     <label className="text-sm font-medium">Brand</label>
                     <Select
                       value={selectedBrand}
-                      onValueChange={handleBrandChange}
+                      onValueChange={(value) => {
+                        setSelectedBrand(value);
+                        setPage(0);
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="All Brands" />
@@ -191,7 +180,13 @@ export default function ProductsPage() {
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Sort By</label>
-                    <Select value={sortBy} onValueChange={handleSortChange}>
+                    <Select
+                      value={sortBy}
+                      onValueChange={(value) => {
+                        setSortBy(value);
+                        setPage(0);
+                      }}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Sort By" />
                       </SelectTrigger>
@@ -211,7 +206,10 @@ export default function ProductsPage() {
             </Sheet>
 
             <div className="hidden md:flex gap-4">
-              <Select value={selectedType} onValueChange={handleTypeChange}>
+              <Select value={selectedType} onValueChange={(value) => {
+                setSelectedType(value);
+                setPage(0);
+              }}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
@@ -223,7 +221,10 @@ export default function ProductsPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={selectedBrand} onValueChange={handleBrandChange}>
+              <Select value={selectedBrand} onValueChange={(value) => {
+                setSelectedBrand(value);
+                setPage(0);
+              }}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="All Brands" />
                 </SelectTrigger>
@@ -237,7 +238,10 @@ export default function ProductsPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={sortBy} onValueChange={handleSortChange}>
+              <Select value={sortBy} onValueChange={(value) => {
+                setSortBy(value);
+                setPage(0);
+              }}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Sort By" />
                 </SelectTrigger>
@@ -251,24 +255,24 @@ export default function ProductsPage() {
           </div>
 
           {/* Products Grid */}
-          {isLoading ? (
+          {isLoading && page === 0 ? (
             <div className="flex justify-center items-center min-h-[400px]">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
-          ) : paginatedProducts.length === 0 ? (
+          ) : products.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-lg text-gray-500">No products found</p>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {paginatedProducts.map((product) => (
+                {products.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
 
               {/* Loading More Indicator */}
-              {hasMore && (
+              {(isFetching || products.length === ITEMS_PER_PAGE) && (
                 <div
                   ref={loadMoreRef}
                   className="flex justify-center items-center py-8"
