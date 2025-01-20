@@ -74,7 +74,7 @@ export function InvoiceList() {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    // Basic HTML template for the invoice with added product and prescription details
+    // Basic HTML template for the invoice with separate product and prescription tables
     const html = `
       <html>
         <head>
@@ -106,6 +106,8 @@ export function InvoiceList() {
             <p><strong>Address:</strong> ${invoice.customer_address || '-'}</p>
             <p><strong>Phone:</strong> ${invoice.customer_phone || '-'}</p>
           </div>
+          
+          <!-- Products Table -->
           <table class="table">
             <thead>
               <tr>
@@ -115,11 +117,6 @@ export function InvoiceList() {
                 <th>Price</th>
                 <th>Discount</th>
                 <th>Total</th>
-                <th>SPH</th>
-                <th>CYL</th>
-                <th>AXIS</th>
-                <th>ADD</th>
-                <th>PD</th>
               </tr>
             </thead>
             <tbody>
@@ -131,15 +128,46 @@ export function InvoiceList() {
                   <td>${formatPrice(item.price)}</td>
                   <td>${formatPrice(item.discount)}</td>
                   <td>${formatPrice(item.total)}</td>
-                  <td>${item.sph || '-'}</td>
-                  <td>${item.cyl || '-'}</td>
-                  <td>${item.axis || '-'}</td>
-                  <td>${item.add_power || '-'}</td>
-                  <td>${item.pd || '-'}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
+
+          <!-- Prescription Table -->
+          <div class="prescription">
+            <h3>Prescription Details</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Eye</th>
+                  <th>SPH</th>
+                  <th>CYL</th>
+                  <th>AXIS</th>
+                  <th>ADD</th>
+                  <th>PD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Right Eye (OD)</td>
+                  <td>${invoiceItems[0]?.sph || '-'}</td>
+                  <td>${invoiceItems[0]?.cyl || '-'}</td>
+                  <td>${invoiceItems[0]?.axis || '-'}</td>
+                  <td>${invoiceItems[0]?.add_power || '-'}</td>
+                  <td>${invoiceItems[0]?.pd || '-'}</td>
+                </tr>
+                <tr>
+                  <td>Left Eye (OS)</td>
+                  <td>${invoiceItems[1]?.sph || '-'}</td>
+                  <td>${invoiceItems[1]?.cyl || '-'}</td>
+                  <td>${invoiceItems[1]?.axis || '-'}</td>
+                  <td>${invoiceItems[1]?.add_power || '-'}</td>
+                  <td>${invoiceItems[1]?.pd || '-'}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <div class="amount">
             <p><strong>Total Amount:</strong> ${formatPrice(invoice.total_amount)}</p>
             <p><strong>Discount:</strong> ${formatPrice(invoice.discount_amount)}</p>
