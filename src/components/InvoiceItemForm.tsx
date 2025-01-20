@@ -8,17 +8,24 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Check } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface InvoiceItemFormProps {
   form: UseFormReturn<any>;
@@ -34,7 +41,9 @@ interface InvoiceItemFormProps {
 }
 
 export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
-  const { data: products, isLoading: productsLoading } = useQuery({
+  const [open, setOpen] = useState<number | null>(null);
+
+  const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -42,7 +51,7 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
         .select("*")
         .order("name");
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
@@ -62,6 +71,7 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
       form.setValue(`items.${index}.left_eye`, null);
       form.setValue(`items.${index}.right_eye`, null);
     }
+    setOpen(null);
   };
 
   return (
@@ -112,31 +122,63 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
             control={form.control}
             name={`items.${index}.product_id`}
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col">
                 <FormLabel>Product</FormLabel>
-                <Select
-                  value={field.value}
-                  onValueChange={(value) => handleProductSelect(value, index)}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select product" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {productsLoading ? (
-                      <div className="p-2 flex items-center justify-center">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      </div>
-                    ) : (
-                      products?.map((product) => (
-                        <SelectItem key={product.id} value={product.id}>
-                          {product.name}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
+                <Popover open={open === index} onOpenChange={(isOpen) => setOpen(isOpen ? index : null)}>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className={cn(
+                          "w-full justify-between",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value
+                          ? products?.find((product) => product.id === field.value)
+                              ?.name
+                          : "Select product"}
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-0">
+                    <Command>
+                      <CommandInput
+                        placeholder="Search products..."
+                        className="h-9"
+                      />
+                      <CommandEmpty>No product found.</CommandEmpty>
+                      <CommandGroup>
+                        {productsLoading ? (
+                          <div className="p-2 flex items-center justify-center">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          </div>
+                        ) : (
+                          products?.map((product) => (
+                            <CommandItem
+                              key={product.id}
+                              value={product.name}
+                              onSelect={() => {
+                                handleProductSelect(product.id, index);
+                              }}
+                            >
+                              {product.name}
+                              <Check
+                                className={cn(
+                                  "ml-auto h-4 w-4",
+                                  product.id === field.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))
+                        )}
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 <FormMessage />
               </FormItem>
             )}
