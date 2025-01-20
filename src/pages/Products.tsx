@@ -44,21 +44,24 @@ export default function ProductsPage() {
       let query = supabase
         .from("products")
         .select("id, name, brand, image_url, online_price, category")
-        .not("image_url", "is", null)
-        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+        .not("image_url", "is", null);
 
+      // Apply filters
       if (searchQuery) {
         query = query.ilike("name", `%${searchQuery}%`);
       }
 
+      // Only apply category filter if not "all"
       if (selectedType !== "all") {
         query = query.eq("category", selectedType);
       }
 
+      // Only apply brand filter if not "all"
       if (selectedBrand !== "all") {
         query = query.eq("brand", selectedBrand);
       }
 
+      // Apply sorting
       if (sortBy === "price_asc") {
         query = query.order("online_price", { ascending: true });
       } else if (sortBy === "price_desc") {
@@ -67,9 +70,16 @@ export default function ProductsPage() {
         query = query.order("created_at", { ascending: false });
       }
 
+      // Apply pagination
+      query = query.range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching products:", error);
+        throw error;
+      }
+
       return data || [];
     },
     placeholderData: (previousData) => previousData,
@@ -77,7 +87,7 @@ export default function ProductsPage() {
     gcTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Fetch unique brands with optimized query
+  // Fetch unique brands
   const { data: brands = [] } = useQuery({
     queryKey: ["brands"],
     queryFn: async () => {
@@ -90,7 +100,7 @@ export default function ProductsPage() {
       if (error) throw error;
 
       const uniqueBrands = [...new Set(data.map((item) => item.brand))].filter(
-        Boolean,
+        Boolean
       );
       return uniqueBrands.sort();
     },
