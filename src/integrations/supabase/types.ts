@@ -84,6 +84,102 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_items: {
+        Row: {
+          created_at: string
+          discount: number
+          id: string
+          invoice_id: string
+          price: number
+          product_id: string
+          quantity: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount?: number
+          id?: string
+          invoice_id: string
+          price: number
+          product_id: string
+          quantity: number
+          total: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount?: number
+          id?: string
+          invoice_id?: string
+          price?: number
+          product_id?: string
+          quantity?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          customer_address: string | null
+          customer_name: string
+          customer_phone: string | null
+          discount_amount: number
+          grand_total: number
+          id: string
+          invoice_number: string
+          sale_date: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_address?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          discount_amount?: number
+          grand_total?: number
+          id?: string
+          invoice_number: string
+          sale_date: string
+          total_amount?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_address?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          discount_amount?: number
+          grand_total?: number
+          id?: string
+          invoice_number?: string
+          sale_date?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       message_templates: {
         Row: {
           content: string
