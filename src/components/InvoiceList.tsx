@@ -115,6 +115,11 @@ export function InvoiceList() {
                 <th>Price</th>
                 <th>Discount</th>
                 <th>Total</th>
+                <th>SPH</th>
+                <th>CYL</th>
+                <th>AXIS</th>
+                <th>ADD</th>
+                <th>PD</th>
               </tr>
             </thead>
             <tbody>
@@ -126,37 +131,15 @@ export function InvoiceList() {
                   <td>${formatPrice(item.price)}</td>
                   <td>${formatPrice(item.discount)}</td>
                   <td>${formatPrice(item.total)}</td>
+                  <td>${item.sph || '-'}</td>
+                  <td>${item.cyl || '-'}</td>
+                  <td>${item.axis || '-'}</td>
+                  <td>${item.add_power || '-'}</td>
+                  <td>${item.pd || '-'}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
-          <div class="prescription">
-            <h3>Prescription Details</h3>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Eye</th>
-                  <th>SPH</th>
-                  <th>CYL</th>
-                  <th>AXIS</th>
-                  <th>ADD</th>
-                  <th>PD</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${invoiceItems.map(item => `
-                  <tr>
-                    <td>${item.eye_side || '-'}</td>
-                    <td>${item.sph || '-'}</td>
-                    <td>${item.cyl || '-'}</td>
-                    <td>${item.axis || '-'}</td>
-                    <td>${item.add_power || '-'}</td>
-                    <td>${item.pd || '-'}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
           <div class="amount">
             <p><strong>Total Amount:</strong> ${formatPrice(invoice.total_amount)}</p>
             <p><strong>Discount:</strong> ${formatPrice(invoice.discount_amount)}</p>
