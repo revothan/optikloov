@@ -37,9 +37,13 @@ export function ProductSelect({ value, onChange, onProductSelect }: ProductSelec
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select("id, name, brand")
         .order("name");
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Error fetching products:", error);
+        return [];
+      }
       return data || [];
     },
   });
@@ -47,8 +51,12 @@ export function ProductSelect({ value, onChange, onProductSelect }: ProductSelec
   const selectedProduct = products.find((product) => product.id === value);
 
   const handleSelect = (currentValue: string) => {
-    const productName = currentValue.toLowerCase();
-    const product = products.find(p => p.name.toLowerCase() === productName);
+    if (!currentValue) return;
+    
+    const product = products.find(
+      (p) => p.name.toLowerCase() === currentValue.toLowerCase()
+    );
+    
     if (product) {
       onChange(product.id);
       onProductSelect(product.id);
@@ -91,14 +99,22 @@ export function ProductSelect({ value, onChange, onProductSelect }: ProductSelec
                     key={product.id}
                     value={product.name}
                     onSelect={handleSelect}
+                    className="flex items-center justify-between"
                   >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === product.id ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {product.name}
+                    <div className="flex items-center">
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          value === product.id ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      <span>{product.name}</span>
+                    </div>
+                    {product.brand && (
+                      <span className="text-sm text-muted-foreground">
+                        {product.brand}
+                      </span>
+                    )}
                   </CommandItem>
                 ))
               )}
