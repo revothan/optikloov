@@ -314,6 +314,86 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.left_eye.sh`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>SH</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.25" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.left_eye.prism`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>PRISM</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.25" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.left_eye.v_frame`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>V FRAME</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="text" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value || null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.left_eye.f_size`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>F SIZE</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="text" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value || null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </div>
 
@@ -412,6 +492,86 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                           step="0.5" 
                           {...field}
                           onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.right_eye.sh`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>SH</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.25" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.right_eye.prism`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>PRISM</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.25" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.right_eye.v_frame`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>V FRAME</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="text" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value || null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.right_eye.f_size`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>F SIZE</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="text" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value || null)}
                           value={field.value ?? ''}
                         />
                       </FormControl>

@@ -42,6 +42,10 @@ const schema = z.object({
         axis: z.number().nullable(),
         add_power: z.number().nullable(),
         pd: z.number().nullable(),
+        sh: z.number().nullable(),
+        v_frame: z.string().nullable(),
+        f_size: z.string().nullable(),
+        prism: z.number().nullable(),
       }).nullable(),
       right_eye: z.object({
         sph: z.number().nullable(),
@@ -49,6 +53,10 @@ const schema = z.object({
         axis: z.number().nullable(),
         add_power: z.number().nullable(),
         pd: z.number().nullable(),
+        sh: z.number().nullable(),
+        v_frame: z.string().nullable(),
+        f_size: z.string().nullable(),
+        prism: z.number().nullable(),
       }).nullable(),
     })
   ).min(1, "At least one item is required"),

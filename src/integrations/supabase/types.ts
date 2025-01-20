@@ -92,15 +92,19 @@ export type Database = {
           cyl: number | null
           discount: number
           eye_side: string | null
+          f_size: string | null
           id: string
           invoice_id: string
           pd: number | null
           price: number
+          prism: number | null
           product_id: string
           quantity: number
+          sh: number | null
           sph: number | null
           total: number
           updated_at: string
+          v_frame: string | null
         }
         Insert: {
           add_power?: number | null
@@ -109,15 +113,19 @@ export type Database = {
           cyl?: number | null
           discount?: number
           eye_side?: string | null
+          f_size?: string | null
           id?: string
           invoice_id: string
           pd?: number | null
           price: number
+          prism?: number | null
           product_id: string
           quantity: number
+          sh?: number | null
           sph?: number | null
           total: number
           updated_at?: string
+          v_frame?: string | null
         }
         Update: {
           add_power?: number | null
@@ -126,15 +134,19 @@ export type Database = {
           cyl?: number | null
           discount?: number
           eye_side?: string | null
+          f_size?: string | null
           id?: string
           invoice_id?: string
           pd?: number | null
           price?: number
+          prism?: number | null
           product_id?: string
           quantity?: number
+          sh?: number | null
           sph?: number | null
           total?: number
           updated_at?: string
+          v_frame?: string | null
         }
         Relationships: [
           {
