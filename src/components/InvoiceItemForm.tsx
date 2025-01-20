@@ -124,7 +124,10 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Product</FormLabel>
-                <Popover open={open === index} onOpenChange={(isOpen) => setOpen(isOpen ? index : null)}>
+                <Popover 
+                  open={open === index} 
+                  onOpenChange={(isOpen) => setOpen(isOpen ? index : null)}
+                >
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
@@ -136,7 +139,8 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                         )}
                       >
                         {field.value
-                          ? products?.find((product) => product.id === field.value)?.name
+                          ? products?.find((product) => product.id === field.value)
+                              ?.name
                           : "Select product"}
                       </Button>
                     </FormControl>
