@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import LogoutButton from "@/components/LogoutButton";
 import { CustomerTable } from "@/components/CustomerList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InvoiceDialog } from "@/components/InvoiceDialog";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -298,6 +299,7 @@ const Admin = () => {
         <TabsList>
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="customers">Customers</TabsTrigger>
+          <TabsTrigger value="invoices">Invoices</TabsTrigger>
         </TabsList>
 
         <TabsContent value="products">
@@ -328,6 +330,19 @@ const Admin = () => {
 
         <TabsContent value="customers">
           <CustomerTable />
+        </TabsContent>
+
+        <TabsContent value="invoices">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">Invoices</h2>
+              <InvoiceDialog />
+            </div>
+            {/* Invoice list will be implemented next */}
+            <div className="text-center text-gray-500 py-8">
+              Invoice list coming soon...
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

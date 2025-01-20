@@ -86,35 +86,53 @@ export type Database = {
       }
       invoice_items: {
         Row: {
+          add_power: number | null
+          axis: number | null
           created_at: string
+          cyl: number | null
           discount: number
+          eye_side: string | null
           id: string
           invoice_id: string
+          pd: number | null
           price: number
           product_id: string
           quantity: number
+          sph: number | null
           total: number
           updated_at: string
         }
         Insert: {
+          add_power?: number | null
+          axis?: number | null
           created_at?: string
+          cyl?: number | null
           discount?: number
+          eye_side?: string | null
           id?: string
           invoice_id: string
+          pd?: number | null
           price: number
           product_id: string
           quantity: number
+          sph?: number | null
           total: number
           updated_at?: string
         }
         Update: {
+          add_power?: number | null
+          axis?: number | null
           created_at?: string
+          cyl?: number | null
           discount?: number
+          eye_side?: string | null
           id?: string
           invoice_id?: string
+          pd?: number | null
           price?: number
           product_id?: string
           quantity?: number
+          sph?: number | null
           total?: number
           updated_at?: string
         }
@@ -137,42 +155,60 @@ export type Database = {
       }
       invoices: {
         Row: {
+          acknowledged_by: string | null
           created_at: string
           customer_address: string | null
           customer_name: string
           customer_phone: string | null
           discount_amount: number
+          down_payment: number | null
           grand_total: number
           id: string
           invoice_number: string
+          paid_amount: number | null
+          payment_type: string | null
+          received_by: string | null
+          remaining_balance: number | null
           sale_date: string
           total_amount: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          acknowledged_by?: string | null
           created_at?: string
           customer_address?: string | null
           customer_name: string
           customer_phone?: string | null
           discount_amount?: number
+          down_payment?: number | null
           grand_total?: number
           id?: string
           invoice_number: string
+          paid_amount?: number | null
+          payment_type?: string | null
+          received_by?: string | null
+          remaining_balance?: number | null
           sale_date: string
           total_amount?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          acknowledged_by?: string | null
           created_at?: string
           customer_address?: string | null
           customer_name?: string
           customer_phone?: string | null
           discount_amount?: number
+          down_payment?: number | null
           grand_total?: number
           id?: string
           invoice_number?: string
+          paid_amount?: number | null
+          payment_type?: string | null
+          received_by?: string | null
+          remaining_balance?: number | null
           sale_date?: string
           total_amount?: number
           updated_at?: string
@@ -201,6 +237,30 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      payment_types: {
+        Row: {
+          created_at: string
+          id: string
+          is_custom: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_custom?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_custom?: boolean | null
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }
