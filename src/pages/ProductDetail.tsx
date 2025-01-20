@@ -12,13 +12,14 @@ export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState<{ [key: string]: boolean }>({});
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select("id, name, brand, image_url, online_price, category, description, photo_1, photo_2, photo_3")
         .eq("id", id)
         .single();
 
@@ -26,6 +27,10 @@ export default function ProductDetailPage() {
       return data;
     },
   });
+
+  const handleImageLoad = (imageUrl: string) => {
+    setImagesLoaded((prev) => ({ ...prev, [imageUrl]: true }));
+  };
 
   const handleWhatsAppClick = (brand: string, name: string) => {
     const message = encodeURIComponent(`Halo, saya mau order ${brand} ${name}`);
@@ -50,9 +55,7 @@ export default function ProductDetailPage() {
         <Navbar />
         <div className="container mx-auto px-4 py-16 text-center flex-grow mt-16">
           <h1 className="text-2xl font-bold mb-4">Product not found</h1>
-          <Button onClick={() => navigate("/products")}>
-            Back to Products
-          </Button>
+          <Button onClick={() => navigate("/products")}>Back to Products</Button>
         </div>
         <Footer />
       </div>
@@ -80,10 +83,7 @@ export default function ProductDetailPage() {
       <Navbar />
 
       <main className="flex-grow mt-16">
-        {" "}
-        {/* Added mt-16 for navbar spacing */}
         <div className="container mx-auto px-4 pb-16">
-          {/* Back Button */}
           <Button
             variant="ghost"
             className="mb-6"
@@ -96,11 +96,20 @@ export default function ProductDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Image Gallery */}
             <div className="space-y-4">
-              <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+              <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-50">
+                {!imagesLoaded[images[currentImageIndex]] && (
+                  <div className="absolute inset-0 bg-gray-100 animate-pulse" />
+                )}
                 <img
                   src={images[currentImageIndex]}
                   alt={product.name}
-                  className="w-full h-full object-cover object-center"
+                  className={`w-full h-full object-cover object-center transition-opacity duration-300 ${
+                    imagesLoaded[images[currentImageIndex]]
+                      ? "opacity-100"
+                      : "opacity-0"
+                  }`}
+                  onLoad={() => handleImageLoad(images[currentImageIndex])}
+                  loading="lazy"
                 />
 
                 {images.length > 1 && (
@@ -128,16 +137,23 @@ export default function ProductDetailPage() {
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                         currentImageIndex === index
                           ? "border-black"
                           : "border-transparent hover:border-gray-300"
                       }`}
                     >
+                      {!imagesLoaded[image] && (
+                        <div className="absolute inset-0 bg-gray-100 animate-pulse" />
+                      )}
                       <img
                         src={image}
                         alt={`Product view ${index + 1}`}
-                        className="w-full h-full object-cover object-center"
+                        className={`w-full h-full object-cover object-center transition-opacity duration-300 ${
+                          imagesLoaded[image] ? "opacity-100" : "opacity-0"
+                        }`}
+                        onLoad={() => handleImageLoad(image)}
+                        loading="lazy"
                       />
                     </button>
                   ))}

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { formatPrice } from "@/lib/utils";
+import { useState } from "react";
 
 interface ProductCardProps {
   product: {
@@ -13,17 +14,26 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   return (
     <Link
       to={`/products/${product.id}`}
       className="group relative bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-all duration-300"
     >
       {/* Image Container */}
-      <div className="aspect-square overflow-hidden bg-gray-100">
+      <div className="aspect-square overflow-hidden bg-gray-50 relative">
+        {!imageLoaded && (
+          <div className="absolute inset-0 bg-gray-100 animate-pulse" />
+        )}
         <img
           src={product.image_url}
           alt={product.name}
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
+          onLoad={() => setImageLoaded(true)}
+          className={`w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 ${
+            imageLoaded ? "opacity-100" : "opacity-0"
+          }`}
         />
       </div>
 
