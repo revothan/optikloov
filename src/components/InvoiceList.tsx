@@ -194,14 +194,21 @@ export function InvoiceList() {
                             <InvoicePDF 
                               invoice={invoice} 
                               items={[]} 
-                              onLoadComplete={() => getInvoiceItems(invoice.id)} 
+                              onLoadComplete={() => getInvoiceItems(invoice.id)}
                             />
                           }
                           fileName={`invoice-${invoice.invoice_number}.pdf`}
                         >
                           {({ loading }) => (
                             <Button disabled={loading}>
-                              {loading ? 'Loading...' : 'Download PDF'}
+                              {loading ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Loading...
+                                </>
+                              ) : (
+                                'Download PDF'
+                              )}
                             </Button>
                           )}
                         </PDFDownloadLink>
