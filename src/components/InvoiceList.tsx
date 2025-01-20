@@ -86,7 +86,6 @@ export function InvoiceList() {
   };
 
   const handleEmail = async (invoice) => {
-    // For now, just show a toast that this feature is coming soon
     toast.info("Email feature coming soon!");
   };
 
