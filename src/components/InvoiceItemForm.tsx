@@ -59,12 +59,8 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
       form.setValue(`items.${index}.price`, product.store_price || 0);
       form.setValue(`items.${index}.product_id`, product.id);
       // Reset prescription fields when product changes
-      form.setValue(`items.${index}.eye_side`, null);
-      form.setValue(`items.${index}.sph`, null);
-      form.setValue(`items.${index}.cyl`, null);
-      form.setValue(`items.${index}.axis`, null);
-      form.setValue(`items.${index}.add_power`, null);
-      form.setValue(`items.${index}.pd`, null);
+      form.setValue(`items.${index}.left_eye`, null);
+      form.setValue(`items.${index}.right_eye`, null);
     }
   };
 
@@ -82,12 +78,8 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
               quantity: 1,
               price: 0,
               discount: 0,
-              eye_side: null, // Initialize as null
-              sph: null,
-              cyl: null,
-              axis: null,
-              add_power: null,
-              pd: null,
+              left_eye: null, // Initialize as null
+              right_eye: null, // Initialize as null
             })
           }
         >
@@ -219,108 +211,215 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
 
           <div className="col-span-full">
             <h4 className="font-medium mb-2">Prescription Details</h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name={`items.${index}.eye_side`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Eye Side</FormLabel>
-                    <Select
-                      value={field.value || ""}
-                      onValueChange={(value) => {
-                        // Only set the value if it's one of the valid options
-                        if (value === "left" || value === "right") {
-                          field.onChange(value);
-                        } else {
-                          field.onChange(null);
-                        }
-                      }}
-                    >
+            
+            {/* Left Eye */}
+            <div className="mb-4">
+              <h5 className="text-sm font-medium mb-2">Left Eye</h5>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.left_eye.sph`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>SPH</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select side" />
-                        </SelectTrigger>
+                        <Input 
+                          type="number" 
+                          step="0.25" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="left">Left</SelectItem>
-                        <SelectItem value="right">Right</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name={`items.${index}.sph`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>SPH</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.25" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.left_eye.cyl`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CYL</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.25" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name={`items.${index}.cyl`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>CYL</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.25" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.left_eye.axis`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>AXIS</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name={`items.${index}.axis`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>AXIS</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.left_eye.add_power`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ADD</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.25" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name={`items.${index}.add_power`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ADD</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.25" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.left_eye.pd`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>PD</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.5" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
 
-              <FormField
-                control={form.control}
-                name={`items.${index}.pd`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>PD</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.5" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Right Eye */}
+            <div>
+              <h5 className="text-sm font-medium mb-2">Right Eye</h5>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.right_eye.sph`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>SPH</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.25" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.right_eye.cyl`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CYL</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.25" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.right_eye.axis`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>AXIS</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.right_eye.add_power`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>ADD</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.25" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`items.${index}.right_eye.pd`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>PD</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.5" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
           </div>
 

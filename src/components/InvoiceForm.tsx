@@ -36,12 +36,20 @@ const schema = z.object({
       quantity: z.number().min(1, "Quantity must be at least 1"),
       price: z.number().min(0, "Price cannot be negative"),
       discount: z.number().min(0, "Discount cannot be negative"),
-      eye_side: z.string().optional(),
-      sph: z.number().optional(),
-      cyl: z.number().optional(),
-      axis: z.number().optional(),
-      add_power: z.number().optional(),
-      pd: z.number().optional(),
+      left_eye: z.object({
+        sph: z.number().nullable(),
+        cyl: z.number().nullable(),
+        axis: z.number().nullable(),
+        add_power: z.number().nullable(),
+        pd: z.number().nullable(),
+      }).nullable(),
+      right_eye: z.object({
+        sph: z.number().nullable(),
+        cyl: z.number().nullable(),
+        axis: z.number().nullable(),
+        add_power: z.number().nullable(),
+        pd: z.number().nullable(),
+      }).nullable(),
     })
   ).min(1, "At least one item is required"),
 });
@@ -135,20 +143,37 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
       // Then create all invoice items
       const { error: itemsError } = await supabase.from("invoice_items").insert(
-        values.items.map((item) => ({
-          invoice_id: invoice.id,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.price,
-          discount: item.discount || 0,
-          eye_side: item.eye_side || null, // Ensure null if not set
-          sph: item.sph || null,
-          cyl: item.cyl || null,
-          axis: item.axis || null,
-          add_power: item.add_power || null,
-          pd: item.pd || null,
-          total: (item.quantity * item.price) - (item.discount || 0),
-        }))
+        values.items.flatMap((item) => {
+          const baseItem = {
+            invoice_id: invoice.id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: item.price,
+            discount: item.discount || 0,
+            total: (item.quantity * item.price) - (item.discount || 0),
+          };
+
+          return [
+            {
+              ...baseItem,
+              eye_side: 'left',
+              sph: item.left_eye?.sph || null,
+              cyl: item.left_eye?.cyl || null,
+              axis: item.left_eye?.axis || null,
+              add_power: item.left_eye?.add_power || null,
+              pd: item.left_eye?.pd || null,
+            },
+            {
+              ...baseItem,
+              eye_side: 'right',
+              sph: item.right_eye?.sph || null,
+              cyl: item.right_eye?.cyl || null,
+              axis: item.right_eye?.axis || null,
+              add_power: item.right_eye?.add_power || null,
+              pd: item.right_eye?.pd || null,
+            }
+          ];
+        })
       );
 
       if (itemsError) throw itemsError;
