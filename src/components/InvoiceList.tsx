@@ -199,7 +199,7 @@ export function InvoiceList() {
                           }
                           fileName={`invoice-${invoice.invoice_number}.pdf`}
                         >
-                          {({ blob, url, loading, error }) => (
+                          {({ loading }) => (
                             <Button disabled={loading}>
                               {loading ? (
                                 <>
