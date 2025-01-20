@@ -8,23 +8,17 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Trash2, Check } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { formatPrice } from "@/lib/utils";
 
 interface InvoiceItemFormProps {
   form: UseFormReturn<any>;
@@ -40,9 +34,7 @@ interface InvoiceItemFormProps {
 }
 
 export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
-  const [open, setOpen] = useState<number | null>(null);
-
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  const { data: products, isLoading: productsLoading } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -50,22 +42,27 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
         .select("*")
         .order("name");
       if (error) throw error;
-      return data || [];
+      return data;
     },
   });
+
+  const calculateItemTotal = (index: number) => {
+    const quantity = parseFloat(form.watch(`items.${index}.quantity`) || "0");
+    const price = parseFloat(form.watch(`items.${index}.price`) || "0");
+    const discount = parseFloat(form.watch(`items.${index}.discount`) || "0");
+    return (quantity * price) - discount;
+  };
 
   const handleProductSelect = (productId: string, index: number) => {
     const product = products?.find((p) => p.id === productId);
     if (product) {
       form.setValue(`items.${index}.price`, product.store_price || 0);
       form.setValue(`items.${index}.product_id`, product.id);
+      // Reset prescription fields when product changes
       form.setValue(`items.${index}.left_eye`, null);
       form.setValue(`items.${index}.right_eye`, null);
     }
-    setOpen(null);
   };
-
-  // ... keep existing code (space-y-4 div and Add Item button)
 
   return (
     <div className="space-y-4">
@@ -115,61 +112,31 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
             control={form.control}
             name={`items.${index}.product_id`}
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem>
                 <FormLabel>Product</FormLabel>
-                <Popover 
-                  open={open === index} 
-                  onOpenChange={(isOpen) => setOpen(isOpen ? index : null)}
+                <Select
+                  value={field.value}
+                  onValueChange={(value) => handleProductSelect(value, index)}
                 >
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          "w-full justify-between",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value && products && products.length > 0
-                          ? products.find((product) => product.id === field.value)
-                              ?.name || "Select product"
-                          : "Select product"}
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[400px] p-0">
-                    <Command>
-                      <CommandInput placeholder="Search products..." />
-                      <CommandEmpty>No products found.</CommandEmpty>
-                      <CommandGroup className="max-h-[300px] overflow-auto">
-                        {productsLoading ? (
-                          <div className="p-2 flex items-center justify-center">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          </div>
-                        ) : products && products.length > 0 ? (
-                          products.map((product) => (
-                            <CommandItem
-                              key={product.id}
-                              value={product.name}
-                              onSelect={() => handleProductSelect(product.id, index)}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  product.id === field.value ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {product.name}
-                            </CommandItem>
-                          ))
-                        ) : (
-                          <CommandEmpty>No products found.</CommandEmpty>
-                        )}
-                      </CommandGroup>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select product" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {productsLoading ? (
+                      <div className="p-2 flex items-center justify-center">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      </div>
+                    ) : (
+                      products?.map((product) => (
+                        <SelectItem key={product.id} value={product.id}>
+                          {product.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -520,6 +487,10 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                 />
               </div>
             </div>
+          </div>
+
+          <div className="col-span-full text-right text-sm text-muted-foreground">
+            Total: {formatPrice(calculateItemTotal(index))}
           </div>
         </div>
       ))}
