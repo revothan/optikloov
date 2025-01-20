@@ -20,6 +20,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { InvoiceItemForm } from "./InvoiceItemForm";
 import { formatPrice } from "@/lib/utils";
 
+// Define the schema for eye prescription
+const eyeSchema = z.object({
+  sph: z.number().nullable(),
+  cyl: z.number().nullable(),
+  axis: z.number().nullable(),
+  add_power: z.number().nullable(),
+});
+
+// Define the complete form schema
 const schema = z.object({
   invoice_number: z.string().min(1, "Invoice number is required"),
   sale_date: z.string().min(1, "Sale date is required"),
@@ -30,31 +39,23 @@ const schema = z.object({
   down_payment: z.string().optional(),
   acknowledged_by: z.string().optional(),
   received_by: z.string().optional(),
-  items: z.array(
-    z.object({
-      product_id: z.string().min(1, "Product is required"),
-      quantity: z.number().min(1, "Quantity must be at least 1"),
-      price: z.number().min(0, "Price cannot be negative"),
-      discount: z.number().min(0, "Discount cannot be negative"),
-      pd: z.number().nullable(),
-      sh: z.number().nullable(),
-      v_frame: z.string().nullable(),
-      f_size: z.string().nullable(),
-      prism: z.number().nullable(),
-      left_eye: z.object({
-        sph: z.number().nullable(),
-        cyl: z.number().nullable(),
-        axis: z.number().nullable(),
-        add_power: z.number().nullable(),
-      }).nullable(),
-      right_eye: z.object({
-        sph: z.number().nullable(),
-        cyl: z.number().nullable(),
-        axis: z.number().nullable(),
-        add_power: z.number().nullable(),
-      }).nullable(),
-    })
-  ).min(1, "At least one item is required"),
+  items: z
+    .array(
+      z.object({
+        product_id: z.string().min(1, "Product is required"),
+        quantity: z.number().min(1, "Quantity must be at least 1"),
+        price: z.number().min(0, "Price cannot be negative"),
+        discount: z.number().min(0, "Discount cannot be negative"),
+        pd: z.number().nullable(),
+        sh: z.number().nullable(),
+        prism: z.number().nullable(),
+        v_frame: z.string().nullable(),
+        f_size: z.string().nullable(),
+        left_eye: eyeSchema.nullable(),
+        right_eye: eyeSchema.nullable(),
+      }),
+    )
+    .min(1, "At least one item is required"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -66,6 +67,8 @@ interface InvoiceFormProps {
 export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const session = useSession();
   const queryClient = useQueryClient();
+
+  // Initialize the form with default values
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -82,17 +85,21 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     },
   });
 
-  const { fields, append, remove, swap, move, insert, prepend } = useFieldArray({
-    name: "items",
-    control: form.control,
-  });
+  // Set up field array for dynamic item handling
+  const { fields, append, remove, swap, move, insert, prepend } = useFieldArray(
+    {
+      name: "items",
+      control: form.control,
+    },
+  );
 
+  // Calculate totals for the invoice
   const calculateTotals = () => {
     const items = form.watch("items") || [];
     const totalAmount = items.reduce((sum, item) => {
-      return sum + (item.quantity * item.price);
+      return sum + item.quantity * item.price;
     }, 0);
-    
+
     const discountAmount = items.reduce((sum, item) => {
       return sum + (item.discount || 0);
     }, 0);
@@ -112,6 +119,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
   const totals = calculateTotals();
 
+  // Handle form submission
   const onSubmit = async (values: FormData) => {
     if (!session?.user?.id) {
       toast.error("You must be logged in");
@@ -119,7 +127,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     }
 
     try {
-      // First create the invoice
+      // Create the invoice
       const { data: invoice, error: invoiceError } = await supabase
         .from("invoices")
         .insert({
@@ -144,22 +152,33 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
       if (invoiceError) throw invoiceError;
 
-      // Then create all invoice items
+      // Create invoice items with all fields included
       const { error: itemsError } = await supabase.from("invoice_items").insert(
         values.items.flatMap((item) => {
+          // Common fields for both eyes
+          const commonFields = {
+            pd: item.pd,
+            sh: item.sh,
+            prism: item.prism,
+            v_frame: item.v_frame,
+            f_size: item.f_size,
+          };
+
           const baseItem = {
             invoice_id: invoice.id,
             product_id: item.product_id,
             quantity: item.quantity,
             price: item.price,
             discount: item.discount || 0,
-            total: (item.quantity * item.price) - (item.discount || 0),
+            total: item.quantity * item.price - (item.discount || 0),
+            ...commonFields,
           };
 
+          // Create two records - one for each eye
           return [
             {
               ...baseItem,
-              eye_side: 'left',
+              eye_side: "left",
               sph: item.left_eye?.sph || null,
               cyl: item.left_eye?.cyl || null,
               axis: item.left_eye?.axis || null,
@@ -167,14 +186,14 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
             },
             {
               ...baseItem,
-              eye_side: 'right',
+              eye_side: "right",
               sph: item.right_eye?.sph || null,
               cyl: item.right_eye?.cyl || null,
               axis: item.right_eye?.axis || null,
               add_power: item.right_eye?.add_power || null,
-            }
+            },
           ];
-        })
+        }),
       );
 
       if (itemsError) throw itemsError;
@@ -191,6 +210,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Basic Invoice Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
@@ -277,6 +297,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
           />
         </div>
 
+        {/* Invoice Items Section */}
         <InvoiceItemForm
           form={form}
           itemFields={{
@@ -290,6 +311,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
           }}
         />
 
+        {/* Payment and Signature Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <FormField
@@ -343,6 +365,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
             />
           </div>
 
+          {/* Totals Summary */}
           <div className="space-y-2 text-right">
             <div className="text-sm text-muted-foreground">
               Total: {formatPrice(totals.totalAmount)}
@@ -362,6 +385,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
           </div>
         </div>
 
+        {/* Submit Button */}
         <Button type="submit" className="w-full">
           {form.formState.isSubmitting ? (
             <div className="flex items-center gap-2">
