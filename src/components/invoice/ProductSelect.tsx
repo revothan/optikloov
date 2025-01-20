@@ -22,6 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ProductSelectProps {
   value: string;
@@ -32,37 +33,72 @@ interface ProductSelectProps {
 export function ProductSelect({ value, onChange, onProductSelect }: ProductSelectProps) {
   const [open, setOpen] = useState(false);
 
-  const { data: products = [], isLoading } = useQuery({
+  const { data: products = [], isLoading, error } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, name, brand")
-        .order("name");
-      
-      if (error) {
-        console.error("Error fetching products:", error);
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("id, name, brand")
+          .order("name");
+        
+        if (error) {
+          console.error("Error fetching products:", error);
+          toast.error("Failed to load products");
+          return [];
+        }
+
+        // Ensure we return an array even if data is null
+        return data || [];
+      } catch (err) {
+        console.error("Error in product query:", err);
+        toast.error("Failed to load products");
         return [];
       }
-      return data || [];
     },
+    retry: 1,
+    staleTime: 1000 * 60, // 1 minute
   });
 
-  const selectedProduct = products.find((product) => product.id === value);
+  const selectedProduct = products?.find((product) => product.id === value);
 
   const handleSelect = (currentValue: string) => {
-    if (!currentValue) return;
-    
-    const product = products.find(
-      (p) => p.name.toLowerCase() === currentValue.toLowerCase()
-    );
-    
-    if (product) {
-      onChange(product.id);
-      onProductSelect(product.id);
-      setOpen(false);
+    try {
+      if (!currentValue) return;
+      
+      const product = products?.find(
+        (p) => p.name.toLowerCase() === currentValue.toLowerCase()
+      );
+      
+      if (product) {
+        onChange(product.id);
+        onProductSelect(product.id);
+        setOpen(false);
+      }
+    } catch (err) {
+      console.error("Error in product selection:", err);
+      toast.error("Failed to select product");
     }
   };
+
+  if (error) {
+    return (
+      <FormItem className="flex flex-col">
+        <FormLabel>Product</FormLabel>
+        <FormControl>
+          <Button
+            variant="outline"
+            type="button"
+            className="w-full text-red-500"
+            onClick={() => toast.error("Failed to load products")}
+          >
+            Error loading products
+          </Button>
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    );
+  }
 
   return (
     <FormItem className="flex flex-col">
@@ -78,6 +114,7 @@ export function ProductSelect({ value, onChange, onProductSelect }: ProductSelec
                 "w-full justify-between",
                 !value && "text-muted-foreground"
               )}
+              type="button"
             >
               {selectedProduct ? selectedProduct.name : "Select product..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
