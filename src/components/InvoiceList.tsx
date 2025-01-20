@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { WhatsAppButton } from "./admin/WhatsAppButton";
 import { Database } from "@/integrations/supabase/types";
 import { InvoicePDF } from "./InvoicePDF";
-import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
+import { PDFDownloadLink, PDFViewer, pdf } from "@react-pdf/renderer";
 import {
   Dialog,
   DialogContent,
@@ -65,7 +65,7 @@ export function InvoiceList() {
     }
   };
 
-  const handleShare = async (invoice, items) => {
+  const handleShare = async (invoice: any, items: any[]) => {
     if (navigator.share) {
       try {
         const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
@@ -85,7 +85,7 @@ export function InvoiceList() {
     }
   };
 
-  const handleEmail = async (invoice) => {
+  const handleEmail = async (invoice: any) => {
     toast.info("Email feature coming soon!");
   };
 
@@ -158,9 +158,11 @@ export function InvoiceList() {
                           document={<InvoicePDF invoice={invoice} items={[]} />}
                           fileName={`invoice-${invoice.invoice_number}.pdf`}
                         >
-                          <Button>
-                            Download PDF
-                          </Button>
+                          {({ loading }: { loading: boolean }) => (
+                            <Button disabled={loading}>
+                              {loading ? "Generating..." : "Download PDF"}
+                            </Button>
+                          )}
                         </PDFDownloadLink>
                       </div>
                     </DialogContent>
