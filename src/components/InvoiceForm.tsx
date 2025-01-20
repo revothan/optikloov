@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { useSession } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,6 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { InvoiceItemForm } from "./InvoiceItemForm";
+import { formatPrice } from "@/lib/utils";
 
 const schema = z.object({
   invoice_number: z.string().min(1, "Invoice number is required"),
@@ -28,6 +30,20 @@ const schema = z.object({
   down_payment: z.string().optional(),
   acknowledged_by: z.string().optional(),
   received_by: z.string().optional(),
+  items: z.array(
+    z.object({
+      product_id: z.string().min(1, "Product is required"),
+      quantity: z.number().min(1, "Quantity must be at least 1"),
+      price: z.number().min(0, "Price cannot be negative"),
+      discount: z.number().min(0, "Discount cannot be negative"),
+      eye_side: z.string().optional(),
+      sph: z.number().optional(),
+      cyl: z.number().optional(),
+      axis: z.number().optional(),
+      add_power: z.number().optional(),
+      pd: z.number().optional(),
+    })
+  ).min(1, "At least one item is required"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -51,8 +67,39 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       down_payment: "0",
       acknowledged_by: "",
       received_by: "",
+      items: [],
     },
   });
+
+  const { fields, append, remove } = useFieldArray({
+    name: "items",
+    control: form.control,
+  });
+
+  const calculateTotals = () => {
+    const items = form.watch("items") || [];
+    const totalAmount = items.reduce((sum, item) => {
+      return sum + (item.quantity * item.price);
+    }, 0);
+    
+    const discountAmount = items.reduce((sum, item) => {
+      return sum + (item.discount || 0);
+    }, 0);
+
+    const grandTotal = totalAmount - discountAmount;
+    const downPayment = parseFloat(form.watch("down_payment") || "0");
+    const remainingBalance = grandTotal - downPayment;
+
+    return {
+      totalAmount,
+      discountAmount,
+      grandTotal,
+      downPayment,
+      remainingBalance,
+    };
+  };
+
+  const totals = calculateTotals();
 
   const onSubmit = async (values: FormData) => {
     if (!session?.user?.id) {
@@ -61,23 +108,50 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     }
 
     try {
-      const { error } = await supabase.from("invoices").insert({
-        invoice_number: values.invoice_number,
-        sale_date: values.sale_date,
-        customer_name: values.customer_name,
-        customer_phone: values.customer_phone,
-        customer_address: values.customer_address,
-        payment_type: values.payment_type,
-        down_payment: parseFloat(values.down_payment || "0"),
-        acknowledged_by: values.acknowledged_by,
-        received_by: values.received_by,
-        user_id: session.user.id,
-        total_amount: 0, // Required by schema
-        discount_amount: 0, // Required by schema
-        grand_total: 0, // Required by schema
-      });
+      // First create the invoice
+      const { data: invoice, error: invoiceError } = await supabase
+        .from("invoices")
+        .insert({
+          invoice_number: values.invoice_number,
+          sale_date: values.sale_date,
+          customer_name: values.customer_name,
+          customer_phone: values.customer_phone,
+          customer_address: values.customer_address,
+          payment_type: values.payment_type,
+          down_payment: parseFloat(values.down_payment || "0"),
+          acknowledged_by: values.acknowledged_by,
+          received_by: values.received_by,
+          user_id: session.user.id,
+          total_amount: totals.totalAmount,
+          discount_amount: totals.discountAmount,
+          grand_total: totals.grandTotal,
+          paid_amount: totals.downPayment,
+          remaining_balance: totals.remainingBalance,
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (invoiceError) throw invoiceError;
+
+      // Then create all invoice items
+      const { error: itemsError } = await supabase.from("invoice_items").insert(
+        values.items.map((item) => ({
+          invoice_id: invoice.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: item.price,
+          discount: item.discount,
+          eye_side: item.eye_side,
+          sph: item.sph,
+          cyl: item.cyl,
+          axis: item.axis,
+          add_power: item.add_power,
+          pd: item.pd,
+          total: (item.quantity * item.price) - (item.discount || 0),
+        }))
+      );
+
+      if (itemsError) throw itemsError;
 
       toast.success("Invoice created successfully");
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
@@ -175,58 +249,83 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="down_payment"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Uang Muka (DP)</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <span className="absolute left-3 top-2.5">Rp</span>
-                    <Input
-                      type="number"
-                      className="pl-12"
-                      placeholder="0"
-                      {...field}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="acknowledged_by"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Diketahui Oleh</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <InvoiceItemForm
+          form={form}
+          itemFields={{ fields, append, remove }}
+        />
 
-          <FormField
-            control={form.control}
-            name="received_by"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Diterima Oleh</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="down_payment"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Uang Muka (DP)</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5">Rp</span>
+                      <Input
+                        type="number"
+                        className="pl-12"
+                        placeholder="0"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="acknowledged_by"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Diketahui Oleh</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="received_by"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Diterima Oleh</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="space-y-2 text-right">
+            <div className="text-sm text-muted-foreground">
+              Total: {formatPrice(totals.totalAmount)}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Discount: {formatPrice(totals.discountAmount)}
+            </div>
+            <div className="text-lg font-semibold">
+              Grand Total: {formatPrice(totals.grandTotal)}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Down Payment: {formatPrice(totals.downPayment)}
+            </div>
+            <div className="text-sm font-medium">
+              Remaining: {formatPrice(totals.remainingBalance)}
+            </div>
+          </div>
         </div>
 
         <Button type="submit" className="w-full">
