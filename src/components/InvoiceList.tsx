@@ -199,19 +199,17 @@ export function InvoiceList() {
                           }
                           fileName={`invoice-${invoice.invoice_number}.pdf`}
                         >
-                          {({ loading }) => (
-                            <span>
-                              <Button disabled={loading}>
-                                {loading ? (
-                                  <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Loading...
-                                  </>
-                                ) : (
-                                  'Download PDF'
-                                )}
-                              </Button>
-                            </span>
+                          {({ blob, url, loading, error }) => (
+                            <Button disabled={loading}>
+                              {loading ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Loading...
+                                </>
+                              ) : (
+                                'Download PDF'
+                              )}
+                            </Button>
                           )}
                         </PDFDownloadLink>
                       </div>
