@@ -36,27 +36,22 @@ const schema = z.object({
       quantity: z.number().min(1, "Quantity must be at least 1"),
       price: z.number().min(0, "Price cannot be negative"),
       discount: z.number().min(0, "Discount cannot be negative"),
+      pd: z.number().nullable(),
+      sh: z.number().nullable(),
+      v_frame: z.string().nullable(),
+      f_size: z.string().nullable(),
+      prism: z.number().nullable(),
       left_eye: z.object({
         sph: z.number().nullable(),
         cyl: z.number().nullable(),
         axis: z.number().nullable(),
         add_power: z.number().nullable(),
-        pd: z.number().nullable(),
-        sh: z.number().nullable(),
-        v_frame: z.string().nullable(),
-        f_size: z.string().nullable(),
-        prism: z.number().nullable(),
       }).nullable(),
       right_eye: z.object({
         sph: z.number().nullable(),
         cyl: z.number().nullable(),
         axis: z.number().nullable(),
         add_power: z.number().nullable(),
-        pd: z.number().nullable(),
-        sh: z.number().nullable(),
-        v_frame: z.string().nullable(),
-        f_size: z.string().nullable(),
-        prism: z.number().nullable(),
       }).nullable(),
     })
   ).min(1, "At least one item is required"),
@@ -169,7 +164,6 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
               cyl: item.left_eye?.cyl || null,
               axis: item.left_eye?.axis || null,
               add_power: item.left_eye?.add_power || null,
-              pd: item.left_eye?.pd || null,
             },
             {
               ...baseItem,
@@ -178,7 +172,6 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
               cyl: item.right_eye?.cyl || null,
               axis: item.right_eye?.axis || null,
               add_power: item.right_eye?.add_power || null,
-              pd: item.right_eye?.pd || null,
             }
           ];
         })

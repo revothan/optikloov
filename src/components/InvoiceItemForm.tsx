@@ -78,8 +78,13 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
               quantity: 1,
               price: 0,
               discount: 0,
-              left_eye: null, // Initialize as null
-              right_eye: null, // Initialize as null
+              pd: null,
+              sh: null,
+              v_frame: null,
+              f_size: null,
+              prism: null,
+              left_eye: null,
+              right_eye: null,
             })
           }
         >
@@ -212,10 +217,111 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
           <div className="col-span-full">
             <h4 className="font-medium mb-2">Prescription Details</h4>
             
+            {/* Common Fields */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+              <FormField
+                control={form.control}
+                name={`items.${index}.pd`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>PD</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.5" 
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name={`items.${index}.sh`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>SH</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.25" 
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name={`items.${index}.prism`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>PRISM</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.25" 
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name={`items.${index}.v_frame`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>V FRAME</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="text" 
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value || null)}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name={`items.${index}.f_size`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>F SIZE</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="text" 
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value || null)}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             {/* Left Eye */}
             <div className="mb-4">
               <h5 className="text-sm font-medium mb-2">Left Eye</h5>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <FormField
                   control={form.control}
                   name={`items.${index}.left_eye.sph`}
@@ -294,113 +400,13 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                     </FormItem>
                   )}
                 />
-
-                <FormField
-                  control={form.control}
-                  name={`items.${index}.left_eye.pd`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>PD</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.5" 
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={`items.${index}.left_eye.sh`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>SH</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.25" 
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={`items.${index}.left_eye.prism`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>PRISM</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.25" 
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <FormField
-                  control={form.control}
-                  name={`items.${index}.left_eye.v_frame`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>V FRAME</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="text" 
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value || null)}
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={`items.${index}.left_eye.f_size`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>F SIZE</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="text" 
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value || null)}
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
             </div>
 
             {/* Right Eye */}
             <div>
               <h5 className="text-sm font-medium mb-2">Right Eye</h5>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <FormField
                   control={form.control}
                   name={`items.${index}.right_eye.sph`}
@@ -472,106 +478,6 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                           step="0.25" 
                           {...field}
                           onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={`items.${index}.right_eye.pd`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>PD</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.5" 
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={`items.${index}.right_eye.sh`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>SH</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.25" 
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={`items.${index}.right_eye.prism`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>PRISM</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.25" 
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <FormField
-                  control={form.control}
-                  name={`items.${index}.right_eye.v_frame`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>V FRAME</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="text" 
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value || null)}
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name={`items.${index}.right_eye.f_size`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>F SIZE</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="text" 
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value || null)}
                           value={field.value ?? ''}
                         />
                       </FormControl>
