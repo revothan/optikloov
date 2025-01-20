@@ -30,8 +30,8 @@ export function ItemDetails({ form, index, calculateItemTotal }: ItemDetailsProp
                 min="1"
                 {...field}
                 onChange={(e) => {
-                  field.onChange(e);
-                  form.trigger("items");
+                  const value = parseInt(e.target.value) || 1;
+                  field.onChange(value);
                 }}
               />
             </FormControl>
@@ -54,8 +54,8 @@ export function ItemDetails({ form, index, calculateItemTotal }: ItemDetailsProp
                   className="pl-12"
                   {...field}
                   onChange={(e) => {
-                    field.onChange(e);
-                    form.trigger("items");
+                    const value = parseFloat(e.target.value) || 0;
+                    field.onChange(value);
                   }}
                 />
               </div>
@@ -79,8 +79,8 @@ export function ItemDetails({ form, index, calculateItemTotal }: ItemDetailsProp
                   className="pl-12"
                   {...field}
                   onChange={(e) => {
-                    field.onChange(e);
-                    form.trigger("items");
+                    const value = parseFloat(e.target.value) || 0;
+                    field.onChange(value);
                   }}
                 />
               </div>

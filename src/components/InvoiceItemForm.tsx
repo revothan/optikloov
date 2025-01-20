@@ -21,19 +21,16 @@ interface InvoiceItemFormProps {
 
 export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
   const calculateItemTotal = (index: number) => {
-    const quantity = parseFloat(form.watch(`items.${index}.quantity`) || "0");
-    const price = parseFloat(form.watch(`items.${index}.price`) || "0");
-    const discount = parseFloat(form.watch(`items.${index}.discount`) || "0");
+    const quantity = form.watch(`items.${index}.quantity`) || 0;
+    const price = form.watch(`items.${index}.price`) || 0;
+    const discount = form.watch(`items.${index}.discount`) || 0;
     return (quantity * price) - discount;
   };
 
-  const handleProductSelect = (productId: string, index: number) => {
-    const product = form.getValues(`items.${index}.product_id`);
+  const handleProductSelect = (product: any, index: number) => {
     if (product) {
       form.setValue(`items.${index}.price`, product.store_price || 0);
       form.setValue(`items.${index}.product_id`, product.id);
-      form.setValue(`items.${index}.left_eye`, null);
-      form.setValue(`items.${index}.right_eye`, null);
     }
   };
 
@@ -84,7 +81,7 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
           <ProductSelect
             value={form.watch(`items.${index}.product_id`)}
             onChange={(value) => form.setValue(`items.${index}.product_id`, value)}
-            onProductSelect={(productId) => handleProductSelect(productId, index)}
+            onProductSelect={(product) => handleProductSelect(product, index)}
           />
 
           <ItemDetails
