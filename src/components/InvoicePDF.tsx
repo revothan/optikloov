@@ -140,7 +140,8 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
                 <Text style={styles.tableCell}>CYL</Text>
                 <Text style={styles.tableCell}>AXIS</Text>
                 <Text style={styles.tableCell}>ADD</Text>
-                <Text style={styles.tableCell}>PD</Text>
+                <Text style={styles.tableCell}>SH</Text>
+                <Text style={styles.tableCell}>PRISM</Text>
               </View>
               {rightEye && (
                 <View style={styles.tableRow}>
@@ -149,7 +150,8 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
                   <Text style={styles.tableCell}>{rightEye.cyl || '-'}</Text>
                   <Text style={styles.tableCell}>{rightEye.axis || '-'}</Text>
                   <Text style={styles.tableCell}>{rightEye.add_power || '-'}</Text>
-                  <Text style={styles.tableCell}>{rightEye.pd || '-'}</Text>
+                  <Text style={styles.tableCell}>{rightEye.sh || '-'}</Text>
+                  <Text style={styles.tableCell}>{rightEye.prism || '-'}</Text>
                 </View>
               )}
               {leftEye && (
@@ -159,9 +161,23 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
                   <Text style={styles.tableCell}>{leftEye.cyl || '-'}</Text>
                   <Text style={styles.tableCell}>{leftEye.axis || '-'}</Text>
                   <Text style={styles.tableCell}>{leftEye.add_power || '-'}</Text>
-                  <Text style={styles.tableCell}>{leftEye.pd || '-'}</Text>
+                  <Text style={styles.tableCell}>{leftEye.sh || '-'}</Text>
+                  <Text style={styles.tableCell}>{leftEye.prism || '-'}</Text>
                 </View>
               )}
+            </View>
+            
+            <View style={[styles.table, { marginTop: 10 }]}>
+              <View style={[styles.tableRow, styles.tableHeader]}>
+                <Text style={styles.tableCell}>PD</Text>
+                <Text style={styles.tableCell}>V FRAME</Text>
+                <Text style={styles.tableCell}>F SIZE</Text>
+              </View>
+              <View style={styles.tableRow}>
+                <Text style={styles.tableCell}>{rightEye?.pd || leftEye?.pd || '-'}</Text>
+                <Text style={styles.tableCell}>{rightEye?.v_frame || leftEye?.v_frame || '-'}</Text>
+                <Text style={styles.tableCell}>{rightEye?.f_size || leftEye?.f_size || '-'}</Text>
+              </View>
             </View>
           </View>
         )}
