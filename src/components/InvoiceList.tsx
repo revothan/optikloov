@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { WhatsAppButton } from "./admin/WhatsAppButton";
 import { Database } from "@/integrations/supabase/types";
 import { InvoicePDF } from "./InvoicePDF";
-import { PDFDownloadLink, PDFViewer, pdf } from "@react-pdf/renderer";
+import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import {
   Dialog,
   DialogContent,
@@ -158,11 +158,9 @@ export function InvoiceList() {
                           document={<InvoicePDF invoice={invoice} items={[]} />}
                           fileName={`invoice-${invoice.invoice_number}.pdf`}
                         >
-                          {({ loading }) => (
-                            <Button disabled={loading}>
-                              {loading ? "Generating..." : "Download PDF"}
-                            </Button>
-                          )}
+                          <Button>
+                            Download PDF
+                          </Button>
                         </PDFDownloadLink>
                       </div>
                     </DialogContent>
