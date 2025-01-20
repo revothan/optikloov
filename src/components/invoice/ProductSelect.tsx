@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -22,6 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProductSelectProps {
   value: string;
@@ -46,8 +46,9 @@ export function ProductSelect({ value, onChange, onProductSelect }: ProductSelec
 
   const selectedProduct = products.find((product) => product.id === value);
 
-  const handleSelect = (productId: string) => {
-    const product = products.find(p => p.id === productId);
+  const handleSelect = (currentValue: string) => {
+    const productName = currentValue.toLowerCase();
+    const product = products.find(p => p.name.toLowerCase() === productName);
     if (product) {
       onChange(product.id);
       onProductSelect(product.id);
@@ -89,7 +90,7 @@ export function ProductSelect({ value, onChange, onProductSelect }: ProductSelec
                   <CommandItem
                     key={product.id}
                     value={product.name}
-                    onSelect={() => handleSelect(product.id)}
+                    onSelect={handleSelect}
                   >
                     <Check
                       className={cn(
