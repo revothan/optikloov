@@ -84,7 +84,7 @@ export function InvoiceList() {
     }
   };
 
-  const handleShare = async (invoice: any, items: any[]) => {
+  const handleShare = async (invoice: any) => {
     if (navigator.share) {
       try {
         const invoiceItems = await getInvoiceItems(invoice.id);
@@ -184,22 +184,20 @@ export function InvoiceList() {
                       <PDFViewer width="100%" height="100%" className="rounded-md">
                         <InvoicePDF 
                           invoice={invoice} 
-                          items={[]} 
-                          loading={true}
-                          onLoadComplete={async () => {
-                            const items = await getInvoiceItems(invoice.id);
-                            return items;
-                          }}
+                          items={[]}
+                          onLoadComplete={() => getInvoiceItems(invoice.id)}
                         />
                       </PDFViewer>
                       <div className="flex justify-end gap-2">
                         <PDFDownloadLink
-                          document={<InvoicePDF invoice={invoice} items={[]} />}
+                          document={<InvoicePDF invoice={invoice} items={[]} onLoadComplete={() => getInvoiceItems(invoice.id)} />}
                           fileName={`invoice-${invoice.invoice_number}.pdf`}
                         >
-                          <Button>
-                            Download PDF
-                          </Button>
+                          {({ loading }) => (
+                            <Button disabled={loading}>
+                              {loading ? 'Loading...' : 'Download PDF'}
+                            </Button>
+                          )}
                         </PDFDownloadLink>
                       </div>
                     </DialogContent>
@@ -208,7 +206,7 @@ export function InvoiceList() {
                     variant="ghost"
                     size="icon"
                     className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                    onClick={() => handleShare(invoice, [])}
+                    onClick={() => handleShare(invoice)}
                   >
                     <Share2 className="h-4 w-4" />
                   </Button>

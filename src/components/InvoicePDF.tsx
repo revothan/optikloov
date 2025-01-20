@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { format } from "date-fns";
+import { useEffect, useState } from "react";
 
 const styles = StyleSheet.create({
   page: {
@@ -56,9 +57,22 @@ const styles = StyleSheet.create({
 interface InvoicePDFProps {
   invoice: any;
   items: any[];
+  onLoadComplete?: () => Promise<any[]>;
 }
 
-export function InvoicePDF({ invoice, items }: InvoicePDFProps) {
+export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: InvoicePDFProps) {
+  const [items, setItems] = useState(initialItems);
+
+  useEffect(() => {
+    const loadItems = async () => {
+      if (onLoadComplete) {
+        const loadedItems = await onLoadComplete();
+        setItems(loadedItems);
+      }
+    };
+    loadItems();
+  }, [onLoadComplete]);
+
   // Group products by product_id to avoid duplication
   const uniqueProducts = items.reduce<Record<string, any>>((acc, item) => {
     if (!acc[item.product_id]) {
