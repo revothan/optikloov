@@ -46,6 +46,15 @@ export function ProductSelect({ value, onChange, onProductSelect }: ProductSelec
 
   const selectedProduct = products.find((product) => product.id === value);
 
+  const handleSelect = (productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      onChange(product.id);
+      onProductSelect(product.id);
+      setOpen(false);
+    }
+  };
+
   return (
     <FormItem className="flex flex-col">
       <FormLabel>Product</FormLabel>
@@ -80,11 +89,7 @@ export function ProductSelect({ value, onChange, onProductSelect }: ProductSelec
                   <CommandItem
                     key={product.id}
                     value={product.name}
-                    onSelect={() => {
-                      onChange(product.id);
-                      onProductSelect(product.id);
-                      setOpen(false);
-                    }}
+                    onSelect={() => handleSelect(product.id)}
                   >
                     <Check
                       className={cn(
