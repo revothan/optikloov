@@ -65,6 +65,8 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
     setOpen(null);
   };
 
+  // ... keep existing code (space-y-4 div and Add Item button)
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
