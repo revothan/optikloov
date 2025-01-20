@@ -55,6 +55,22 @@ export function InvoiceList() {
     },
   });
 
+  const getInvoiceItems = async (invoiceId: string) => {
+    const { data, error } = await supabase
+      .from("invoice_items")
+      .select(`
+        *,
+        products (*)
+      `)
+      .eq("invoice_id", invoiceId);
+
+    if (error) {
+      console.error("Error fetching invoice items:", error);
+      throw error;
+    }
+    return data;
+  };
+
   const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase.from("invoices").delete().eq("id", id);
@@ -71,7 +87,8 @@ export function InvoiceList() {
   const handleShare = async (invoice: any, items: any[]) => {
     if (navigator.share) {
       try {
-        const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
+        const invoiceItems = await getInvoiceItems(invoice.id);
+        const blob = await pdf(<InvoicePDF invoice={invoice} items={invoiceItems} />).toBlob();
         const file = new File([blob], `invoice-${invoice.invoice_number}.pdf`, { type: 'application/pdf' });
         
         await navigator.share({
@@ -165,7 +182,15 @@ export function InvoiceList() {
                         <DialogTitle>Invoice Preview</DialogTitle>
                       </DialogHeader>
                       <PDFViewer width="100%" height="100%" className="rounded-md">
-                        <InvoicePDF invoice={invoice} items={[]} />
+                        <InvoicePDF 
+                          invoice={invoice} 
+                          items={[]} 
+                          loading={true}
+                          onLoadComplete={async () => {
+                            const items = await getInvoiceItems(invoice.id);
+                            return items;
+                          }}
+                        />
                       </PDFViewer>
                       <div className="flex justify-end gap-2">
                         <PDFDownloadLink
