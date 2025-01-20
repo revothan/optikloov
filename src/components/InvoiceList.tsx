@@ -13,6 +13,11 @@ import { Loader2, Trash2, Printer, MessageCircle, Mail, Pencil } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { WhatsAppButton } from "./admin/WhatsAppButton";
+import { Database } from "@/integrations/supabase/types";
+
+type InvoiceItem = Database['public']['Tables']['invoice_items']['Row'] & {
+  products?: Database['public']['Tables']['products']['Row']
+};
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -71,7 +76,7 @@ export function InvoiceList() {
     }
 
     // Group products by product_id to avoid duplicates
-    const uniqueProducts = invoiceItems.reduce((acc, item) => {
+    const uniqueProducts = (invoiceItems as InvoiceItem[]).reduce<Record<string, InvoiceItem>>((acc, item) => {
       if (!acc[item.product_id]) {
         acc[item.product_id] = item;
       }
@@ -82,8 +87,8 @@ export function InvoiceList() {
     const uniqueProductsArray = Object.values(uniqueProducts);
 
     // Find prescription details for right and left eyes
-    const rightEye = invoiceItems.find(item => item.eye_side === 'right') || invoiceItems[0];
-    const leftEye = invoiceItems.find(item => item.eye_side === 'left') || invoiceItems[1];
+    const rightEye = (invoiceItems as InvoiceItem[]).find(item => item.eye_side === 'right') || invoiceItems[0];
+    const leftEye = (invoiceItems as InvoiceItem[]).find(item => item.eye_side === 'left') || invoiceItems[1];
 
     // Create a new window for printing
     const printWindow = window.open('', '_blank');
