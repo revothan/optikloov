@@ -140,13 +140,13 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
           product_id: item.product_id,
           quantity: item.quantity,
           price: item.price,
-          discount: item.discount,
-          eye_side: item.eye_side,
-          sph: item.sph,
-          cyl: item.cyl,
-          axis: item.axis,
-          add_power: item.add_power,
-          pd: item.pd,
+          discount: item.discount || 0,
+          eye_side: item.eye_side || null, // Ensure null if not set
+          sph: item.sph || null,
+          cyl: item.cyl || null,
+          axis: item.axis || null,
+          add_power: item.add_power || null,
+          pd: item.pd || null,
           total: (item.quantity * item.price) - (item.discount || 0),
         }))
       );

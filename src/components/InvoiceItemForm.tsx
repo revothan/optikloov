@@ -58,6 +58,13 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
     if (product) {
       form.setValue(`items.${index}.price`, product.store_price || 0);
       form.setValue(`items.${index}.product_id`, product.id);
+      // Reset prescription fields when product changes
+      form.setValue(`items.${index}.eye_side`, null);
+      form.setValue(`items.${index}.sph`, null);
+      form.setValue(`items.${index}.cyl`, null);
+      form.setValue(`items.${index}.axis`, null);
+      form.setValue(`items.${index}.add_power`, null);
+      form.setValue(`items.${index}.pd`, null);
     }
   };
 
@@ -75,12 +82,12 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
               quantity: 1,
               price: 0,
               discount: 0,
-              eye_side: "",
-              sph: 0,
-              cyl: 0,
-              axis: 0,
-              add_power: 0,
-              pd: 0,
+              eye_side: null, // Initialize as null
+              sph: null,
+              cyl: null,
+              axis: null,
+              add_power: null,
+              pd: null,
             })
           }
         >
