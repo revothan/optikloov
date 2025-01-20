@@ -72,7 +72,9 @@ export default function ProductsPage() {
       if (error) throw error;
       return data || [];
     },
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
+    staleTime: 1000 * 60, // 1 minute
+    gcTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // Fetch unique brands with optimized query
@@ -92,6 +94,8 @@ export default function ProductsPage() {
       );
       return uniqueBrands.sort();
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes
   });
 
   useEffect(() => {
