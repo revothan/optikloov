@@ -70,6 +70,21 @@ export function InvoiceList() {
       return;
     }
 
+    // Group products by product_id to avoid duplicates
+    const uniqueProducts = invoiceItems.reduce((acc, item) => {
+      if (!acc[item.product_id]) {
+        acc[item.product_id] = item;
+      }
+      return acc;
+    }, {});
+
+    // Convert back to array
+    const uniqueProductsArray = Object.values(uniqueProducts);
+
+    // Find prescription details for right and left eyes
+    const rightEye = invoiceItems.find(item => item.eye_side === 'right') || invoiceItems[0];
+    const leftEye = invoiceItems.find(item => item.eye_side === 'left') || invoiceItems[1];
+
     // Create a new window for printing
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -120,7 +135,7 @@ export function InvoiceList() {
               </tr>
             </thead>
             <tbody>
-              ${invoiceItems.map(item => `
+              ${uniqueProductsArray.map(item => `
                 <tr>
                   <td>${item.products?.name || '-'}</td>
                   <td>${item.products?.brand || '-'}</td>
@@ -150,19 +165,19 @@ export function InvoiceList() {
               <tbody>
                 <tr>
                   <td>Right Eye (OD)</td>
-                  <td>${invoiceItems[0]?.sph || '-'}</td>
-                  <td>${invoiceItems[0]?.cyl || '-'}</td>
-                  <td>${invoiceItems[0]?.axis || '-'}</td>
-                  <td>${invoiceItems[0]?.add_power || '-'}</td>
-                  <td>${invoiceItems[0]?.pd || '-'}</td>
+                  <td>${rightEye?.sph || '-'}</td>
+                  <td>${rightEye?.cyl || '-'}</td>
+                  <td>${rightEye?.axis || '-'}</td>
+                  <td>${rightEye?.add_power || '-'}</td>
+                  <td>${rightEye?.pd || '-'}</td>
                 </tr>
                 <tr>
                   <td>Left Eye (OS)</td>
-                  <td>${invoiceItems[1]?.sph || '-'}</td>
-                  <td>${invoiceItems[1]?.cyl || '-'}</td>
-                  <td>${invoiceItems[1]?.axis || '-'}</td>
-                  <td>${invoiceItems[1]?.add_power || '-'}</td>
-                  <td>${invoiceItems[1]?.pd || '-'}</td>
+                  <td>${leftEye?.sph || '-'}</td>
+                  <td>${leftEye?.cyl || '-'}</td>
+                  <td>${leftEye?.axis || '-'}</td>
+                  <td>${leftEye?.add_power || '-'}</td>
+                  <td>${leftEye?.pd || '-'}</td>
                 </tr>
               </tbody>
             </table>
