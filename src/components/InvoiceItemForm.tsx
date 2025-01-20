@@ -23,7 +23,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Plus, Trash2, Check } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -51,16 +50,9 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
         .select("*")
         .order("name");
       if (error) throw error;
-      return data || []; // Ensure we always return an array
+      return data || [];
     },
   });
-
-  const calculateItemTotal = (index: number) => {
-    const quantity = parseFloat(form.watch(`items.${index}.quantity`) || "0");
-    const price = parseFloat(form.watch(`items.${index}.price`) || "0");
-    const discount = parseFloat(form.watch(`items.${index}.discount`) || "0");
-    return (quantity * price) - discount;
-  };
 
   const handleProductSelect = (productId: string, index: number) => {
     const product = products?.find((p) => p.id === productId);
@@ -137,7 +129,7 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value && products
+                        {field.value && products && products.length > 0
                           ? products.find((product) => product.id === field.value)
                               ?.name || "Select product"
                           : "Select product"}

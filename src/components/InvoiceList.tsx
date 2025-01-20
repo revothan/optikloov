@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { WhatsAppButton } from "./admin/WhatsAppButton";
 import { Database } from "@/integrations/supabase/types";
 import { InvoicePDF } from "./InvoicePDF";
-import { PDFDownloadLink, PDFViewer, pdf } from "@react-pdf/renderer";
+import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import {
   Dialog,
   DialogContent,
@@ -202,10 +202,10 @@ export function InvoiceList() {
                           {({ loading }) => (
                             <Button disabled={loading}>
                               {loading ? (
-                                <>
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                  Loading...
-                                </>
+                                <div className="flex items-center gap-2">
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  <span>Loading...</span>
+                                </div>
                               ) : (
                                 'Download PDF'
                               )}
