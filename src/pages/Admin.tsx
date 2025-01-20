@@ -21,6 +21,7 @@ import LogoutButton from "@/components/LogoutButton";
 import { CustomerTable } from "@/components/CustomerList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InvoiceDialog } from "@/components/InvoiceDialog";
+import { InvoiceList } from "@/components/InvoiceList";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -338,10 +339,7 @@ const Admin = () => {
               <h2 className="text-xl font-semibold">Invoices</h2>
               <InvoiceDialog />
             </div>
-            {/* Invoice list will be implemented next */}
-            <div className="text-center text-gray-500 py-8">
-              Invoice list coming soon...
-            </div>
+            <InvoiceList />
           </div>
         </TabsContent>
       </Tabs>
