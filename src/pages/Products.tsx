@@ -35,11 +35,11 @@ export default function ProductsPage() {
 
   // Fetch products with optimized query
   const {
-    data: products = [],
+    data: allProducts = [],
     isLoading,
     isFetching,
   } = useQuery({
-    queryKey: ["products", searchQuery, selectedType, selectedBrand, sortBy, page],
+    queryKey: ["products", searchQuery, selectedType, selectedBrand, sortBy],
     queryFn: async () => {
       let query = supabase
         .from("products")
@@ -70,9 +70,6 @@ export default function ProductsPage() {
         query = query.order("created_at", { ascending: false });
       }
 
-      // Apply pagination
-      query = query.range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
-
       const { data, error } = await query;
 
       if (error) {
@@ -86,6 +83,10 @@ export default function ProductsPage() {
     staleTime: 1000 * 60, // 1 minute
     gcTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  // Calculate paginated products
+  const paginatedProducts = allProducts.slice(0, (page + 1) * ITEMS_PER_PAGE);
+  const hasMore = paginatedProducts.length < allProducts.length;
 
   // Fetch unique brands
   const { data: brands = [] } = useQuery({
@@ -109,10 +110,10 @@ export default function ProductsPage() {
   });
 
   useEffect(() => {
-    if (inView && !isLoading && !isFetching && products.length === ITEMS_PER_PAGE) {
+    if (inView && !isLoading && !isFetching && hasMore) {
       setPage((prev) => prev + 1);
     }
-  }, [inView, isLoading, isFetching, products.length]);
+  }, [inView, isLoading, isFetching, hasMore]);
 
   // Reset pagination when filters change
   useEffect(() => {
@@ -273,20 +274,20 @@ export default function ProductsPage() {
             <div className="flex justify-center items-center min-h-[400px]">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
-          ) : products.length === 0 ? (
+          ) : paginatedProducts.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-lg text-gray-500">No products found</p>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {products.map((product) => (
+                {paginatedProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
 
               {/* Loading More Indicator */}
-              {(isFetching || products.length === ITEMS_PER_PAGE) && (
+              {(isFetching || hasMore) && (
                 <div
                   ref={loadMoreRef}
                   className="flex justify-center items-center py-8"
