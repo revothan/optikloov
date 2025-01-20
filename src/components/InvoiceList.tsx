@@ -199,9 +199,9 @@ export function InvoiceList() {
                           }
                           fileName={`invoice-${invoice.invoice_number}.pdf`}
                         >
-                          {({ loading }: { loading: boolean }) => (
-                            <Button disabled={loading}>
-                              {loading ? (
+                          {(props) => (
+                            <Button disabled={props.loading}>
+                              {props.loading ? (
                                 <>
                                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                   Loading...
