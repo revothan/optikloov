@@ -43,7 +43,7 @@ interface InvoiceItemFormProps {
 export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
   const [open, setOpen] = useState<number | null>(null);
 
-  const { data: products, isLoading: productsLoading } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -51,7 +51,7 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
         .select("*")
         .order("name");
       if (error) throw error;
-      return data;
+      return data || []; // Ensure we always return an array
     },
   });
 
@@ -150,8 +150,8 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                           <div className="p-2 flex items-center justify-center">
                             <Loader2 className="h-4 w-4 animate-spin" />
                           </div>
-                        ) : (
-                          products?.map((product) => (
+                        ) : products && products.length > 0 ? (
+                          products.map((product) => (
                             <CommandItem
                               key={product.id}
                               value={product.name}
@@ -160,14 +160,14 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  product.id === field.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
+                                  product.id === field.value ? "opacity-100" : "opacity-0"
                                 )}
                               />
                               {product.name}
                             </CommandItem>
                           ))
+                        ) : (
+                          <CommandEmpty>No products found.</CommandEmpty>
                         )}
                       </CommandGroup>
                     </Command>
