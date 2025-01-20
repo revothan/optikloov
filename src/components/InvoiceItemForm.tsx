@@ -220,7 +220,7 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                   <FormItem>
                     <FormLabel>Eye Side</FormLabel>
                     <Select
-                      value={field.value}
+                      value={field.value || ""}
                       onValueChange={field.onChange}
                     >
                       <FormControl>
