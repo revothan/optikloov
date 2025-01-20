@@ -190,7 +190,13 @@ export function InvoiceList() {
                       </PDFViewer>
                       <div className="flex justify-end gap-2">
                         <PDFDownloadLink
-                          document={<InvoicePDF invoice={invoice} items={[]} onLoadComplete={() => getInvoiceItems(invoice.id)} />}
+                          document={
+                            <InvoicePDF 
+                              invoice={invoice} 
+                              items={[]} 
+                              onLoadComplete={() => getInvoiceItems(invoice.id)} 
+                            />
+                          }
                           fileName={`invoice-${invoice.invoice_number}.pdf`}
                         >
                           {({ loading }) => (
