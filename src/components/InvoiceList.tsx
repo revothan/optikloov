@@ -39,7 +39,7 @@ const formatPrice = (price: number) => {
 
 export function InvoiceList() {
   const queryClient = useQueryClient();
-  const { data: invoices, isLoading } = useQuery({
+  const { data: invoices, isLoading, error } = useQuery({
     queryKey: ["invoices"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -47,7 +47,10 @@ export function InvoiceList() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
       return data;
     },
   });
@@ -93,6 +96,17 @@ export function InvoiceList() {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-red-500">
+        <p>Error loading invoices. Please try again later.</p>
+        <p className="text-sm text-gray-500 mt-2">
+          {error instanceof Error ? error.message : 'Unknown error occurred'}
+        </p>
       </div>
     );
   }
@@ -158,11 +172,9 @@ export function InvoiceList() {
                           document={<InvoicePDF invoice={invoice} items={[]} />}
                           fileName={`invoice-${invoice.invoice_number}.pdf`}
                         >
-                          {({ loading }: { loading: boolean }) => (
-                            <Button disabled={loading}>
-                              {loading ? "Generating..." : "Download PDF"}
-                            </Button>
-                          )}
+                          <Button>
+                            Download PDF
+                          </Button>
                         </PDFDownloadLink>
                       </div>
                     </DialogContent>
