@@ -1,5 +1,4 @@
-import { Search, SlidersHorizontal } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -18,6 +17,9 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { SearchInput } from "./SearchInput";
+import { CategoryFilter } from "./CategoryFilter";
 
 interface ProductFiltersProps {
   searchQuery: string;
@@ -56,41 +58,11 @@ export function ProductFilters({
     brand.toLowerCase().includes(brandSearchQuery.toLowerCase())
   );
 
-  const categories = [
-    { value: "all", label: "All Categories" },
-    { value: "Frame", label: "Frame" },
-    { value: "Sunglasses", label: "Sunglasses" },
-    { value: "Lensa", label: "Lensa" },
-    { value: "Softlens", label: "Softlens" },
-  ];
-
   return (
     <div className="mb-8 space-y-4">
       <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search products..."
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
-        <div className="w-full md:w-64">
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.value} value={category.value}>
-                  {category.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <SearchInput searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <CategoryFilter selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
 
         <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
           <SheetTrigger asChild>

@@ -13,12 +13,17 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
   const showEnd = Math.min(totalPages, currentPage + 3);
   const visiblePages = pages.slice(showStart, showEnd);
 
+  const handlePageChange = (page: number) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    onPageChange(page);
+  };
+
   return (
     <div className="flex items-center justify-center gap-2 mt-12">
       <Button
         variant="outline"
         size="icon"
-        onClick={() => onPageChange(currentPage - 1)}
+        onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="hover:bg-gray-100"
       >
@@ -30,7 +35,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onPageChange(1)}
+            onClick={() => handlePageChange(1)}
             className="hover:bg-gray-100"
           >
             1
@@ -44,7 +49,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
           key={page}
           variant={currentPage === page ? "default" : "outline"}
           size="sm"
-          onClick={() => onPageChange(page)}
+          onClick={() => handlePageChange(page)}
           className={currentPage !== page ? "hover:bg-gray-100" : ""}
         >
           {page}
@@ -59,7 +64,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onPageChange(totalPages)}
+            onClick={() => handlePageChange(totalPages)}
             className="hover:bg-gray-100"
           >
             {totalPages}
@@ -70,7 +75,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       <Button
         variant="outline"
         size="icon"
-        onClick={() => onPageChange(currentPage + 1)}
+        onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className="hover:bg-gray-100"
       >

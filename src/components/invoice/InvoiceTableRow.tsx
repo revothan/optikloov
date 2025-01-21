@@ -1,103 +1,97 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, MoreHorizontal, Printer } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tables } from "@/integrations/supabase/types";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import { InvoicePDF } from "../InvoicePDF";
+import InvoicePDF from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
 
-interface InvoiceTableRowProps {
-  invoice: Tables<"invoices">;
-  onDelete: (id: string) => void;
-  onPrint: (invoice: Tables<"invoices">) => void;
-  onShare: (invoice: Tables<"invoices">) => void;
-  onEmail: (invoice: Tables<"invoices">) => void;
-  getInvoiceItems: (invoiceId: string) => Promise<any[]>;
+interface Invoice {
+  id: string;
+  invoice_number: string;
+  sale_date: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_address: string;
+  total_amount: number;
+  discount_amount: number;
+  grand_total: number;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  payment_type: string;
+  down_payment: number;
+  paid_amount: number;
+  remaining_balance: number;
+  acknowledged_by: string;
+  received_by: string;
 }
 
-export function InvoiceTableRow({
-  invoice,
-  onDelete,
-  onPrint,
-  onShare,
-  onEmail,
-  getInvoiceItems,
-}: InvoiceTableRowProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [items, setItems] = useState<any[]>([]);
+interface InvoiceTableRowProps {
+  invoice: Invoice;
+  onDelete: (invoice: Invoice) => void;
+}
+
+export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete(invoice);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
-    <tr key={invoice.id} className="border-b">
-      <td className="py-4">{invoice.invoice_number}</td>
-      <td>{invoice.customer_name}</td>
-      <td>{formatPrice(invoice.total_amount)}</td>
-      <td>{formatPrice(invoice.discount_amount)}</td>
-      <td>{formatPrice(invoice.grand_total)}</td>
-      <td>{invoice.payment_type}</td>
-      <td>{new Date(invoice.sale_date).toLocaleDateString()}</td>
-      <td>
-        <div className="flex items-center justify-end">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPrint(invoice)}
-          >
-            <Printer className="h-4 w-4 mr-2" />
-            Print
-          </Button>
-
-          <PDFDownloadLink
-            document={<InvoicePDF invoice={invoice} items={items} />}
-            fileName={`invoice-${invoice.invoice_number}.pdf`}
-          >
-            {({ loading }) => (
-              <Button
-                variant="outline"
-                size="sm"
-                className="ml-2"
-                disabled={loading}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                PDF
-              </Button>
-            )}
-          </PDFDownloadLink>
-
-          <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="ml-2">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => onShare(invoice)}
-              >
-                Share
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onEmail(invoice)}
-              >
-                Email
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-red-600"
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  onDelete(invoice.id);
-                }}
-              >
-                Delete Invoice
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+    <tr key={invoice.id}>
+      <td className="px-4 py-2">{invoice.invoice_number}</td>
+      <td className="px-4 py-2">{invoice.customer_name}</td>
+      <td className="px-4 py-2">{formatPrice(invoice.grand_total)}</td>
+      <td className="px-4 py-2">
+        <PDFDownloadLink
+          document={<InvoicePDF invoice={invoice} />}
+          fileName={`invoice-${invoice.invoice_number}.pdf`}
+        >
+          {({ loading }) => (
+            <Button variant="outline" size="sm" disabled={loading}>
+              {loading ? "Loading..." : "Download PDF"}
+            </Button>
+          )}
+        </PDFDownloadLink>
+      </td>
+      <td className="px-4 py-2">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" size="icon" disabled={isDeleting}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this invoice? This action cannot be
+                undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </td>
     </tr>
   );
