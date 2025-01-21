@@ -9,31 +9,36 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tables } from "@/integrations/supabase/types";
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import { InvoicePDF } from "./InvoicePDF";
-import { formatCurrency } from "@/lib/utils";
+import { InvoicePDF } from "../InvoicePDF";
+import { formatPrice } from "@/lib/utils";
 
 interface InvoiceTableRowProps {
   invoice: Tables<"invoices">;
-  items: Tables<"invoice_items">[];
+  onDelete: (id: string) => void;
   onPrint: (invoice: Tables<"invoices">) => void;
-  onDelete: (invoice: Tables<"invoices">) => void;
+  onShare: (invoice: Tables<"invoices">) => void;
+  onEmail: (invoice: Tables<"invoices">) => void;
+  getInvoiceItems: (invoiceId: string) => Promise<any[]>;
 }
 
 export function InvoiceTableRow({
   invoice,
-  items,
-  onPrint,
   onDelete,
+  onPrint,
+  onShare,
+  onEmail,
+  getInvoiceItems,
 }: InvoiceTableRowProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [items, setItems] = useState<any[]>([]);
 
   return (
     <tr key={invoice.id} className="border-b">
       <td className="py-4">{invoice.invoice_number}</td>
       <td>{invoice.customer_name}</td>
-      <td>{formatCurrency(invoice.total_amount)}</td>
-      <td>{formatCurrency(invoice.discount_amount)}</td>
-      <td>{formatCurrency(invoice.grand_total)}</td>
+      <td>{formatPrice(invoice.total_amount)}</td>
+      <td>{formatPrice(invoice.discount_amount)}</td>
+      <td>{formatPrice(invoice.grand_total)}</td>
       <td>{invoice.payment_type}</td>
       <td>{new Date(invoice.sale_date).toLocaleDateString()}</td>
       <td>
@@ -72,10 +77,20 @@ export function InvoiceTableRow({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
+                onClick={() => onShare(invoice)}
+              >
+                Share
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onEmail(invoice)}
+              >
+                Email
+              </DropdownMenuItem>
+              <DropdownMenuItem
                 className="text-red-600"
                 onClick={() => {
                   setIsMenuOpen(false);
-                  onDelete(invoice);
+                  onDelete(invoice.id);
                 }}
               >
                 Delete Invoice

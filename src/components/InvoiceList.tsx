@@ -80,6 +80,11 @@ export function InvoiceList() {
     toast.info("Email feature coming soon!");
   };
 
+  const handlePrint = async (invoice: any) => {
+    // Print functionality will be implemented later
+    toast.info("Print feature coming soon!");
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -111,6 +116,7 @@ export function InvoiceList() {
               onDelete={handleDelete}
               onShare={handleShare}
               onEmail={handleEmail}
+              onPrint={handlePrint}
               getInvoiceItems={getInvoiceItems}
             />
           ))}
