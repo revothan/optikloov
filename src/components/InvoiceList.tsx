@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { InvoiceTableHeader } from "./invoice/InvoiceTableHeader";
 import { InvoiceTableRow } from "./invoice/InvoiceTableRow";
+import { InvoicePDF } from "./InvoicePDF";
 import { pdf } from "@react-pdf/renderer";
 
 export function InvoiceList() {
