@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ProductFiltersProps {
   searchQuery: string;
@@ -44,6 +46,12 @@ export function ProductFilters({
   isFilterSheetOpen,
   setIsFilterSheetOpen,
 }: ProductFiltersProps) {
+  const [brandSearchQuery, setBrandSearchQuery] = useState("");
+  
+  const filteredBrands = brands.filter((brand) =>
+    brand.toLowerCase().includes(brandSearchQuery.toLowerCase())
+  );
+
   return (
     <div className="mb-8 space-y-4">
       <div className="flex gap-4">
@@ -87,19 +95,29 @@ export function ProductFilters({
 
               <div className="space-y-2">
                 <h3 className="text-sm font-medium">Brand</h3>
-                <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All Brands" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Brands</SelectItem>
-                    {brands.map((brand) => (
-                      <SelectItem key={brand} value={brand}>
-                        {brand}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Search brands..."
+                    value={brandSearchQuery}
+                    onChange={(e) => setBrandSearchQuery(e.target.value)}
+                    className="mb-2"
+                  />
+                  <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="All Brands" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <ScrollArea className="h-[200px]">
+                        <SelectItem value="all">All Brands</SelectItem>
+                        {filteredBrands.map((brand) => (
+                          <SelectItem key={brand} value={brand}>
+                            {brand}
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-2">
