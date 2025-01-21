@@ -5,8 +5,6 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { InvoiceTableHeader } from "./invoice/InvoiceTableHeader";
 import { InvoiceTableRow } from "./invoice/InvoiceTableRow";
-import { InvoicePDF } from "./InvoicePDF";
-import { pdf } from "@react-pdf/renderer";
 
 export function InvoiceList() {
   const queryClient = useQueryClient();
@@ -26,22 +24,6 @@ export function InvoiceList() {
     },
   });
 
-  const getInvoiceItems = async (invoiceId: string) => {
-    const { data, error } = await supabase
-      .from("invoice_items")
-      .select(`
-        *,
-        products (*)
-      `)
-      .eq("invoice_id", invoiceId);
-
-    if (error) {
-      console.error("Error fetching invoice items:", error);
-      throw error;
-    }
-    return data;
-  };
-
   const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase.from("invoices").delete().eq("id", id);
@@ -53,35 +35,6 @@ export function InvoiceList() {
       console.error("Error deleting invoice:", error);
       toast.error("Failed to delete invoice");
     }
-  };
-
-  const handleShare = async (invoice: any) => {
-    if (navigator.share) {
-      try {
-        const invoiceItems = await getInvoiceItems(invoice.id);
-        const blob = await pdf(<InvoicePDF invoice={invoice} items={invoiceItems} />).toBlob();
-        const file = new File([blob], `invoice-${invoice.invoice_number}.pdf`, { type: 'application/pdf' });
-        
-        await navigator.share({
-          files: [file],
-          title: `Invoice #${invoice.invoice_number}`,
-          text: 'Here is your invoice from OPTIK LOOV',
-        });
-      } catch (error) {
-        console.error('Error sharing:', error);
-        toast.error('Failed to share invoice');
-      }
-    } else {
-      toast.error('Sharing is not supported on this device');
-    }
-  };
-
-  const handleEmail = async (invoice: any) => {
-    toast.info("Email feature coming soon!");
-  };
-
-  const handlePrint = async (invoice: any) => {
-    toast.info("Print feature coming soon!");
   };
 
   if (isLoading) {

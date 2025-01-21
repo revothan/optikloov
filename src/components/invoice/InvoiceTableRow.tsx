@@ -19,9 +19,10 @@ interface InvoiceTableRowProps {
     customer_phone?: string;
     customer_address?: string;
   };
+  onDelete: (id: string) => Promise<void>;
 }
 
-export function InvoiceTableRow({ invoice }: InvoiceTableRowProps) {
+export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["invoice-items", invoice.id],
     queryFn: async () => {
@@ -80,6 +81,15 @@ export function InvoiceTableRow({ invoice }: InvoiceTableRowProps) {
       </td>
       <td className="py-4 px-4">
         {invoice.remaining_balance ? formatPrice(invoice.remaining_balance) : "-"}
+      </td>
+      <td className="py-4 px-4">
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => onDelete(invoice.id)}
+        >
+          Delete
+        </Button>
       </td>
     </tr>
   );
