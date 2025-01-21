@@ -81,7 +81,6 @@ export function InvoiceList() {
   };
 
   const handlePrint = async (invoice: any) => {
-    // Print functionality will be implemented later
     toast.info("Print feature coming soon!");
   };
 
@@ -114,10 +113,6 @@ export function InvoiceList() {
               key={invoice.id}
               invoice={invoice}
               onDelete={handleDelete}
-              onShare={handleShare}
-              onEmail={handleEmail}
-              onPrint={handlePrint}
-              getInvoiceItems={getInvoiceItems}
             />
           ))}
           {!invoices?.length && (

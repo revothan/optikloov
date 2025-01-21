@@ -13,7 +13,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import InvoicePDF from "@/components/InvoicePDF";
+import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
 
 interface Invoice {
@@ -39,7 +39,7 @@ interface Invoice {
 
 interface InvoiceTableRowProps {
   invoice: Invoice;
-  onDelete: (invoice: Invoice) => void;
+  onDelete: (id: string) => void;
 }
 
 export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
@@ -48,7 +48,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await onDelete(invoice);
+      await onDelete(invoice.id);
     } finally {
       setIsDeleting(false);
     }
@@ -61,7 +61,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
       <td className="px-4 py-2">{formatPrice(invoice.grand_total)}</td>
       <td className="px-4 py-2">
         <PDFDownloadLink
-          document={<InvoicePDF invoice={invoice} />}
+          document={<InvoicePDF invoice={invoice} items={[]} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
           {({ loading }) => (
