@@ -54,7 +54,7 @@ const Contact = () => {
 
             {/* Facebook */}
             <a
-              href="https://facebook.com/optikloov"
+              href="https://www.facebook.com/people/Optik-Loov/61568572959018/"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center p-6 bg-white rounded-xl border hover:border-[#1877F2] transition-colors group"
@@ -70,7 +70,7 @@ const Contact = () => {
 
             {/* Instagram */}
             <a
-              href="https://instagram.com/optik.loov"
+              href="https://instagram.com/optikloov"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center p-6 bg-white rounded-xl border hover:border-[#E4405F] transition-colors group"
@@ -80,7 +80,7 @@ const Contact = () => {
                 <h3 className="text-lg font-semibold group-hover:text-[#E4405F] transition-colors">
                   Instagram
                 </h3>
-                <p className="text-gray-600">@optik.loov</p>
+                <p className="text-gray-600">@optikloov</p>
               </div>
             </a>
           </div>
