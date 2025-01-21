@@ -26,6 +26,8 @@ interface ProductFiltersProps {
   setSelectedType: (value: string) => void;
   selectedBrand: string;
   setSelectedBrand: (value: string) => void;
+  selectedCategory: string;
+  setSelectedCategory: (value: string) => void;
   sortBy: string;
   setSortBy: (value: string) => void;
   brands: string[];
@@ -40,6 +42,8 @@ export function ProductFilters({
   setSelectedType,
   selectedBrand,
   setSelectedBrand,
+  selectedCategory,
+  setSelectedCategory,
   sortBy,
   setSortBy,
   brands,
@@ -51,6 +55,14 @@ export function ProductFilters({
   const filteredBrands = brands.filter((brand) =>
     brand.toLowerCase().includes(brandSearchQuery.toLowerCase())
   );
+
+  const categories = [
+    { value: "all", label: "All Categories" },
+    { value: "Frame", label: "Frame" },
+    { value: "Sunglasses", label: "Sunglasses" },
+    { value: "Lensa", label: "Lensa" },
+    { value: "Softlens", label: "Softlens" },
+  ];
 
   return (
     <div className="mb-8 space-y-4">
@@ -89,6 +101,22 @@ export function ProductFilters({
                     <SelectItem value="Eyeglasses">Eyeglasses</SelectItem>
                     <SelectItem value="Contact Lenses">Contact Lenses</SelectItem>
                     <SelectItem value="Accessories">Accessories</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Category</h3>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

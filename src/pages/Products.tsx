@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { ProductFilters } from "@/components/products/ProductFilters";
 import { ProductGrid } from "@/components/products/ProductGrid";
 import { ViewToggle } from "@/components/products/ViewToggle";
@@ -15,6 +14,7 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [selectedBrand, setSelectedBrand] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("latest");
   const [currentPage, setCurrentPage] = useState(1);
   const [view, setView] = useState<"grid" | "list">("grid");
@@ -26,7 +26,7 @@ export default function ProductsPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["products", searchQuery, selectedType, selectedBrand, sortBy],
+    queryKey: ["products", searchQuery, selectedType, selectedBrand, selectedCategory, sortBy],
     queryFn: async () => {
       try {
         let query = supabase
@@ -42,6 +42,9 @@ export default function ProductsPage() {
         }
         if (selectedBrand !== "all") {
           query = query.ilike("brand", selectedBrand);
+        }
+        if (selectedCategory !== "all") {
+          query = query.eq("category", selectedCategory);
         }
         if (sortBy === "price_asc") {
           query = query.order("online_price", { ascending: true });
@@ -103,6 +106,8 @@ export default function ProductsPage() {
             setSelectedType={setSelectedType}
             selectedBrand={selectedBrand}
             setSelectedBrand={setSelectedBrand}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
             sortBy={sortBy}
             setSortBy={setSortBy}
             brands={brands}
