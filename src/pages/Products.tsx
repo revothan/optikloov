@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProductCard } from "@/components/ProductCard";
+import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -33,87 +34,96 @@ export default function ProductsPage() {
   const [page, setPage] = useState(0);
   const { ref: loadMoreRef, inView } = useInView();
 
-  // Fetch products with optimized query
+  // Fetch products with optimized query and error handling
   const {
     data: allProducts = [],
     isLoading,
     isFetching,
+    error,
   } = useQuery({
     queryKey: ["products", searchQuery, selectedType, selectedBrand, sortBy],
     queryFn: async () => {
-      let query = supabase
-        .from("products")
-        .select("id, name, brand, image_url, online_price, category")
-        .not("image_url", "is", null);
+      try {
+        let query = supabase
+          .from("products")
+          .select("id, name, brand, image_url, online_price, category")
+          .not("image_url", "is", null);
 
-      // Apply filters
-      if (searchQuery) {
-        query = query.ilike("name", `%${searchQuery}%`);
-      }
+        // Apply filters
+        if (searchQuery) {
+          query = query.ilike("name", `%${searchQuery}%`);
+        }
 
-      // Only apply category filter if not "all"
-      if (selectedType !== "all") {
-        query = query.eq("category", selectedType);
-      }
+        if (selectedType !== "all") {
+          query = query.eq("category", selectedType);
+        }
 
-      // Only apply brand filter if not "all"
-      if (selectedBrand !== "all") {
-        query = query.eq("brand", selectedBrand);
-      }
+        if (selectedBrand !== "all") {
+          query = query.eq("brand", selectedBrand);
+        }
 
-      // Apply sorting
-      if (sortBy === "price_asc") {
-        query = query.order("online_price", { ascending: true });
-      } else if (sortBy === "price_desc") {
-        query = query.order("online_price", { ascending: false });
-      } else {
-        query = query.order("created_at", { ascending: false });
-      }
+        // Apply sorting
+        if (sortBy === "price_asc") {
+          query = query.order("online_price", { ascending: true });
+        } else if (sortBy === "price_desc") {
+          query = query.order("online_price", { ascending: false });
+        } else {
+          query = query.order("created_at", { ascending: false });
+        }
 
-      const { data, error } = await query;
+        const { data, error: supabaseError } = await query;
 
-      if (error) {
+        if (supabaseError) {
+          throw supabaseError;
+        }
+
+        return data || [];
+      } catch (error) {
         console.error("Error fetching products:", error);
+        toast.error("Failed to load products. Please try again.");
         throw error;
       }
-
-      return data || [];
     },
-    placeholderData: (previousData) => previousData,
-    staleTime: 1000 * 60, // 1 minute
-    gcTime: 1000 * 60 * 5, // 5 minutes
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 1000 * 60,
+    gcTime: 1000 * 60 * 5,
   });
 
-  // Calculate paginated products
-  const paginatedProducts = allProducts.slice(0, (page + 1) * ITEMS_PER_PAGE);
-  const hasMore = paginatedProducts.length < allProducts.length;
-
-  // Fetch unique brands
+  // Fetch unique brands with error handling
   const { data: brands = [] } = useQuery({
     queryKey: ["brands"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("brand")
-        .not("brand", "is", null)
-        .not("image_url", "is", null);
+      try {
+        const { data, error: supabaseError } = await supabase
+          .from("products")
+          .select("brand")
+          .not("brand", "is", null)
+          .not("image_url", "is", null);
 
-      if (error) throw error;
+        if (supabaseError) throw supabaseError;
 
-      const uniqueBrands = [...new Set(data.map((item) => item.brand))].filter(
-        Boolean
-      );
-      return uniqueBrands.sort();
+        const uniqueBrands = [...new Set(data.map((item) => item.brand))].filter(
+          Boolean
+        );
+        return uniqueBrands.sort();
+      } catch (error) {
+        console.error("Error fetching brands:", error);
+        toast.error("Failed to load brands. Please try again.");
+        throw error;
+      }
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10, // 10 minutes
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });
 
   useEffect(() => {
-    if (inView && !isLoading && !isFetching && hasMore) {
+    if (inView && !isLoading && !isFetching && allProducts.length > (page + 1) * ITEMS_PER_PAGE) {
       setPage((prev) => prev + 1);
     }
-  }, [inView, isLoading, isFetching, hasMore]);
+  }, [inView, isLoading, isFetching, allProducts.length, page]);
 
   // Reset pagination when filters change
   useEffect(() => {
@@ -274,20 +284,25 @@ export default function ProductsPage() {
             <div className="flex justify-center items-center min-h-[400px]">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
-          ) : paginatedProducts.length === 0 ? (
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-lg text-red-500">Failed to load products</p>
+              <p className="text-sm text-gray-500 mt-2">Please try again later</p>
+            </div>
+          ) : allProducts.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-lg text-gray-500">No products found</p>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {paginatedProducts.map((product) => (
+                {allProducts.slice(0, (page + 1) * ITEMS_PER_PAGE).map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
 
               {/* Loading More Indicator */}
-              {(isFetching || hasMore) && (
+              {(isFetching || page * ITEMS_PER_PAGE < allProducts.length) && (
                 <div
                   ref={loadMoreRef}
                   className="flex justify-center items-center py-8"
