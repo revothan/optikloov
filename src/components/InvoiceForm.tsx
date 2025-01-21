@@ -6,19 +6,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import * as z from "zod";
 
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { InvoiceItemForm } from "./InvoiceItemForm";
-import { formatPrice } from "@/lib/utils";
+import { BasicInvoiceInfo } from "./invoice-form/BasicInvoiceInfo";
+import { PaymentSignature } from "./invoice-form/PaymentSignature";
 
 // Define the schema for eye prescription
 const eyeSchema = z.object({
@@ -86,12 +79,10 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   });
 
   // Set up field array for dynamic item handling
-  const { fields, append, remove, swap, move, insert, prepend } = useFieldArray(
-    {
-      name: "items",
-      control: form.control,
-    },
-  );
+  const { fields, append, remove, swap, move, insert, prepend } = useFieldArray({
+    name: "items",
+    control: form.control,
+  });
 
   // Calculate totals for the invoice
   const calculateTotals = () => {
@@ -210,94 +201,8 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Basic Invoice Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="invoice_number"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nomor Invoice</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <BasicInvoiceInfo form={form} />
 
-          <FormField
-            control={form.control}
-            name="sale_date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tanggal</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="customer_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nama Pelanggan</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="customer_phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nomor Telepon</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="customer_address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Alamat</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="payment_type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Jenis Pembayaran</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Invoice Items Section */}
         <InvoiceItemForm
           form={form}
           itemFields={{
@@ -311,81 +216,8 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
           }}
         />
 
-        {/* Payment and Signature Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="down_payment"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Uang Muka (DP)</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <span className="absolute left-3 top-2.5">Rp</span>
-                      <Input
-                        type="number"
-                        className="pl-12"
-                        placeholder="0"
-                        {...field}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <PaymentSignature form={form} totals={totals} />
 
-            <FormField
-              control={form.control}
-              name="acknowledged_by"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Diketahui Oleh</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="received_by"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Diterima Oleh</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Totals Summary */}
-          <div className="space-y-2 text-right">
-            <div className="text-sm text-muted-foreground">
-              Total: {formatPrice(totals.totalAmount)}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Discount: {formatPrice(totals.discountAmount)}
-            </div>
-            <div className="text-lg font-semibold">
-              Grand Total: {formatPrice(totals.grandTotal)}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Down Payment: {formatPrice(totals.downPayment)}
-            </div>
-            <div className="text-sm font-medium">
-              Remaining: {formatPrice(totals.remainingBalance)}
-            </div>
-          </div>
-        </div>
-
-        {/* Submit Button */}
         <Button type="submit" className="w-full">
           {form.formState.isSubmitting ? (
             <div className="flex items-center gap-2">

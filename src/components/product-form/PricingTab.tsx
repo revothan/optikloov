@@ -1,198 +1,93 @@
 import React from "react";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { UseFormReturn } from "react-hook-form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
+import { FormFields } from "./FormFields";
+import { TabContent } from "./TabContent";
 
-export function PricingTab({ form }: { form: UseFormReturn<any> }) {
+interface PricingTabProps {
+  form: UseFormReturn<any>;
+}
+
+export function PricingTab({ form }: PricingTabProps) {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Store Price */}
-        <FormField
-          control={form.control}
+      <TabContent>
+        <FormFields
+          form={form}
           name="store_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Store Price</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5">Rp</span>
-                  <Input
-                    type="number"
-                    className="pl-12"
-                    placeholder="0"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Store Price"
+          type="number"
+          placeholder="0"
         />
-
-        {/* Sell Price */}
-        <FormField
-          control={form.control}
-          name="sell_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Sell Price</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5">Rp</span>
-                  <Input
-                    type="number"
-                    className="pl-12"
-                    placeholder="0"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Buy Price */}
-        <FormField
-          control={form.control}
-          name="buy_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Buy Price</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5">Rp</span>
-                  <Input
-                    type="number"
-                    className="pl-12"
-                    placeholder="0"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Online Price */}
-        <FormField
-          control={form.control}
+        <FormFields
+          form={form}
           name="online_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Online Price</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5">Rp</span>
-                  <Input
-                    type="number"
-                    className="pl-12"
-                    placeholder="0"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Online Price"
+          type="number"
+          placeholder="0"
         />
+      </TabContent>
 
-        {/* Market Price */}
-        <FormField
-          control={form.control}
+      <TabContent>
+        <FormFields
+          form={form}
+          name="buy_price"
+          label="Buy Price"
+          type="number"
+          placeholder="0"
+        />
+        <FormFields
+          form={form}
           name="market_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Market Price</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5">Rp</span>
-                  <Input
-                    type="number"
-                    className="pl-12"
-                    placeholder="0"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Market Price"
+          type="number"
+          placeholder="0"
         />
+      </TabContent>
 
-        {/* POS Sell Price */}
-        <FormField
-          control={form.control}
+      <TabContent>
+        <FormFields
+          form={form}
+          name="sell_price"
+          label="Sell Price"
+          type="number"
+          placeholder="0"
+        />
+        <FormFields
+          form={form}
           name="pos_sell_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>POS Sell Price</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5">Rp</span>
-                  <Input
-                    type="number"
-                    className="pl-12"
-                    placeholder="0"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="POS Sell Price"
+          type="number"
+          placeholder="0"
         />
-      </div>
+      </TabContent>
 
-      {/* Dynamic POS Price Toggle */}
       <FormField
         control={form.control}
         name="pos_sell_price_dynamic"
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+          <FormItem className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <FormLabel className="text-base">Dynamic POS Pricing</FormLabel>
-              <p className="text-sm text-muted-foreground">
-                Enable dynamic pricing for POS transactions
-              </p>
+              <FormLabel className="text-base">Dynamic POS Price</FormLabel>
+              <FormMessage />
             </div>
             <FormControl>
-              <Switch checked={field.value} onCheckedChange={field.onChange} />
+              <Switch
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
             </FormControl>
           </FormItem>
         )}
       />
 
-      {/* Commission */}
-      <FormField
-        control={form.control}
+      <FormFields
+        form={form}
         name="comission"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Commission</FormLabel>
-            <FormControl>
-              <div className="relative">
-                <span className="absolute left-3 top-2.5">Rp</span>
-                <Input
-                  type="number"
-                  className="pl-12"
-                  placeholder="0"
-                  {...field}
-                />
-              </div>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+        label="Commission"
+        type="number"
+        placeholder="0"
       />
     </div>
   );

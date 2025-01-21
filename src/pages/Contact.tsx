@@ -13,16 +13,12 @@ import Footer from "@/components/Footer";
 const Contact = () => {
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
       <Navbar />
 
-      {/* Contact Content */}
       <div className="container mx-auto px-4 pt-32 pb-16">
         <div className="max-w-2xl mx-auto">
-          {/* Back to Home link removed */}
-
           <h1 className="text-4xl font-bold mb-8 animate-in fade-in slide-in-from-bottom duration-700">
-            Contact Us
+            Hubungi Kami
           </h1>
 
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom duration-700 delay-200">
@@ -58,7 +54,7 @@ const Contact = () => {
 
             {/* Facebook */}
             <a
-              href="https://facebook.com/optikloov"
+              href="https://www.facebook.com/people/Optik-Loov/61568572959018/"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center p-6 bg-white rounded-xl border hover:border-[#1877F2] transition-colors group"
@@ -74,7 +70,7 @@ const Contact = () => {
 
             {/* Instagram */}
             <a
-              href="https://instagram.com/optik.loov"
+              href="https://instagram.com/optikloov"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center p-6 bg-white rounded-xl border hover:border-[#E4405F] transition-colors group"
@@ -84,14 +80,14 @@ const Contact = () => {
                 <h3 className="text-lg font-semibold group-hover:text-[#E4405F] transition-colors">
                   Instagram
                 </h3>
-                <p className="text-gray-600">@optik.loov</p>
+                <p className="text-gray-600">@optikloov</p>
               </div>
             </a>
           </div>
 
           {/* Store Address */}
           <div className="mt-12 p-6 bg-gray-50 rounded-xl animate-in fade-in slide-in-from-bottom duration-700 delay-300">
-            <h2 className="text-xl font-semibold mb-4">Visit Our Store</h2>
+            <h2 className="text-xl font-semibold mb-4">Kunjungi Toko Kami</h2>
             <p className="text-gray-600 mb-4">
               Ruko Downtown Drive Blok DDBLV No 016
               <br />
@@ -106,7 +102,7 @@ const Contact = () => {
                 )
               }
             >
-              Get Directions
+              Petunjuk Arah
             </Button>
           </div>
         </div>

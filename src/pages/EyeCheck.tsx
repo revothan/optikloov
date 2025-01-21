@@ -16,12 +16,11 @@ const EyeCheckPage = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-8">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Digitalized Vision Screening Test Appointment
+                Pemeriksaan Mata Digital
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Schedule your comprehensive eye examination with our experienced
-                optometrists. Choose a convenient time slot and let us take care
-                of your vision needs.
+                Jadwalkan pemeriksaan mata lengkap dengan optometris berpengalaman kami.
+                Pilih waktu yang nyaman dan biarkan kami membantu kebutuhan penglihatan Anda.
               </p>
             </div>
             <div className="max-w-4xl mx-auto h-[600px] md:h-[700px] border rounded-lg shadow-lg">
@@ -35,11 +34,11 @@ const EyeCheckPage = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-8">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Visit Our Store
+                Kunjungi Toko Kami
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Find us easily at our convenient location. We're ready to
-                welcome you and provide the best eye care services.
+                Temukan kami dengan mudah di lokasi yang nyaman. Kami siap
+                menyambut Anda dan memberikan layanan mata terbaik.
               </p>
             </div>
             <Map />

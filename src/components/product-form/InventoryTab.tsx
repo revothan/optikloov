@@ -1,5 +1,12 @@
+import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 
@@ -14,14 +21,10 @@ export function InventoryTab({ form }: InventoryTabProps) {
         control={form.control}
         name="track_inventory"
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+          <FormItem className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <FormLabel className="text-base">
-                Lacak Inventori
-              </FormLabel>
-              <FormDescription>
-                Aktifkan untuk melacak stok produk
-              </FormDescription>
+              <FormLabel className="text-base">Track Inventory</FormLabel>
+              <FormMessage />
             </div>
             <FormControl>
               <Switch
@@ -39,7 +42,7 @@ export function InventoryTab({ form }: InventoryTabProps) {
           name="stock_qty"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Jumlah Stok</FormLabel>
+              <FormLabel>Stock Quantity</FormLabel>
               <FormControl>
                 <Input type="number" placeholder="0" {...field} />
               </FormControl>
@@ -53,7 +56,7 @@ export function InventoryTab({ form }: InventoryTabProps) {
           name="hold_qty"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Jumlah Hold</FormLabel>
+              <FormLabel>Hold Quantity</FormLabel>
               <FormControl>
                 <Input type="number" placeholder="0" {...field} />
               </FormControl>
@@ -61,13 +64,15 @@ export function InventoryTab({ form }: InventoryTabProps) {
             </FormItem>
           )}
         />
+      </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={form.control}
           name="low_stock_alert"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Peringatan Stok Rendah</FormLabel>
+              <FormLabel>Low Stock Alert</FormLabel>
               <FormControl>
                 <Input type="number" placeholder="0" {...field} />
               </FormControl>
@@ -81,7 +86,7 @@ export function InventoryTab({ form }: InventoryTabProps) {
           name="qty_fast_moving"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Jumlah Fast Moving</FormLabel>
+              <FormLabel>Fast Moving Quantity</FormLabel>
               <FormControl>
                 <Input type="number" placeholder="0" {...field} />
               </FormControl>
@@ -90,6 +95,20 @@ export function InventoryTab({ form }: InventoryTabProps) {
           )}
         />
       </div>
+
+      <FormField
+        control={form.control}
+        name="uom"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Unit of Measure</FormLabel>
+            <FormControl>
+              <Input placeholder="e.g., pcs, kg, etc." {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }

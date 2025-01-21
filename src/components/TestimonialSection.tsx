@@ -30,7 +30,9 @@ const TestimonialSection = () => {
     queryKey: ["googleReviews"],
     queryFn: async () => {
       console.log("Fetching Google reviews...");
-      const { data, error } = await supabase.functions.invoke("getgooglereviews");
+      const { data, error } = await supabase.functions.invoke("getgooglereviews", {
+        body: { language: "id" }, // Request Indonesian reviews
+      });
       if (error) {
         console.error("Error fetching reviews:", error);
         throw error;
@@ -43,7 +45,7 @@ const TestimonialSection = () => {
   if (isLoading) {
     return (
       <div className="min-h-[300px] flex items-center justify-center">
-        <div className="animate-pulse text-gray-400">Loading reviews...</div>
+        <div className="animate-pulse text-gray-400">Memuat ulasan...</div>
       </div>
     );
   }
@@ -52,7 +54,7 @@ const TestimonialSection = () => {
     console.error("Error in TestimonialSection:", error);
     return (
       <div className="min-h-[300px] flex items-center justify-center">
-        <div className="text-red-500">Failed to load reviews</div>
+        <div className="text-red-500">Gagal memuat ulasan</div>
       </div>
     );
   }
@@ -60,7 +62,7 @@ const TestimonialSection = () => {
   if (!reviews || reviews.length === 0) {
     return (
       <div className="min-h-[300px] flex items-center justify-center">
-        <div className="text-gray-500">No reviews yet</div>
+        <div className="text-gray-500">Belum ada ulasan</div>
       </div>
     );
   }
@@ -70,10 +72,10 @@ const TestimonialSection = () => {
       <div className="container px-4 mx-auto">
         <div className="text-center mb-12 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
-            What Our Customers Say
+            Apa Kata Pelanggan Kami
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-base leading-relaxed">
-            Real experiences shared by our valued customers who have trusted Optik LOOV for their eyewear needs
+            Pengalaman nyata dari pelanggan kami yang telah mempercayakan Optik LOOV untuk kebutuhan kacamata mereka
           </p>
         </div>
 
