@@ -66,7 +66,7 @@ export function ProductFilters({
 
   return (
     <div className="mb-8 space-y-4">
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
@@ -77,11 +77,26 @@ export function ProductFilters({
           />
         </div>
 
+        <div className="w-full md:w-64">
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.value} value={category.value}>
+                  {category.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" className="md:hidden">
               <SlidersHorizontal className="h-4 w-4 mr-2" />
-              Filters
+              More Filters
             </Button>
           </SheetTrigger>
           <SheetContent className="w-full sm:max-w-md">
@@ -101,22 +116,6 @@ export function ProductFilters({
                     <SelectItem value="Eyeglasses">Eyeglasses</SelectItem>
                     <SelectItem value="Contact Lenses">Contact Lenses</SelectItem>
                     <SelectItem value="Accessories">Accessories</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Category</h3>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
                   </SelectContent>
                 </Select>
               </div>
