@@ -16,7 +16,7 @@ const Map = () => {
 
         {/* Address Content */}
         <div className="w-full md:w-1/2">
-          <h3 className="text-2xl font-bold mb-4">Our Location</h3>
+          <h3 className="text-2xl font-bold mb-4">Lokasi Kami</h3>
           <p className="text-gray-600 mb-6">
             Ruko Downtown Drive, Kecamatan No.016 Blok DDBLV, Medang, Kec.
             Pagedangan, Kabupaten Tangerang, Banten 15334, Indonesia
@@ -30,7 +30,7 @@ const Map = () => {
             className="inline-block"
           >
             <button className="bg-black hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300">
-              Find Us On Google Maps
+              Temukan Kami di Google Maps
             </button>
           </a>
         </div>

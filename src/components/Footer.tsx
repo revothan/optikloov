@@ -28,14 +28,14 @@ const Footer = () => {
             </p>
           </div>
           <div>
-            <h3 className="text-xl font-bold mb-6">Quick Links</h3>
+            <h3 className="text-xl font-bold mb-6">Menu Cepat</h3>
             <div className="space-y-3">
               <p>
                 <a
                   href="/"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  Home
+                  Beranda
                 </a>
               </p>
               <p>
@@ -51,7 +51,7 @@ const Footer = () => {
                   href="/contact"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  Contact Us
+                  Hubungi Kami
                 </a>
               </p>
               <p>
@@ -59,7 +59,7 @@ const Footer = () => {
                   href="/membership"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  LOOVERS Memberships
+                  LOOVERS Membership
                 </a>
               </p>
             </div>

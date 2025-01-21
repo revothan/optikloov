@@ -36,7 +36,7 @@ const NavigationBar = () => {
             to="/"
             className="text-black hover:text-gray-600 transition-colors"
           >
-            Home
+            Beranda
           </Link>
           <Link
             to="/products"
@@ -48,19 +48,19 @@ const NavigationBar = () => {
             to="/contact"
             className="text-black hover:text-gray-600 transition-colors"
           >
-            Contact Us
+            Hubungi Kami
           </Link>
           <Link
             to="/membership"
             className="text-black hover:text-gray-600 transition-colors"
           >
-            Memberships
+            Membership
           </Link>
           <Link
             to="/visiontest"
             className="text-black hover:text-gray-600 transition-colors"
           >
-            Vision Test
+            Tes Penglihatan
           </Link>
         </div>
       </div>
@@ -74,7 +74,7 @@ const NavigationBar = () => {
               className="w-full p-4 text-black hover:bg-gray-50 transition-colors flex justify-center items-center"
               onClick={() => setIsMenuOpen(false)}
             >
-              Home
+              Beranda
             </Link>
             <Link
               to="/products"
@@ -88,21 +88,21 @@ const NavigationBar = () => {
               className="w-full p-4 text-black hover:bg-gray-50 transition-colors flex justify-center items-center"
               onClick={() => setIsMenuOpen(false)}
             >
-              Contact Us
+              Hubungi Kami
             </Link>
             <Link
               to="/membership"
               className="w-full p-4 text-black hover:bg-gray-50 transition-colors flex justify-center items-center"
               onClick={() => setIsMenuOpen(false)}
             >
-              Memberships
+              Membership
             </Link>
             <Link
               to="/visiontest"
               className="w-full p-4 text-black hover:bg-gray-50 transition-colors flex justify-center items-center"
               onClick={() => setIsMenuOpen(false)}
             >
-              Vision Test
+              Tes Penglihatan
             </Link>
           </div>
         </div>

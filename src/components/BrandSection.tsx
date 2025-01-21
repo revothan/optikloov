@@ -8,7 +8,7 @@ const BrandSection = () => {
           <div className="space-y-16">
             {/* Frames and Lenses Section */}
             <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-8">Frames and Lenses Available</h2>
+              <h2 className="text-2xl font-semibold mb-8">Frame dan Lensa yang Tersedia</h2>
               <div className="grid grid-cols-3 md:grid-cols-5 gap-8">
                 <div className="flex flex-col items-center justify-center p-4 grayscale hover:grayscale-0 transition-all duration-300">
                   <img src="https://ucarecdn.com/da2dbe7e-6b65-4e7f-b761-6c5e7f7308d7/-/preview/500x500/" alt="Oakley" className="h-20 object-contain" />
@@ -38,14 +38,14 @@ const BrandSection = () => {
                   <img src="https://ucarecdn.com/e6ca0367-078c-4547-acf5-405fe90cd944/-/preview/500x500/" alt="New Balance" className="h-20 object-contain" />
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 text-gray-500 italic">
-                  and many more
+                  dan masih banyak lagi
                 </div>
               </div>
             </div>
 
             {/* Lens Partners Section */}
             <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-8">Supporting Lens Partners</h2>
+              <h2 className="text-2xl font-semibold mb-8">Partner Lensa Kami</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                 <div className="flex flex-col items-center justify-center p-4 grayscale hover:grayscale-0 transition-all duration-300">
                   <img src="https://ucarecdn.com/c71639f5-d20d-402a-92b5-f8b83258881d/-/preview/500x500/" alt="Essilor" className="h-20 object-contain" />
