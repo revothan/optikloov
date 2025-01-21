@@ -16,12 +16,23 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
+  const translateCategory = (category: string) => {
+    const categories: { [key: string]: string } = {
+      'Sunglasses': 'Kacamata Hitam',
+      'Eyeglasses': 'Kacamata',
+      'Contact Lenses': 'Lensa Kontak',
+      'Accessories': 'Aksesoris',
+      // Add more translations as needed
+    };
+    return categories[category] || category;
+  };
+
   return (
     <Link
       to={`/products/${product.id}`}
       className="group relative bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-all duration-300"
     >
-      {/* Image Container */}
+      {/* Container Gambar */}
       <div className="aspect-square overflow-hidden bg-gray-50 relative">
         {!imageLoaded && (
           <div className="absolute inset-0 bg-gray-100 animate-pulse" />
@@ -37,22 +48,22 @@ export function ProductCard({ product }: ProductCardProps) {
         />
       </div>
 
-      {/* Content */}
+      {/* Konten */}
       <div className="p-4">
-        {/* Brand */}
+        {/* Merek */}
         <p className="text-sm text-gray-500 mb-1">{product.brand}</p>
 
-        {/* Product Name */}
+        {/* Nama Produk */}
         <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
           {product.name}
         </h3>
 
-        {/* Category Badge */}
+        {/* Label Kategori */}
         <span className="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full mb-2">
-          {product.category}
+          {translateCategory(product.category)}
         </span>
 
-        {/* Price */}
+        {/* Harga */}
         <p className="text-lg font-semibold text-gray-900">
           {formatPrice(product.online_price)}
         </p>
