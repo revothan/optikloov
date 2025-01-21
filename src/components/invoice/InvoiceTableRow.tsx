@@ -1,8 +1,6 @@
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/utils";
 
 interface InvoiceTableRowProps {
@@ -18,55 +16,23 @@ interface InvoiceTableRowProps {
     remaining_balance?: number;
     customer_phone?: string;
     customer_address?: string;
+    acknowledged_by?: string;
+    received_by?: string;
+    user_id: string;
   };
   onDelete: (id: string) => Promise<void>;
 }
 
 export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
-  const { data: items = [], isLoading } = useQuery({
-    queryKey: ["invoice-items", invoice.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("invoice_items")
-        .select(`
-          id,
-          quantity,
-          price,
-          discount,
-          total,
-          eye_side,
-          sph,
-          cyl,
-          axis,
-          add_power,
-          pd,
-          sh,
-          v_frame,
-          f_size,
-          prism,
-          product_id,
-          products (
-            id,
-            name,
-            brand
-          )
-        `)
-        .eq("invoice_id", invoice.id);
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
   return (
     <tr className="border-b">
       <td className="py-4 px-4">
         <PDFDownloadLink
-          document={<InvoicePDF invoice={invoice} items={items} />}
+          document={<InvoicePDF invoice={invoice} items={[]} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
           {({ loading }) => (
-            <Button variant="ghost" size="sm" disabled={loading || isLoading}>
+            <Button variant="ghost" size="sm" disabled={loading}>
               {invoice.invoice_number}
             </Button>
           )}
