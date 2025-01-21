@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import {
   SessionContextProvider,
   useSession,
@@ -45,6 +45,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return session ? <>{children}</> : null;
 };
 
+// WhatsApp button wrapper that hides on admin route
+const ConditionalWhatsAppButton = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname === "/admin";
+  
+  if (isAdminRoute) return null;
+  return <WhatsAppButton />;
+};
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -65,7 +74,7 @@ const App = () => {
               <Route path="/luckyangpao" element={<LuckyAngpau />} />
               <Route path="/visiontest" element={<EyeCheckPage />} />
             </Routes>
-            <WhatsAppButton />
+            <ConditionalWhatsAppButton />
           </BrowserRouter>
         </TooltipProvider>
       </SessionContextProvider>
