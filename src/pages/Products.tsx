@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, checkSupabaseConnection } from "@/integrations/supabase/client";
 import {
   Search,
   SlidersHorizontal,
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Sheet,
   SheetContent,
@@ -30,8 +31,6 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ProductCard } from "@/components/ProductCard";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -117,6 +116,7 @@ const PaginationControls = ({ currentPage, totalPages, onPageChange }) => {
     </div>
   );
 };
+
 const FilterSheet = ({
   selectedType,
   setSelectedType,
@@ -173,7 +173,7 @@ const FilterSheet = ({
 
       <div className="space-y-2">
         <h3 className="text-sm font-medium">Sort By</h3>
-        <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
+        <Select value={sortBy} onValueChange={setSortBy}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Sort By" />
           </SelectTrigger>
@@ -291,39 +291,61 @@ export default function ProductsPage() {
 
   const { ref: loadMoreRef, inView } = useInView();
 
+  // Add connection check
+  useEffect(() => {
+    checkSupabaseConnection().then((isConnected) => {
+      if (!isConnected) {
+        toast.error("Failed to connect to the database. Please try again later.");
+      }
+    });
+  }, []);
+
   const {
     data: allProducts = [],
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["products", searchQuery, selectedType, selectedBrand, sortBy],
     queryFn: async () => {
-      let query = supabase
-        .from("products")
-        .select("id, name, brand, image_url, online_price, category")
-        .not("image_url", "is", null);
+      try {
+        let query = supabase
+          .from("products")
+          .select("id, name, brand, image_url, online_price, category")
+          .not("image_url", "is", null);
 
-      if (searchQuery) {
-        query = query.ilike("name", `%${searchQuery}%`);
-      }
-      if (selectedType !== "all") {
-        query = query.eq("category", selectedType);
-      }
-      if (selectedBrand !== "all") {
-        query = query.eq("brand", selectedBrand);
-      }
-      if (sortBy === "price_asc") {
-        query = query.order("online_price", { ascending: true });
-      } else if (sortBy === "price_desc") {
-        query = query.order("online_price", { ascending: false });
-      } else {
-        query = query.order("created_at", { ascending: false });
-      }
+        if (searchQuery) {
+          query = query.ilike("name", `%${searchQuery}%`);
+        }
+        if (selectedType !== "all") {
+          query = query.eq("category", selectedType);
+        }
+        if (selectedBrand !== "all") {
+          query = query.eq("brand", selectedBrand);
+        }
+        if (sortBy === "price_asc") {
+          query = query.order("online_price", { ascending: true });
+        } else if (sortBy === "price_desc") {
+          query = query.order("online_price", { ascending: false });
+        } else {
+          query = query.order("created_at", { ascending: false });
+        }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data || [];
+        const { data, error } = await query;
+        
+        if (error) {
+          console.error("Supabase query error:", error);
+          throw error;
+        }
+        
+        return data || [];
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+        throw err;
+      }
     },
+    retry: 2,
+    retryDelay: 1000,
   });
 
   const { data: brands = [] } = useQuery({
@@ -439,12 +461,12 @@ export default function ProductsPage() {
             <div className="text-center py-12">
               <p className="text-lg text-red-500">Failed to load products</p>
               <p className="text-sm text-gray-500 mt-2">
-                Please try again later
+                Please check your connection and try again
               </p>
               <Button
                 variant="outline"
                 className="mt-4"
-                onClick={() => window.location.reload()}
+                onClick={() => refetch()}
               >
                 Retry
               </Button>
