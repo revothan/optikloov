@@ -86,7 +86,7 @@ export function ProductFilters({
                     <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="Sunglasses">Sunglasses</SelectItem>
                     <SelectItem value="Eyeglasses">Eyeglasses</SelectItem>
-                    <SelectItem value="Contact Lenses">Contact Lenses</SelectItem>
+                    <SelectItem value="Soft Lens">Soft Lens</SelectItem>
                     <SelectItem value="Accessories">Accessories</SelectItem>
                   </SelectContent>
                 </Select>

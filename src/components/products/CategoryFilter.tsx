@@ -17,7 +17,7 @@ export function CategoryFilter({ selectedCategory, setSelectedCategory }: Catego
     { value: "Frame", label: "Frame" },
     { value: "Sunglasses", label: "Sunglasses" },
     { value: "Lensa", label: "Lensa" },
-    { value: "Softlens", label: "Softlens" },
+    { value: "Soft Lens", label: "Soft Lens" },
   ];
 
   return (
