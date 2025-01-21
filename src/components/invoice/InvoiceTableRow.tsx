@@ -1,97 +1,85 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { PDFDownloadLink } from "@react-pdf/renderer";
+import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/utils";
 
-interface Invoice {
-  id: string;
-  invoice_number: string;
-  sale_date: string;
-  customer_name: string;
-  customer_phone: string;
-  customer_address: string;
-  total_amount: number;
-  discount_amount: number;
-  grand_total: number;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-  payment_type: string;
-  down_payment: number;
-  paid_amount: number;
-  remaining_balance: number;
-  acknowledged_by: string;
-  received_by: string;
-}
-
 interface InvoiceTableRowProps {
-  invoice: Invoice;
-  onDelete: (id: string) => void;
+  invoice: {
+    id: string;
+    invoice_number: string;
+    sale_date: string;
+    customer_name: string;
+    total_amount: number;
+    discount_amount: number;
+    grand_total: number;
+    down_payment?: number;
+    remaining_balance?: number;
+    customer_phone?: string;
+    customer_address?: string;
+  };
 }
 
-export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
+export function InvoiceTableRow({ invoice }: InvoiceTableRowProps) {
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["invoice-items", invoice.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("invoice_items")
+        .select(`
+          id,
+          quantity,
+          price,
+          discount,
+          total,
+          eye_side,
+          sph,
+          cyl,
+          axis,
+          add_power,
+          pd,
+          sh,
+          v_frame,
+          f_size,
+          prism,
+          product_id,
+          products (
+            id,
+            name,
+            brand
+          )
+        `)
+        .eq("invoice_id", invoice.id);
 
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      await onDelete(invoice.id);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+      if (error) throw error;
+      return data;
+    },
+  });
 
   return (
-    <tr key={invoice.id}>
-      <td className="px-4 py-2">{invoice.invoice_number}</td>
-      <td className="px-4 py-2">{invoice.customer_name}</td>
-      <td className="px-4 py-2">{formatPrice(invoice.grand_total)}</td>
-      <td className="px-4 py-2">
+    <tr className="border-b">
+      <td className="py-4 px-4">
         <PDFDownloadLink
-          document={<InvoicePDF invoice={invoice} items={[]} />}
+          document={<InvoicePDF invoice={invoice} items={items} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
           {({ loading }) => (
-            <Button variant="outline" size="sm" disabled={loading}>
-              {loading ? "Loading..." : "Download PDF"}
+            <Button variant="ghost" size="sm" disabled={loading || isLoading}>
+              {invoice.invoice_number}
             </Button>
           )}
         </PDFDownloadLink>
       </td>
-      <td className="px-4 py-2">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" size="icon" disabled={isDeleting}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete this invoice? This action cannot be
-                undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      <td className="py-4 px-4">{invoice.customer_name}</td>
+      <td className="py-4 px-4">{formatPrice(invoice.total_amount)}</td>
+      <td className="py-4 px-4">{formatPrice(invoice.discount_amount)}</td>
+      <td className="py-4 px-4">{formatPrice(invoice.grand_total)}</td>
+      <td className="py-4 px-4">
+        {invoice.down_payment ? formatPrice(invoice.down_payment) : "-"}
+      </td>
+      <td className="py-4 px-4">
+        {invoice.remaining_balance ? formatPrice(invoice.remaining_balance) : "-"}
       </td>
     </tr>
   );
