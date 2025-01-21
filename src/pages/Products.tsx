@@ -41,7 +41,7 @@ export default function ProductsPage() {
           query = query.eq("category", selectedType);
         }
         if (selectedBrand !== "all") {
-          query = query.eq("brand", selectedBrand);
+          query = query.ilike("brand", selectedBrand);
         }
         if (sortBy === "price_asc") {
           query = query.order("online_price", { ascending: true });
