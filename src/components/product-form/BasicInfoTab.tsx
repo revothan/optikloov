@@ -1,3 +1,4 @@
+import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
   FormField,
@@ -8,69 +9,25 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ProductImageUpload } from "@/components/ProductImageUpload";
-import { Tables } from "@/integrations/supabase/types";
+import { Switch } from "@/components/ui/switch";
+import { ProductImageUpload } from "../ProductImageUpload";
 
 interface BasicInfoTabProps {
   form: UseFormReturn<any>;
-  product?: Tables<"products">;
 }
 
-export function BasicInfoTab({ form, product }: BasicInfoTabProps) {
-  const handleImageChange = (url: string) => {
-    console.log("Image URL received:", url);
-    form.setValue("image_url", url, {
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: true,
-    });
-  };
-
-  const handleAdditionalImagesChange = (urls: { [key: string]: string }) => {
-    Object.entries(urls).forEach(([key, value]) => {
-      form.setValue(key, value, {
-        shouldDirty: true,
-        shouldTouch: true,
-        shouldValidate: true,
-      });
-    });
-  };
-
+export function BasicInfoTab({ form }: BasicInfoTabProps) {
   return (
     <div className="space-y-6">
-      <FormField
-        control={form.control}
-        name="image_url"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Product Images</FormLabel>
-            <FormControl>
-              <ProductImageUpload
-                onImageUrlChange={handleImageChange}
-                onAdditionalImagesChange={handleAdditionalImagesChange}
-                defaultImageUrl={field.value || product?.image_url}
-                defaultAdditionalImages={{
-                  photo_1: form.watch("photo_1") || "",
-                  photo_2: form.watch("photo_2") || "",
-                  photo_3: form.watch("photo_3") || "",
-                }}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nama Produk</FormLabel>
+              <FormLabel>Product Name</FormLabel>
               <FormControl>
-                <Input placeholder="Masukkan nama produk" {...field} />
+                <Input placeholder="Enter product name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -82,37 +39,25 @@ export function BasicInfoTab({ form, product }: BasicInfoTabProps) {
           name="alternative_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nama Alternatif</FormLabel>
+              <FormLabel>Alternative Name</FormLabel>
               <FormControl>
-                <Input placeholder="Masukkan nama alternatif" {...field} />
+                <Input placeholder="Alternative name (optional)" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+      </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={form.control}
-          name="sku"
+          name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>SKU</FormLabel>
+              <FormLabel>Category</FormLabel>
               <FormControl>
-                <Input placeholder="Masukkan SKU" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="barcode"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Barcode</FormLabel>
-              <FormControl>
-                <Input placeholder="Masukkan barcode" {...field} />
+                <Input placeholder="Product category" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -126,35 +71,7 @@ export function BasicInfoTab({ form, product }: BasicInfoTabProps) {
             <FormItem>
               <FormLabel>Brand</FormLabel>
               <FormControl>
-                <Input placeholder="Masukkan brand" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Kategori</FormLabel>
-              <FormControl>
-                <Input placeholder="Masukkan kategori" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="uom"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Satuan (UOM)</FormLabel>
-              <FormControl>
-                <Input placeholder="Masukkan satuan" {...field} />
+                <Input placeholder="Product brand" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -167,10 +84,10 @@ export function BasicInfoTab({ form, product }: BasicInfoTabProps) {
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Deskripsi</FormLabel>
+            <FormLabel>Description</FormLabel>
             <FormControl>
               <Textarea
-                placeholder="Masukkan deskripsi produk"
+                placeholder="Product description"
                 className="resize-none"
                 {...field}
               />
@@ -180,118 +97,83 @@ export function BasicInfoTab({ form, product }: BasicInfoTabProps) {
         )}
       />
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={form.control}
-          name="has_variants"
+          name="sku"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+            <FormItem>
+              <FormLabel>SKU</FormLabel>
               <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Input placeholder="Stock Keeping Unit" {...field} />
               </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>Memiliki Varian</FormLabel>
-              </div>
+              <FormMessage />
             </FormItem>
           )}
         />
 
-        {form.watch("has_variants") && (
-          <>
-            <FormField
-              control={form.control}
-              name="variant_label"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Label Varian</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Contoh: Ukuran, Warna, dll"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="variant_names"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nama Varian</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Contoh: S,M,L,XL atau Merah,Biru,Hijau"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="alternative_variant_names"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nama Alternatif Varian</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Nama alternatif untuk varian"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="published"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Dipublikasikan</FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="pos_hidden"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Sembunyikan di POS</FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="barcode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Barcode</FormLabel>
+              <FormControl>
+                <Input placeholder="Product barcode" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
+
+      <div className="space-y-4">
+        <FormField
+          control={form.control}
+          name="published"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Published</FormLabel>
+                <FormMessage />
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+      </div>
+
+      <FormField
+        control={form.control}
+        name="image_url"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Product Images</FormLabel>
+            <FormControl>
+              <ProductImageUpload
+                onImageUrlChange={field.onChange}
+                defaultImageUrl={field.value}
+                onAdditionalImagesChange={(urls) => {
+                  form.setValue("photo_1", urls.photo_1 || null);
+                  form.setValue("photo_2", urls.photo_2 || null);
+                  form.setValue("photo_3", urls.photo_3 || null);
+                }}
+                defaultAdditionalImages={{
+                  photo_1: form.getValues("photo_1"),
+                  photo_2: form.getValues("photo_2"),
+                  photo_3: form.getValues("photo_3"),
+                }}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }
