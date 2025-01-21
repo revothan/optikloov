@@ -16,9 +16,10 @@ import LuckyAngpau from "./pages/LuckyAngpau";
 import Contact from "./pages/Contact";
 import Products from "./pages/Products";
 import Membership from "./pages/Membership";
-import ProductDetail from "./pages/ProductDetail"; // Fixed import
+import ProductDetail from "./pages/ProductDetail";
 import { useEffect } from "react";
 import EyeCheckPage from "./pages/EyeCheck";
+import { WhatsAppButton } from "./components/WhatsAppButton";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -59,12 +60,12 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/products" element={<Products />} />
-              <Route path="/products/:id" element={<ProductDetail />} />{" "}
-              {/* Added new route */}
+              <Route path="/products/:id" element={<ProductDetail />} />
               <Route path="/membership" element={<Membership />} />
               <Route path="/luckyangpao" element={<LuckyAngpau />} />
               <Route path="/visiontest" element={<EyeCheckPage />} />
             </Routes>
+            <WhatsAppButton />
           </BrowserRouter>
         </TooltipProvider>
       </SessionContextProvider>
