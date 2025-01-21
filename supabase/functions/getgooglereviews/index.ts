@@ -18,8 +18,7 @@ serve(async (req) => {
       throw new Error('Google Places API key not found');
     }
 
-    // Add language parameter to get reviews in Indonesian
-    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${PLACE_ID}&fields=reviews&language=id&key=${API_KEY}`;
+    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${PLACE_ID}&fields=reviews&key=${API_KEY}`;
     
     console.log('Fetching reviews from Google Places API...');
     const response = await fetch(url);
