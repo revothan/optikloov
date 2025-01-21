@@ -1,16 +1,10 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { ProductImageUpload } from "../ProductImageUpload";
+import { FormFields } from "./FormFields";
+import { TabContent } from "./TabContent";
 
 interface BasicInfoTabProps {
   form: UseFormReturn<any>;
@@ -19,113 +13,58 @@ interface BasicInfoTabProps {
 export function BasicInfoTab({ form }: BasicInfoTabProps) {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          control={form.control}
+      <TabContent>
+        <FormFields
+          form={form}
           name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Product Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter product name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Product Name"
+          placeholder="Enter product name"
         />
-
-        <FormField
-          control={form.control}
+        <FormFields
+          form={form}
           name="alternative_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Alternative Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Alternative name (optional)" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Alternative Name"
+          placeholder="Alternative name (optional)"
         />
-      </div>
+      </TabContent>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          control={form.control}
+      <TabContent>
+        <FormFields
+          form={form}
           name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Category</FormLabel>
-              <FormControl>
-                <Input placeholder="Product category" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Category"
+          placeholder="Product category"
         />
-
-        <FormField
-          control={form.control}
+        <FormFields
+          form={form}
           name="brand"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Brand</FormLabel>
-              <FormControl>
-                <Input placeholder="Product brand" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Brand"
+          placeholder="Product brand"
         />
-      </div>
+      </TabContent>
 
-      <FormField
-        control={form.control}
+      <FormFields
+        form={form}
         name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Description</FormLabel>
-            <FormControl>
-              <Textarea
-                placeholder="Product description"
-                className="resize-none"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+        label="Description"
+        placeholder="Product description"
+        isTextArea
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          control={form.control}
+      <TabContent>
+        <FormFields
+          form={form}
           name="sku"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>SKU</FormLabel>
-              <FormControl>
-                <Input placeholder="Stock Keeping Unit" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="SKU"
+          placeholder="Stock Keeping Unit"
         />
-
-        <FormField
-          control={form.control}
+        <FormFields
+          form={form}
           name="barcode"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Barcode</FormLabel>
-              <FormControl>
-                <Input placeholder="Product barcode" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Barcode"
+          placeholder="Product barcode"
         />
-      </div>
+      </TabContent>
 
       <div className="space-y-4">
         <FormField

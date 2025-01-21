@@ -1,14 +1,9 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
+import { FormFields } from "./FormFields";
+import { TabContent } from "./TabContent";
 
 interface PricingTabProps {
   form: UseFormReturn<any>;
@@ -17,95 +12,56 @@ interface PricingTabProps {
 export function PricingTab({ form }: PricingTabProps) {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          control={form.control}
+      <TabContent>
+        <FormFields
+          form={form}
           name="store_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Store Price</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="0" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Store Price"
+          type="number"
+          placeholder="0"
         />
-
-        <FormField
-          control={form.control}
+        <FormFields
+          form={form}
           name="online_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Online Price</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="0" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Online Price"
+          type="number"
+          placeholder="0"
         />
-      </div>
+      </TabContent>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          control={form.control}
+      <TabContent>
+        <FormFields
+          form={form}
           name="buy_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Buy Price</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="0" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Buy Price"
+          type="number"
+          placeholder="0"
         />
-
-        <FormField
-          control={form.control}
+        <FormFields
+          form={form}
           name="market_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Market Price</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="0" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Market Price"
+          type="number"
+          placeholder="0"
         />
-      </div>
+      </TabContent>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          control={form.control}
+      <TabContent>
+        <FormFields
+          form={form}
           name="sell_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Sell Price</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="0" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Sell Price"
+          type="number"
+          placeholder="0"
         />
-
-        <FormField
-          control={form.control}
+        <FormFields
+          form={form}
           name="pos_sell_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>POS Sell Price</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="0" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="POS Sell Price"
+          type="number"
+          placeholder="0"
         />
-      </div>
+      </TabContent>
 
       <FormField
         control={form.control}
@@ -126,18 +82,12 @@ export function PricingTab({ form }: PricingTabProps) {
         )}
       />
 
-      <FormField
-        control={form.control}
+      <FormFields
+        form={form}
         name="comission"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Commission</FormLabel>
-            <FormControl>
-              <Input type="number" placeholder="0" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+        label="Commission"
+        type="number"
+        placeholder="0"
       />
     </div>
   );
