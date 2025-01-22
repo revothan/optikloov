@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Star, Quote } from "lucide-react";
+import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Carousel,
