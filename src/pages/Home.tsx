@@ -1,7 +1,7 @@
-import { Footer } from "@/components/Footer";
-import { Navbar } from "@/components/Navbar";
-import { HeroCarousel } from "@/components/HeroCarousel";
-import { BrandSection } from "@/components/BrandSection";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import HeroCarousel from "@/components/HeroCarousel";
+import BrandSection from "@/components/BrandSection";
 import { RecentProducts } from "@/components/RecentProducts";
 import TestimonialSection from "@/components/TestimonialSection";
 
