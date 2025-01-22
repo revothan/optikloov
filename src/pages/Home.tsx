@@ -1,19 +1,19 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import BrandSection from "@/components/BrandSection";
-import HeroCarousel from "@/components/HeroCarousel";
-import Map from "@/components/Maps";
+import { Footer } from "@/components/Footer";
+import { Navbar } from "@/components/Navbar";
+import { HeroCarousel } from "@/components/HeroCarousel";
+import { BrandSection } from "@/components/BrandSection";
+import { RecentProducts } from "@/components/RecentProducts";
 import TestimonialSection from "@/components/TestimonialSection";
 
 const Home = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       <main>
         <HeroCarousel />
-        <TestimonialSection />
-        <Map />
         <BrandSection />
+        <RecentProducts />
+        <TestimonialSection />
       </main>
       <Footer />
     </div>
