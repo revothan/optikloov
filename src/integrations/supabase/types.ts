@@ -182,6 +182,7 @@ export type Database = {
           received_by: string | null
           remaining_balance: number | null
           sale_date: string
+          status: string | null
           total_amount: number
           updated_at: string
           user_id: string
@@ -202,6 +203,7 @@ export type Database = {
           received_by?: string | null
           remaining_balance?: number | null
           sale_date: string
+          status?: string | null
           total_amount?: number
           updated_at?: string
           user_id: string
@@ -222,6 +224,7 @@ export type Database = {
           received_by?: string | null
           remaining_balance?: number | null
           sale_date?: string
+          status?: string | null
           total_amount?: number
           updated_at?: string
           user_id?: string

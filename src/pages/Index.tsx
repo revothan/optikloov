@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { MapPin, Facebook, Instagram, MessageCircle, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { RecentProducts } from "@/components/RecentProducts";
+import TestimonialSection from "@/components/TestimonialSection";
 
 const COUNTDOWN_DATE = new Date('2024-12-12T00:00:00');
 
@@ -42,9 +44,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center p-4 md:p-8">
-      {/* Logo with glass morphism effect - moved to top and made smaller */}
-      <div className="w-24 h-24 mb-8 flex items-center justify-center backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-2">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center">
+      {/* Logo Section */}
+      <div className="w-24 h-24 mb-8 flex items-center justify-center backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-2 mt-8">
         <img 
           src="https://ucarecdn.com/f1e8a0de-f654-46bd-83f6-771d47116b66/-/preview/1000x1000/" 
           alt="Optik LOOV Logo" 
@@ -59,7 +61,7 @@ const Index = () => {
         </span>
       </div>
 
-      {/* Countdown Section with glass morphism - improved mobile responsiveness */}
+      {/* Countdown Section */}
       <Card className="bg-black/40 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl mb-12 w-full max-w-2xl animate-fade-in">
         <h2 className="text-sm uppercase tracking-[0.2em] text-gray-400 mb-2 text-center">
           Soft Opening
@@ -85,7 +87,7 @@ const Index = () => {
         </Button>
       </Card>
 
-      {/* Location Section with glass morphism */}
+      {/* Location Section */}
       <Card className="bg-black/40 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl w-full max-w-2xl mb-12 animate-fade-in">
         <div className="space-y-6">
           <div className="text-center">
@@ -114,7 +116,7 @@ const Index = () => {
       </Card>
 
       {/* Social Media Links Section */}
-      <Card className="bg-black/40 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl w-full max-w-2xl animate-fade-in">
+      <Card className="bg-black/40 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl w-full max-w-2xl mb-12 animate-fade-in">
         <div className="space-y-6">
           <div className="text-center">
             <h2 className="text-sm uppercase tracking-[0.2em] text-gray-400 mb-4">
@@ -149,6 +151,12 @@ const Index = () => {
           </div>
         </div>
       </Card>
+
+      {/* Recent Products Section */}
+      <RecentProducts />
+
+      {/* Testimonials Section */}
+      <TestimonialSection />
     </div>
   );
 };
