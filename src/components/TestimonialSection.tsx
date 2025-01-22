@@ -30,9 +30,7 @@ const TestimonialSection = () => {
     queryKey: ["googleReviews"],
     queryFn: async () => {
       console.log("Fetching Google reviews...");
-      const { data, error } = await supabase.functions.invoke("getgooglereviews", {
-        body: { language: "id" }, // Request Indonesian reviews
-      });
+      const { data, error } = await supabase.functions.invoke("getgooglereviews");
       if (error) {
         console.error("Error fetching reviews:", error);
         throw error;
