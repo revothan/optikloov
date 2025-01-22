@@ -11,8 +11,8 @@ const Home = () => {
       <Navbar />
       <main>
         <HeroCarousel />
-        <BrandSection />
         <RecentProducts />
+        <BrandSection />
         <TestimonialSection />
       </main>
       <Footer />

@@ -14,7 +14,7 @@ export function RecentProducts() {
         .select("id, name, brand, image_url, online_price, category")
         .not("image_url", "is", null)
         .order("created_at", { ascending: false })
-        .limit(5);
+        .limit(8);
 
       if (error) throw error;
       return data;
@@ -41,7 +41,7 @@ export function RecentProducts() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
