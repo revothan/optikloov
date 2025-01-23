@@ -2,24 +2,22 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import {
   SessionContextProvider,
   useSession,
 } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import Index from "./pages/Index";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
-import LuckyAngpau from "./pages/LuckyAngpau";
 import Contact from "./pages/Contact";
 import Products from "./pages/Products";
 import Membership from "./pages/Membership";
 import ProductDetail from "./pages/ProductDetail";
-import { useEffect } from "react";
 import EyeCheckPage from "./pages/EyeCheck";
 import { WhatsAppButton } from "./components/WhatsAppButton";
+import LuckyAngpau from "./pages/LuckyAngpau";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -35,24 +33,16 @@ const queryClient = new QueryClient({
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
 
-  useEffect(() => {
-    if (!session) {
-      // Redirect them to the /login page if not authenticated
-      window.location.href = "/login";
-    }
-  }, [session]);
+  if (!session) {
+    // Redirect them to the /login page if not authenticated
+    window.location.href = "/login";
+    return null;
+  }
 
-  return session ? <>{children}</> : null;
+  return <>{children}</>;
 };
 
-// WhatsApp button wrapper that hides on admin route
-const ConditionalWhatsAppButton = () => {
-  const location = useLocation();
-  const isAdminRoute = location.pathname === "/admin";
-  
-  if (isAdminRoute) return null;
-  return <WhatsAppButton />;
-};
+const isAdminSubdomain = window.location.hostname.startsWith('admin.');
 
 const App = () => {
   return (
@@ -63,18 +53,37 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/store" element={<Home />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/products/:id" element={<ProductDetail />} />
-              <Route path="/membership" element={<Membership />} />
-              <Route path="/luckyangpao" element={<LuckyAngpau />} />
-              <Route path="/visiontest" element={<EyeCheckPage />} />
+              {isAdminSubdomain ? (
+                // Admin subdomain routes
+                <>
+                  <Route path="/login" element={<Login />} />
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <Admin />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="*" element={<Navigate to="/" />} />
+                </>
+              ) : (
+                // Main site routes
+                <>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/store" element={<Home />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/products/:id" element={<ProductDetail />} />
+                  <Route path="/membership" element={<Membership />} />
+                  <Route path="/luckyangpao" element={<LuckyAngpau />} />
+                  <Route path="/visiontest" element={<EyeCheckPage />} />
+                </>
+              )}
             </Routes>
-            <ConditionalWhatsAppButton />
+            {!isAdminSubdomain && <WhatsAppButton />}
           </BrowserRouter>
         </TooltipProvider>
       </SessionContextProvider>
