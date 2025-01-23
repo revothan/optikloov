@@ -15,25 +15,6 @@ interface PrescriptionFieldsProps {
 }
 
 export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProps) {
-  // Only format the display value, not the input value
-  const formatDisplayValue = (value: number | null, type: 'sph' | 'cyl' | 'add') => {
-    if (value === null) return '';
-    
-    const absValue = Math.abs(value);
-    const formattedNumber = absValue.toFixed(2);
-    
-    switch(type) {
-      case 'sph':
-        return value >= 0 ? `+${formattedNumber}` : `-${formattedNumber}`;
-      case 'cyl':
-        return value === 0 ? '0.00' : `-${formattedNumber}`;
-      case 'add':
-        return value === 0 ? '0.00' : `+${formattedNumber}`;
-      default:
-        return formattedNumber;
-    }
-  };
-
   const handleValueChange = (fieldName: string, value: string, type: 'sph' | 'cyl' | 'add') => {
     // Allow typing of decimal numbers and negative signs
     const isValidInput = /^-?\d*\.?\d*$/.test(value);
@@ -66,11 +47,10 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
                 <Input
                   type="text"
                   {...field}
-                  value={field.value !== null ? field.value.toString() : ''}
+                  value={field.value !== null && field.value !== undefined ? field.value.toString() : ''}
                   onChange={(e) => handleValueChange(`${field.name}`, e.target.value, 'sph')}
                   onBlur={() => {
                     if (field.value !== null) {
-                      // Format on blur
                       const formatted = parseFloat(field.value.toFixed(2));
                       form.setValue(`items.${index}.${side}_eye.sph`, formatted);
                     }
@@ -93,7 +73,7 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
                 <Input
                   type="text"
                   {...field}
-                  value={field.value !== null ? field.value.toString() : ''}
+                  value={field.value !== null && field.value !== undefined ? field.value.toString() : ''}
                   onChange={(e) => handleValueChange(`${field.name}`, e.target.value, 'cyl')}
                   onBlur={() => {
                     if (field.value !== null) {
@@ -140,7 +120,7 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
                 <Input
                   type="text"
                   {...field}
-                  value={field.value !== null ? field.value.toString() : ''}
+                  value={field.value !== null && field.value !== undefined ? field.value.toString() : ''}
                   onChange={(e) => handleValueChange(`${field.name}`, e.target.value, 'add')}
                   onBlur={() => {
                     if (field.value !== null) {
