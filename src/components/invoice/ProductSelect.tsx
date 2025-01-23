@@ -52,16 +52,17 @@ export function ProductSelect({
       if (error) throw error;
       return data || [];
     },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   const filteredProducts = useMemo(() => {
+    if (!Array.isArray(products)) return [];
+    
     return products.filter((product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      product.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [products, searchQuery]);
 
-  const selectedProduct = products.find((product) => product.id === value);
+  const selectedProduct = products?.find((product) => product.id === value);
 
   if (isError) {
     return (
@@ -89,7 +90,7 @@ export function ProductSelect({
               aria-expanded={open}
               className={cn(
                 "w-full justify-between",
-                !value && "text-muted-foreground",
+                !value && "text-muted-foreground"
               )}
               disabled={isLoading}
             >
@@ -139,7 +140,7 @@ export function ProductSelect({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          value === product.id ? "opacity-100" : "opacity-0",
+                          value === product.id ? "opacity-100" : "opacity-0"
                         )}
                       />
                       {product.name}
@@ -155,4 +156,3 @@ export function ProductSelect({
     </FormItem>
   );
 }
-

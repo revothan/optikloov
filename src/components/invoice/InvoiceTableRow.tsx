@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
-import { PDFDownloadLink, BlobProvider } from "@react-pdf/renderer";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,13 +13,12 @@ import {
   Printer, 
   Share2, 
   Mail, 
-  MessageCircle,
   MoreHorizontal,
   Trash
 } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
-import { ReactNode } from "react";
+import { ReactElement } from "react";
 
 interface InvoiceTableRowProps {
   invoice: {
@@ -66,13 +65,13 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
-  const renderPDFDownload = (loading: boolean): ReactNode => (
+  const renderPDFDownload = ({ loading }: { loading: boolean }): ReactElement => (
     <Button variant="ghost" size="sm" disabled={loading}>
       {loading ? "Loading..." : invoice.invoice_number}
     </Button>
   );
 
-  const renderPDFDownloadMenuItem = (loading: boolean): ReactNode => (
+  const renderPDFDownloadMenuItem = ({ loading }: { loading: boolean }): ReactElement => (
     <div className="flex items-center">
       <Download className="mr-2 h-4 w-4" />
       {loading ? "Loading..." : "Download PDF"}
@@ -86,7 +85,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
           document={<InvoicePDF invoice={invoice} items={[]} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
-          {({ loading }) => renderPDFDownload(loading) as ReactNode}
+          {renderPDFDownload}
         </PDFDownloadLink>
       </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>
@@ -125,7 +124,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                   document={<InvoicePDF invoice={invoice} items={[]} />}
                   fileName={`invoice-${invoice.invoice_number}.pdf`}
                 >
-                  {({ loading }) => renderPDFDownloadMenuItem(loading) as ReactNode}
+                  {renderPDFDownloadMenuItem}
                 </PDFDownloadLink>
               </DropdownMenuItem>
               <DropdownMenuItem
