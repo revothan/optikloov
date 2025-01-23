@@ -7,8 +7,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { NumericKeypad } from "./NumericKeypad";
+import { NumericKeypadDialog } from "./NumericKeypadDialog";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PrescriptionFieldsProps {
   form: UseFormReturn<any>;
@@ -18,6 +19,7 @@ interface PrescriptionFieldsProps {
 
 export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProps) {
   const [activeField, setActiveField] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   const formatValue = (value: number | null, type: 'sph' | 'cyl' | 'add') => {
     if (value === null) return '';
@@ -57,25 +59,15 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
             <FormItem>
               <FormLabel>SPH</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    {...field}
-                    value={formatValue(field.value, 'sph')}
-                    onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
-                    onFocus={() => setActiveField(`${field.name}`)}
-                    className="text-right"
-                  />
-                  {activeField === field.name && (
-                    <NumericKeypad
-                      onValue={(value) => handleValueChange(`${field.name}`, value)}
-                      onClose={() => setActiveField(null)}
-                      allowNegative
-                      initialValue={field.value?.toString() || ''}
-                    />
-                  )}
-                </div>
+                <Input
+                  type="text"
+                  inputMode={isMobile ? "none" : "decimal"}
+                  {...field}
+                  value={formatValue(field.value, 'sph')}
+                  onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
+                  onFocus={() => setActiveField(`${field.name}`)}
+                  className="text-right"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -89,25 +81,15 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
             <FormItem>
               <FormLabel>CYL</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    {...field}
-                    value={formatValue(field.value, 'cyl')}
-                    onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
-                    onFocus={() => setActiveField(`${field.name}`)}
-                    className="text-right"
-                  />
-                  {activeField === field.name && (
-                    <NumericKeypad
-                      onValue={(value) => handleValueChange(`${field.name}`, value)}
-                      onClose={() => setActiveField(null)}
-                      alwaysNegative
-                      initialValue={field.value?.toString() || ''}
-                    />
-                  )}
-                </div>
+                <Input
+                  type="text"
+                  inputMode={isMobile ? "none" : "decimal"}
+                  {...field}
+                  value={formatValue(field.value, 'cyl')}
+                  onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
+                  onFocus={() => setActiveField(`${field.name}`)}
+                  className="text-right"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -142,31 +124,38 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
             <FormItem>
               <FormLabel>ADD</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    {...field}
-                    value={formatValue(field.value, 'add')}
-                    onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
-                    onFocus={() => setActiveField(`${field.name}`)}
-                    className="text-right"
-                  />
-                  {activeField === field.name && (
-                    <NumericKeypad
-                      onValue={(value) => handleValueChange(`${field.name}`, value)}
-                      onClose={() => setActiveField(null)}
-                      alwaysPositive
-                      initialValue={field.value?.toString() || ''}
-                    />
-                  )}
-                </div>
+                <Input
+                  type="text"
+                  inputMode={isMobile ? "none" : "decimal"}
+                  {...field}
+                  value={formatValue(field.value, 'add')}
+                  onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
+                  onFocus={() => setActiveField(`${field.name}`)}
+                  className="text-right"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
       </div>
+
+      <NumericKeypadDialog
+        open={!!activeField}
+        onClose={() => setActiveField(null)}
+        onValue={(value) => {
+          if (activeField) {
+            handleValueChange(activeField, value);
+          }
+        }}
+        allowNegative={activeField?.includes('sph')}
+        alwaysNegative={activeField?.includes('cyl')}
+        alwaysPositive={activeField?.includes('add_power')}
+        initialValue={activeField ? 
+          form.getValues(activeField)?.toString().replace(/[+\-]/g, '') || "0" 
+          : "0"
+        }
+      />
     </div>
   );
 }
