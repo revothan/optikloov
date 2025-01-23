@@ -28,11 +28,17 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("payment_types")
-        .select("*")
-        .order("name");
+        .select("*");
       
       if (error) throw error;
-      return data;
+
+      // Define the desired order
+      const order = ["QRIS", "Debit", "Credit Card", "Cash"];
+      
+      // Sort the data based on the order array
+      return data.sort((a, b) => {
+        return order.indexOf(a.name) - order.indexOf(b.name);
+      });
     },
   });
 
