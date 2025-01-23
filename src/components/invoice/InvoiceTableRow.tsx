@@ -1,4 +1,3 @@
-import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
@@ -19,12 +18,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
+import { Fragment } from "react";
 
 interface InvoiceTableRowProps {
   invoice: {
     id: string;
     invoice_number: string;
-    sale_date: string;
     customer_name: string;
     total_amount: number;
     discount_amount: number;
@@ -32,10 +31,6 @@ interface InvoiceTableRowProps {
     down_payment?: number;
     remaining_balance?: number;
     customer_phone?: string;
-    customer_address?: string;
-    acknowledged_by?: string;
-    received_by?: string;
-    user_id: string;
   };
   onDelete: (id: string) => Promise<void>;
 }
@@ -77,11 +72,13 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
           document={<InvoicePDF invoice={invoice} items={[]} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
-          {({ loading }) => (
-            <Button variant="ghost" size="sm" disabled={loading}>
-              {loading ? "Loading..." : invoice.invoice_number}
-            </Button>
-          )}
+          <Fragment>
+            {({ loading }: { loading: boolean }) => (
+              <Button variant="ghost" size="sm" disabled={loading}>
+                {loading ? "Loading..." : invoice.invoice_number}
+              </Button>
+            )}
+          </Fragment>
         </PDFDownloadLink>
       </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>
@@ -120,12 +117,14 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                   document={<InvoicePDF invoice={invoice} items={[]} />}
                   fileName={`invoice-${invoice.invoice_number}.pdf`}
                 >
-                  {({ loading }) => (
-                    <div className="flex items-center">
-                      <Download className="mr-2 h-4 w-4" />
-                      {loading ? "Loading..." : "Download PDF"}
-                    </div>
-                  )}
+                  <Fragment>
+                    {({ loading }: { loading: boolean }) => (
+                      <div className="flex items-center">
+                        <Download className="mr-2 h-4 w-4" />
+                        {loading ? "Loading..." : "Download PDF"}
+                      </div>
+                    )}
+                  </Fragment>
                 </PDFDownloadLink>
               </DropdownMenuItem>
               <DropdownMenuItem
