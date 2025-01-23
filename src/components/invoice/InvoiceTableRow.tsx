@@ -65,13 +65,13 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
-  const renderPDFDownload = ({ loading }: { loading: boolean }): ReactElement => (
+  const renderPDFDownload = ({ loading }: { loading: boolean }): JSX.Element => (
     <Button variant="ghost" size="sm" disabled={loading}>
       {loading ? "Loading..." : invoice.invoice_number}
     </Button>
   );
 
-  const renderPDFDownloadMenuItem = ({ loading }: { loading: boolean }): ReactElement => (
+  const renderPDFDownloadMenuItem = ({ loading }: { loading: boolean }): JSX.Element => (
     <div className="flex items-center">
       <Download className="mr-2 h-4 w-4" />
       {loading ? "Loading..." : "Download PDF"}
@@ -85,11 +85,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
           document={<InvoicePDF invoice={invoice} items={[]} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
-          {({ loading }) => (
-            <Button variant="ghost" size="sm" disabled={loading}>
-              {loading ? "Loading..." : invoice.invoice_number}
-            </Button>
-          )}
+          {renderPDFDownload}
         </PDFDownloadLink>
       </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>
@@ -128,12 +124,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                   document={<InvoicePDF invoice={invoice} items={[]} />}
                   fileName={`invoice-${invoice.invoice_number}.pdf`}
                 >
-                  {({ loading }) => (
-                    <div className="flex items-center">
-                      <Download className="mr-2 h-4 w-4" />
-                      {loading ? "Loading..." : "Download PDF"}
-                    </div>
-                  )}
+                  {renderPDFDownloadMenuItem}
                 </PDFDownloadLink>
               </DropdownMenuItem>
               <DropdownMenuItem

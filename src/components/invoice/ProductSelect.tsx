@@ -70,8 +70,12 @@ export function ProductSelect({
   const handleProductSelect = (product: Product) => {
     onChange(product.id);
     onProductSelect(product);
-    setOpen(false); // Close dropdown after selection
-    setSearchQuery(""); // Reset search query
+    setOpen(false);
+    setSearchQuery("");
+  };
+
+  const handleScroll = (e: React.WheelEvent) => {
+    e.stopPropagation();
   };
 
   if (isError) {
@@ -124,7 +128,7 @@ export function ProductSelect({
           side="bottom"
           sideOffset={4}
         >
-          <div className="flex flex-col">
+          <div className="flex flex-col max-h-[300px]" onWheel={handleScroll}>
             <div className="flex items-center border-b p-2 sticky top-0 bg-background z-10">
               <Input
                 placeholder="Search products..."
@@ -133,7 +137,7 @@ export function ProductSelect({
                 className="border-0 focus-visible:ring-0"
               />
             </div>
-            <ScrollArea className="h-[200px] overflow-y-auto">
+            <ScrollArea className="flex-1 overflow-y-auto">
               {filteredProducts.length === 0 ? (
                 <div className="py-6 text-center text-sm text-muted-foreground">
                   No products found.
@@ -143,6 +147,7 @@ export function ProductSelect({
                   {filteredProducts.map((product) => (
                     <Button
                       key={product.id}
+                      type="button"
                       variant="ghost"
                       className="justify-start font-normal"
                       onClick={() => handleProductSelect(product)}
