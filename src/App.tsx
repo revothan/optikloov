@@ -8,16 +8,8 @@ import {
   useSession,
 } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
-import Contact from "./pages/Contact";
-import Products from "./pages/Products";
-import Membership from "./pages/Membership";
-import ProductDetail from "./pages/ProductDetail";
-import EyeCheckPage from "./pages/EyeCheck";
-import { WhatsAppButton } from "./components/WhatsAppButton";
-import LuckyAngpau from "./pages/LuckyAngpau";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -42,8 +34,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const isAdminSubdomain = window.location.hostname.startsWith('admin.');
-
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -53,39 +43,19 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {isAdminSubdomain ? (
-                // Admin subdomain routes
-                <>
-                  <Route path="/login" element={<Login />} />
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedRoute>
-                        <Admin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  {/* Redirect root to /admin on admin subdomain */}
-                  <Route path="/" element={<Navigate to="/admin" replace />} />
-                  <Route path="*" element={<Navigate to="/admin" />} />
-                </>
-              ) : (
-                // Main site routes
-                <>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/store" element={<Home />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/products/:id" element={<ProductDetail />} />
-                  <Route path="/membership" element={<Membership />} />
-                  <Route path="/luckyangpao" element={<LuckyAngpau />} />
-                  <Route path="/visiontest" element={<EyeCheckPage />} />
-                </>
-              )}
+              <Route path="/login" element={<Login />} />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <Admin />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Redirect root and any other routes to /admin */}
+              <Route path="/" element={<Navigate to="/admin" replace />} />
+              <Route path="*" element={<Navigate to="/admin" />} />
             </Routes>
-            {!isAdminSubdomain && <WhatsAppButton />}
           </BrowserRouter>
         </TooltipProvider>
       </SessionContextProvider>
