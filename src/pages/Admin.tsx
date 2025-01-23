@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LogoutButton } from "@/components/LogoutButton";
 import InvoiceList from "@/components/InvoiceList";
+import { InvoiceDialog } from "@/components/InvoiceDialog";
 import {
   Loader2,
   Package,
@@ -152,11 +153,13 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="invoices">
-            <Suspense fallback={<div>Loading invoices...</div>}>
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <InvoiceList />
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Invoices</h2>
+                <InvoiceDialog />
               </div>
-            </Suspense>
+              <InvoiceList />
+            </div>
           </TabsContent>
         </Tabs>
       </ErrorBoundary>
