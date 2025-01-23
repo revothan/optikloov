@@ -19,17 +19,9 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
     // Allow typing of decimal numbers and negative signs
     const isValidInput = /^-?\d*\.?\d*$/.test(value);
     
-    if (isValidInput || value === '-' || value === '') {
-      // Store the raw input value temporarily
-      const numericValue = value === '' || value === '-' ? null : parseFloat(value);
-      
-      // Only format and store the final value when it's a valid number
-      if (numericValue !== null && !isNaN(numericValue)) {
-        form.setValue(`items.${index}.${side}_eye.${fieldName.split('.').pop()}`, numericValue);
-      } else {
-        // Allow temporary invalid states during typing
-        form.setValue(`items.${index}.${side}_eye.${fieldName.split('.').pop()}`, null);
-      }
+    if (isValidInput || value === '') {
+      const numericValue = value === '' ? null : parseFloat(value);
+      form.setValue(`items.${index}.${side}_eye.${fieldName.split('.').pop()}`, numericValue);
     }
   };
 
@@ -50,8 +42,9 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
                   value={field.value !== null && field.value !== undefined ? field.value.toString() : ''}
                   onChange={(e) => handleValueChange(`${field.name}`, e.target.value, 'sph')}
                   onBlur={() => {
-                    if (field.value !== null) {
-                      const formatted = parseFloat(field.value.toFixed(2));
+                    const value = field.value;
+                    if (value !== null && value !== undefined) {
+                      const formatted = parseFloat(value.toFixed(2));
                       form.setValue(`items.${index}.${side}_eye.sph`, formatted);
                     }
                   }}
@@ -76,8 +69,9 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
                   value={field.value !== null && field.value !== undefined ? field.value.toString() : ''}
                   onChange={(e) => handleValueChange(`${field.name}`, e.target.value, 'cyl')}
                   onBlur={() => {
-                    if (field.value !== null) {
-                      const formatted = parseFloat(field.value.toFixed(2));
+                    const value = field.value;
+                    if (value !== null && value !== undefined) {
+                      const formatted = parseFloat(value.toFixed(2));
                       form.setValue(`items.${index}.${side}_eye.cyl`, formatted);
                     }
                   }}
@@ -123,8 +117,9 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
                   value={field.value !== null && field.value !== undefined ? field.value.toString() : ''}
                   onChange={(e) => handleValueChange(`${field.name}`, e.target.value, 'add')}
                   onBlur={() => {
-                    if (field.value !== null) {
-                      const formatted = parseFloat(field.value.toFixed(2));
+                    const value = field.value;
+                    if (value !== null && value !== undefined) {
+                      const formatted = parseFloat(value.toFixed(2));
                       form.setValue(`items.${index}.${side}_eye.add_power`, formatted);
                     }
                   }}
