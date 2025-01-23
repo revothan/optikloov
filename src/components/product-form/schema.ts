@@ -1,12 +1,15 @@
 import * as z from "zod";
 
+const CATEGORIES = ["Frame", "Lensa", "Soft Lens", "Sunglasses", "Others"] as const;
+
 const createSchema = z.object({
   // Required fields for new products
   name: z.string().min(1, "Nama produk harus diisi"),
   store_price: z.string().min(1, "Harga jual di toko harus diisi"),
-  category: z.string().min(1, "Kategori harus diisi"),
+  category: z.enum(CATEGORIES, {
+    errorMap: () => ({ message: "Please select a valid category" }),
+  }),
 
-  // Optional fields
   alternative_name: z.string().optional(),
   description: z.string().optional(),
   brand: z.string().optional(),
@@ -55,7 +58,9 @@ const editSchema = z.object({
   // All fields are optional for editing
   name: z.string().optional(),
   store_price: z.string().optional(),
-  category: z.string().min(1, "Kategori harus diisi"),
+  category: z.enum(CATEGORIES, {
+    errorMap: () => ({ message: "Please select a valid category" }),
+  }),
   alternative_name: z.string().optional(),
   description: z.string().optional(),
   brand: z.string().optional(),
