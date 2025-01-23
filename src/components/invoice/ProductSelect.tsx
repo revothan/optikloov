@@ -62,9 +62,17 @@ export function ProductSelect({
     );
   }, [products, searchQuery]);
 
-  const selectedProduct = Array.isArray(products) 
-    ? products.find((product) => product.id === value)
-    : undefined;
+  const selectedProduct = useMemo(() => {
+    if (!Array.isArray(products)) return undefined;
+    return products.find((product) => product.id === value);
+  }, [products, value]);
+
+  const handleProductSelect = (product: Product) => {
+    onChange(product.id);
+    onProductSelect(product);
+    setOpen(false); // Close dropdown after selection
+    setSearchQuery(""); // Reset search query
+  };
 
   if (isError) {
     return (
@@ -110,9 +118,14 @@ export function ProductSelect({
             </Button>
           </FormControl>
         </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0" align="start">
+        <PopoverContent 
+          className="w-[300px] p-0" 
+          align="start"
+          side="bottom"
+          sideOffset={4}
+        >
           <div className="flex flex-col">
-            <div className="flex items-center border-b p-2">
+            <div className="flex items-center border-b p-2 sticky top-0 bg-background z-10">
               <Input
                 placeholder="Search products..."
                 value={searchQuery}
@@ -120,7 +133,7 @@ export function ProductSelect({
                 className="border-0 focus-visible:ring-0"
               />
             </div>
-            <ScrollArea className="h-[200px]">
+            <ScrollArea className="h-[200px] overflow-y-auto">
               {filteredProducts.length === 0 ? (
                 <div className="py-6 text-center text-sm text-muted-foreground">
                   No products found.
@@ -132,12 +145,7 @@ export function ProductSelect({
                       key={product.id}
                       variant="ghost"
                       className="justify-start font-normal"
-                      onClick={() => {
-                        onChange(product.id);
-                        onProductSelect(product);
-                        setOpen(false);
-                        setSearchQuery("");
-                      }}
+                      onClick={() => handleProductSelect(product)}
                     >
                       <Check
                         className={cn(
