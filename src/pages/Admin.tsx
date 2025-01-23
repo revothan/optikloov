@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LogoutButton } from "@/components/LogoutButton";
+import InvoiceList from "@/components/InvoiceList";
 import {
   Loader2,
   Package,
@@ -25,7 +26,6 @@ import { formatPrice } from "@/lib/utils";
 
 // Lazy load components
 const CustomerTable = lazy(() => import("@/components/CustomerList"));
-const InvoiceList = lazy(() => import("@/components/InvoiceList"));
 
 export default function Admin() {
   const session = useSession();

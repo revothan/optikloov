@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,13 +73,11 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
           document={<InvoicePDF invoice={invoice} items={[]} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
-          <Fragment>
-            {({ loading }: { loading: boolean }) => (
-              <Button variant="ghost" size="sm" disabled={loading}>
-                {loading ? "Loading..." : invoice.invoice_number}
-              </Button>
-            )}
-          </Fragment>
+          {({ loading }: { loading: boolean }) => (
+            <Button variant="ghost" size="sm" disabled={loading}>
+              {loading ? "Loading..." : invoice.invoice_number}
+            </Button>
+          )}
         </PDFDownloadLink>
       </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>
@@ -117,14 +116,12 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                   document={<InvoicePDF invoice={invoice} items={[]} />}
                   fileName={`invoice-${invoice.invoice_number}.pdf`}
                 >
-                  <Fragment>
-                    {({ loading }: { loading: boolean }) => (
-                      <div className="flex items-center">
-                        <Download className="mr-2 h-4 w-4" />
-                        {loading ? "Loading..." : "Download PDF"}
-                      </div>
-                    )}
-                  </Fragment>
+                  {({ loading }: { loading: boolean }) => (
+                    <div className="flex items-center">
+                      <Download className="mr-2 h-4 w-4" />
+                      {loading ? "Loading..." : "Download PDF"}
+                    </div>
+                  )}
                 </PDFDownloadLink>
               </DropdownMenuItem>
               <DropdownMenuItem
