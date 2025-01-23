@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { PDFDownloadLink, BlobProvider } from "@react-pdf/renderer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
-import { ReactElement } from "react";
+import { ReactNode } from "react";
 
 interface InvoiceTableRowProps {
   invoice: {
@@ -66,13 +66,13 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
-  const renderPDFDownload = (loading: boolean): ReactElement => (
+  const renderPDFDownload = (loading: boolean): ReactNode => (
     <Button variant="ghost" size="sm" disabled={loading}>
       {loading ? "Loading..." : invoice.invoice_number}
     </Button>
   );
 
-  const renderPDFDownloadMenuItem = (loading: boolean): ReactElement => (
+  const renderPDFDownloadMenuItem = (loading: boolean): ReactNode => (
     <div className="flex items-center">
       <Download className="mr-2 h-4 w-4" />
       {loading ? "Loading..." : "Download PDF"}
