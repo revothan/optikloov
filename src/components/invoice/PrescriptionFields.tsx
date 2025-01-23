@@ -15,7 +15,8 @@ interface PrescriptionFieldsProps {
 }
 
 export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProps) {
-  const formatValue = (value: number | null, type: 'sph' | 'cyl' | 'add') => {
+  // Only format the display value, not the input value
+  const formatDisplayValue = (value: number | null, type: 'sph' | 'cyl' | 'add') => {
     if (value === null) return '';
     
     const absValue = Math.abs(value);
@@ -33,23 +34,22 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
     }
   };
 
-  const handleValueChange = (fieldName: string, value: string) => {
-    // Remove any non-numeric characters except decimal point and minus sign
-    const cleanedValue = value.replace(/[^\d.-]/g, '');
+  const handleValueChange = (fieldName: string, value: string, type: 'sph' | 'cyl' | 'add') => {
+    // Allow typing of decimal numbers and negative signs
+    const isValidInput = /^-?\d*\.?\d*$/.test(value);
     
-    // Parse the value, considering negative numbers
-    let numericValue: number | null = null;
-    
-    if (cleanedValue !== '' && cleanedValue !== '-') {
-      numericValue = parseFloat(cleanedValue);
+    if (isValidInput || value === '-' || value === '') {
+      // Store the raw input value temporarily
+      const numericValue = value === '' || value === '-' ? null : parseFloat(value);
       
-      // Ensure the value has at most 2 decimal places
-      if (!isNaN(numericValue)) {
-        numericValue = parseFloat(numericValue.toFixed(2));
+      // Only format and store the final value when it's a valid number
+      if (numericValue !== null && !isNaN(numericValue)) {
+        form.setValue(`items.${index}.${side}_eye.${fieldName.split('.').pop()}`, numericValue);
+      } else {
+        // Allow temporary invalid states during typing
+        form.setValue(`items.${index}.${side}_eye.${fieldName.split('.').pop()}`, null);
       }
     }
-    
-    form.setValue(`items.${index}.${side}_eye.${fieldName.split('.').pop()}`, numericValue);
   };
 
   return (
@@ -66,8 +66,15 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
                 <Input
                   type="text"
                   {...field}
-                  value={formatValue(field.value, 'sph')}
-                  onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
+                  value={field.value !== null ? field.value.toString() : ''}
+                  onChange={(e) => handleValueChange(`${field.name}`, e.target.value, 'sph')}
+                  onBlur={() => {
+                    if (field.value !== null) {
+                      // Format on blur
+                      const formatted = parseFloat(field.value.toFixed(2));
+                      form.setValue(`items.${index}.${side}_eye.sph`, formatted);
+                    }
+                  }}
                   className="text-right"
                 />
               </FormControl>
@@ -86,8 +93,14 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
                 <Input
                   type="text"
                   {...field}
-                  value={formatValue(field.value, 'cyl')}
-                  onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
+                  value={field.value !== null ? field.value.toString() : ''}
+                  onChange={(e) => handleValueChange(`${field.name}`, e.target.value, 'cyl')}
+                  onBlur={() => {
+                    if (field.value !== null) {
+                      const formatted = parseFloat(field.value.toFixed(2));
+                      form.setValue(`items.${index}.${side}_eye.cyl`, formatted);
+                    }
+                  }}
                   className="text-right"
                 />
               </FormControl>
@@ -127,8 +140,14 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
                 <Input
                   type="text"
                   {...field}
-                  value={formatValue(field.value, 'add')}
-                  onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
+                  value={field.value !== null ? field.value.toString() : ''}
+                  onChange={(e) => handleValueChange(`${field.name}`, e.target.value, 'add')}
+                  onBlur={() => {
+                    if (field.value !== null) {
+                      const formatted = parseFloat(field.value.toFixed(2));
+                      form.setValue(`items.${index}.${side}_eye.add_power`, formatted);
+                    }
+                  }}
                   className="text-right"
                 />
               </FormControl>
