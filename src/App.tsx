@@ -1,8 +1,8 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import {
   SessionContextProvider,
   useSession,
@@ -21,14 +21,35 @@ const queryClient = new QueryClient({
   },
 });
 
-// Protected Route wrapper component
+// Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsLoading(false);
+        if (!session) {
+          window.location.href = '/login';
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setIsLoading(false);
+        window.location.href = '/login';
+      }
+    };
+    
+    checkAuth();
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   if (!session) {
-    // Redirect them to the /login page if not authenticated
-    window.location.href = "/login";
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
@@ -40,7 +61,6 @@ const App = () => {
       <SessionContextProvider supabaseClient={supabase}>
         <TooltipProvider>
           <Toaster />
-          <Sonner />
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />

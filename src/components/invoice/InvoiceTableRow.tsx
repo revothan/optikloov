@@ -33,7 +33,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
         >
           {({ loading }) => (
             <Button variant="ghost" size="sm" disabled={loading}>
-              {invoice.invoice_number}
+              {loading ? 'Loading...' : invoice.invoice_number}
             </Button>
           )}
         </PDFDownloadLink>
