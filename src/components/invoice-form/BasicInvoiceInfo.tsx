@@ -1,4 +1,5 @@
 import { UseFormReturn } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import {
   FormField,
   FormItem,
@@ -7,12 +8,34 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BasicInvoiceInfoProps {
   form: UseFormReturn<any>;
 }
 
 export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
+  // Fetch payment types from the database
+  const { data: paymentTypes } = useQuery({
+    queryKey: ["payment-types"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payment_types")
+        .select("*")
+        .order("name");
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <FormField
@@ -91,9 +114,20 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Jenis Pembayaran</FormLabel>
-            <FormControl>
-              <Input {...field} />
-            </FormControl>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih jenis pembayaran" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {paymentTypes?.map((type) => (
+                  <SelectItem key={type.id} value={type.name}>
+                    {type.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <FormMessage />
           </FormItem>
         )}
