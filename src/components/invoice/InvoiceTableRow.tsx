@@ -30,7 +30,6 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
         <PDFDownloadLink
           document={<InvoicePDF invoice={invoice} items={[]} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
-          className="inline-block"
         >
           {({ loading }) => (
             <Button variant="ghost" size="sm" disabled={loading}>
