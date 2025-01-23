@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { InvoiceTableHeader } from "./invoice/InvoiceTableHeader";
 import { InvoiceTableRow } from "./invoice/InvoiceTableRow";
 
-export function InvoiceList() {
+export default function InvoiceList() {
   const queryClient = useQueryClient();
   const { data: invoices, isLoading, error } = useQuery({
     queryKey: ["invoices"],
@@ -16,12 +16,10 @@ export function InvoiceList() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Supabase error:", error);
-        throw error;
-      }
+      if (error) throw error;
       return data;
     },
+    staleTime: 30000, // Consider data fresh for 30 seconds
   });
 
   const handleDelete = async (id: string) => {
@@ -48,10 +46,13 @@ export function InvoiceList() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-red-500">
-        <p>Error loading invoices. Please try again later.</p>
-        <p className="text-sm text-gray-500 mt-2">
-          {error instanceof Error ? error.message : 'Unknown error occurred'}
-        </p>
+        <p>Error loading invoices</p>
+        <button
+          className="mt-4 text-blue-500 hover:underline"
+          onClick={() => queryClient.invalidateQueries({ queryKey: ["invoices"] })}
+        >
+          Retry
+        </button>
       </div>
     );
   }

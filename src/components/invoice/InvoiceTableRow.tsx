@@ -31,9 +31,9 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
           document={<InvoicePDF invoice={invoice} items={[]} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
-          {({ loading }) => (
+          {({ loading, error }) => (
             <Button variant="ghost" size="sm" disabled={loading}>
-              {loading ? 'Loading...' : invoice.invoice_number}
+              {loading ? "Loading..." : invoice.invoice_number}
             </Button>
           )}
         </PDFDownloadLink>
