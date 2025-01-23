@@ -7,6 +7,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
+import { NumericKeypad } from "./NumericKeypad";
+import { useState } from "react";
 
 interface PrescriptionFieldsProps {
   form: UseFormReturn<any>;
@@ -15,6 +17,35 @@ interface PrescriptionFieldsProps {
 }
 
 export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProps) {
+  const [activeField, setActiveField] = useState<string | null>(null);
+
+  const formatValue = (value: number | null, type: 'sph' | 'cyl' | 'add') => {
+    if (value === null) return '';
+    
+    const formattedNumber = Math.abs(value).toFixed(2);
+    
+    switch(type) {
+      case 'sph':
+        return `${value >= 0 ? '+' : '-'}${formattedNumber}`;
+      case 'cyl':
+        return value === 0 ? '0.00' : `-${formattedNumber}`;
+      case 'add':
+        return value === 0 ? '0.00' : `+${formattedNumber}`;
+      default:
+        return formattedNumber;
+    }
+  };
+
+  const handleValueChange = (fieldName: string, value: string) => {
+    const numericValue = parseFloat(value.replace(/[+\-]/g, ''));
+    if (!isNaN(numericValue)) {
+      const finalValue = fieldName.includes('cyl') ? -Math.abs(numericValue) :
+                        fieldName.includes('add') ? Math.abs(numericValue) :
+                        numericValue;
+      form.setValue(`items.${index}.${side}_eye.${fieldName.split('.').pop()}`, finalValue);
+    }
+  };
+
   return (
     <div>
       <h5 className="text-sm font-medium mb-2">{side === "left" ? "Left Eye" : "Right Eye"}</h5>
@@ -26,15 +57,25 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
             <FormItem>
               <FormLabel>SPH</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  step="0.25"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(e.target.value ? parseFloat(e.target.value) : null)
-                  }
-                  value={field.value ?? ""}
-                />
+                <div className="relative">
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    {...field}
+                    value={formatValue(field.value, 'sph')}
+                    onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
+                    onFocus={() => setActiveField(`${field.name}`)}
+                    className="text-right"
+                  />
+                  {activeField === field.name && (
+                    <NumericKeypad
+                      onValue={(value) => handleValueChange(`${field.name}`, value)}
+                      onClose={() => setActiveField(null)}
+                      allowNegative
+                      initialValue={field.value?.toString() || ''}
+                    />
+                  )}
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -48,15 +89,25 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
             <FormItem>
               <FormLabel>CYL</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  step="0.25"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(e.target.value ? parseFloat(e.target.value) : null)
-                  }
-                  value={field.value ?? ""}
-                />
+                <div className="relative">
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    {...field}
+                    value={formatValue(field.value, 'cyl')}
+                    onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
+                    onFocus={() => setActiveField(`${field.name}`)}
+                    className="text-right"
+                  />
+                  {activeField === field.name && (
+                    <NumericKeypad
+                      onValue={(value) => handleValueChange(`${field.name}`, value)}
+                      onClose={() => setActiveField(null)}
+                      alwaysNegative
+                      initialValue={field.value?.toString() || ''}
+                    />
+                  )}
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -74,7 +125,7 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
                   type="number"
                   {...field}
                   onChange={(e) =>
-                    field.onChange(e.target.value ? parseFloat(e.target.value) : null)
+                    field.onChange(e.target.value ? parseInt(e.target.value) : null)
                   }
                   value={field.value ?? ""}
                 />
@@ -91,15 +142,25 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
             <FormItem>
               <FormLabel>ADD</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  step="0.25"
-                  {...field}
-                  onChange={(e) =>
-                    field.onChange(e.target.value ? parseFloat(e.target.value) : null)
-                  }
-                  value={field.value ?? ""}
-                />
+                <div className="relative">
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    {...field}
+                    value={formatValue(field.value, 'add')}
+                    onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
+                    onFocus={() => setActiveField(`${field.name}`)}
+                    className="text-right"
+                  />
+                  {activeField === field.name && (
+                    <NumericKeypad
+                      onValue={(value) => handleValueChange(`${field.name}`, value)}
+                      onClose={() => setActiveField(null)}
+                      alwaysPositive
+                      initialValue={field.value?.toString() || ''}
+                    />
+                  )}
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
