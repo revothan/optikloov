@@ -23,7 +23,7 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
     
     switch(type) {
       case 'sph':
-        return `${value >= 0 ? '+' : '-'}${formattedNumber}`;
+        return value >= 0 ? `+${formattedNumber}` : `-${formattedNumber}`;
       case 'cyl':
         return value === 0 ? '0.00' : `-${formattedNumber}`;
       case 'add':
@@ -34,10 +34,22 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
   };
 
   const handleValueChange = (fieldName: string, value: string) => {
-    const numericValue = parseFloat(value);
-    if (!isNaN(numericValue)) {
-      form.setValue(`items.${index}.${side}_eye.${fieldName.split('.').pop()}`, numericValue);
+    // Remove any non-numeric characters except decimal point and minus sign
+    const cleanedValue = value.replace(/[^\d.-]/g, '');
+    
+    // Parse the value, considering negative numbers
+    let numericValue: number | null = null;
+    
+    if (cleanedValue !== '' && cleanedValue !== '-') {
+      numericValue = parseFloat(cleanedValue);
+      
+      // Ensure the value has at most 2 decimal places
+      if (!isNaN(numericValue)) {
+        numericValue = parseFloat(numericValue.toFixed(2));
+      }
     }
+    
+    form.setValue(`items.${index}.${side}_eye.${fieldName.split('.').pop()}`, numericValue);
   };
 
   return (
