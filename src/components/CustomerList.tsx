@@ -202,3 +202,5 @@ export function CustomerTable() {
     </Card>
   );
 }
+
+export default CustomerTable;

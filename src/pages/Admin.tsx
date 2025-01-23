@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProductDialog } from "@/components/ProductDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Loader2,
   Package,
@@ -20,6 +21,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InvoiceDialog } from "@/components/InvoiceDialog";
 import { ProductSkeleton } from "@/components/ProductSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ProductCard } from "@/components/ProductCard";
+import { formatPrice } from "@/lib/utils";
 
 // Lazy load components
 const CustomerTable = lazy(() => import("@/components/CustomerList"));
@@ -66,7 +69,6 @@ export default function Admin() {
   } = useQuery({
     queryKey: ["products", currentPage],
     queryFn: () => fetchProducts(currentPage),
-    keepPreviousData: true,
     staleTime: 30000, // Consider data fresh for 30 seconds
   });
 
@@ -76,6 +78,18 @@ export default function Admin() {
       prefetchNextPage(currentPage);
     }
   }, [currentPage, productsData]);
+
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      const { error } = await supabase.from("products").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Product deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast.error("Failed to delete product");
+    }
+  };
 
   // Filter products based on search query
   const filteredProducts = productsData?.data?.filter(
