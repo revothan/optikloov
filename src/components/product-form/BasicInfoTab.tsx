@@ -38,7 +38,7 @@ export function BasicInfoTab({ form }: BasicInfoTabProps) {
         <FormFields
           form={form}
           name="category"
-          label="Category"
+          label="Category *"
           placeholder="Product category"
         />
         <FormFields
@@ -122,4 +122,3 @@ export function BasicInfoTab({ form }: BasicInfoTabProps) {
     </div>
   );
 }
-
