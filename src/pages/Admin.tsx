@@ -16,7 +16,6 @@ import {
   Search,
 } from "lucide-react";
 import { toast } from "sonner";
-import LogoutButton from "@/components/LogoutButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InvoiceDialog } from "@/components/InvoiceDialog";
 import { ProductSkeleton } from "@/components/ProductSkeleton";
