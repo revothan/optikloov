@@ -24,7 +24,8 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
   const formatValue = (value: number | null, type: 'sph' | 'cyl' | 'add') => {
     if (value === null) return '';
     
-    const formattedNumber = Math.abs(value).toFixed(2);
+    const absValue = Math.abs(value);
+    const formattedNumber = absValue.toFixed(2);
     
     switch(type) {
       case 'sph':
@@ -39,12 +40,9 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
   };
 
   const handleValueChange = (fieldName: string, value: string) => {
-    const numericValue = parseFloat(value.replace(/[+\-]/g, ''));
+    const numericValue = parseFloat(value);
     if (!isNaN(numericValue)) {
-      const finalValue = fieldName.includes('cyl') ? -Math.abs(numericValue) :
-                        fieldName.includes('add') ? Math.abs(numericValue) :
-                        numericValue;
-      form.setValue(`items.${index}.${side}_eye.${fieldName.split('.').pop()}`, finalValue);
+      form.setValue(`items.${index}.${side}_eye.${fieldName.split('.').pop()}`, numericValue);
     }
   };
 
@@ -152,7 +150,7 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
         alwaysNegative={activeField?.includes('cyl')}
         alwaysPositive={activeField?.includes('add_power')}
         initialValue={activeField ? 
-          form.getValues(activeField)?.toString().replace(/[+\-]/g, '') || "0" 
+          String(form.getValues(activeField) || "0")
           : "0"
         }
       />

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface NumericKeypadProps {
   onValue: (value: string) => void;
@@ -18,54 +18,99 @@ export function NumericKeypad({
   alwaysNegative = false,
   initialValue = "",
 }: NumericKeypadProps) {
-  const [value, setValue] = useState(initialValue);
-  const [isNegative, setIsNegative] = useState(
-    alwaysNegative || (initialValue.startsWith("-") && allowNegative)
-  );
+  const [displayValue, setDisplayValue] = useState("");
+  const [isNegative, setIsNegative] = useState(false);
+
+  useEffect(() => {
+    // Initialize with the provided value
+    const cleanValue = initialValue.replace(/[^\d.-]/g, "");
+    setDisplayValue(cleanValue.replace("-", ""));
+    setIsNegative(cleanValue.startsWith("-"));
+  }, [initialValue]);
+
+  const formatValue = (value: string) => {
+    // Ensure two decimal places
+    const parts = value.split(".");
+    if (parts.length === 2) {
+      // If there's a decimal part, pad it to 2 places
+      parts[1] = parts[1].slice(0, 2).padEnd(2, "0");
+    } else {
+      // If there's no decimal part, add .00
+      parts.push("00");
+    }
+    return parts.join(".");
+  };
 
   const handleNumberClick = (num: string) => {
-    if (value.includes(".") && num === ".") return;
-    
-    let newValue = value + num;
-    if (value === "0" && num !== ".") {
-      newValue = num;
-    }
-    
-    // Ensure only 2 decimal places
-    if (value.includes(".")) {
-      const [whole, decimal] = newValue.split(".");
-      if (decimal && decimal.length > 2) return;
-    }
-    
-    setValue(newValue);
-    const finalValue = isNegative ? `-${newValue}` : newValue;
-    onValue(alwaysPositive ? newValue : alwaysNegative ? `-${newValue}` : finalValue);
+    setDisplayValue((prev) => {
+      if (num === "." && prev.includes(".")) return prev;
+      if (prev === "0" && num !== ".") return num;
+      
+      let newValue = prev + num;
+      const parts = newValue.split(".");
+      if (parts.length === 2 && parts[1].length > 2) {
+        return prev;
+      }
+      return newValue;
+    });
   };
 
   const handleDelete = () => {
-    const newValue = value.slice(0, -1);
-    setValue(newValue || "0");
-    const finalValue = isNegative ? `-${newValue}` : newValue;
-    onValue(alwaysPositive ? newValue : alwaysNegative ? `-${newValue}` : finalValue);
+    setDisplayValue((prev) => {
+      const newValue = prev.slice(0, -1);
+      return newValue || "0";
+    });
+  };
+
+  const handleClear = () => {
+    setDisplayValue("0");
+    setIsNegative(false);
   };
 
   const toggleSign = () => {
-    if (alwaysPositive || alwaysNegative) return;
-    if (allowNegative) {
-      setIsNegative(!isNegative);
-      onValue(isNegative ? value : `-${value}`);
+    if (!allowNegative || alwaysPositive || alwaysNegative) return;
+    setIsNegative(!isNegative);
+  };
+
+  const handleDone = () => {
+    let finalValue = formatValue(displayValue || "0");
+    
+    if (alwaysNegative) {
+      finalValue = "-" + finalValue;
+    } else if (alwaysPositive) {
+      finalValue = finalValue;
+    } else {
+      finalValue = isNegative ? "-" + finalValue : finalValue;
     }
+    
+    onValue(finalValue);
+    onClose();
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 bg-background border-t z-50">
-      <div className="grid grid-cols-3 gap-1 p-2">
+    <div className="bg-background p-4 space-y-4">
+      <div className="flex items-center justify-between bg-muted p-4 rounded-lg mb-4">
+        <span className="text-2xl font-mono">
+          {isNegative ? "-" : ""}{displayValue || "0"}
+        </span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleClear}
+        >
+          Clear
+        </Button>
+      </div>
+      
+      <div className="grid grid-cols-3 gap-2">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
           <Button
             key={num}
             type="button"
             variant="outline"
             onClick={() => handleNumberClick(num.toString())}
+            className="h-14 text-lg"
           >
             {num}
           </Button>
@@ -74,6 +119,7 @@ export function NumericKeypad({
           type="button"
           variant="outline"
           onClick={() => handleNumberClick(".")}
+          className="h-14 text-lg"
         >
           .
         </Button>
@@ -81,6 +127,7 @@ export function NumericKeypad({
           type="button"
           variant="outline"
           onClick={() => handleNumberClick("0")}
+          className="h-14 text-lg"
         >
           0
         </Button>
@@ -88,24 +135,29 @@ export function NumericKeypad({
           type="button"
           variant="outline"
           onClick={handleDelete}
+          className="h-14"
         >
           ←
         </Button>
-        {allowNegative && !alwaysPositive && !alwaysNegative && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={toggleSign}
-            className="col-span-2"
-          >
-            +/-
-          </Button>
-        )}
+        
+        <div className="col-span-2">
+          {allowNegative && !alwaysPositive && !alwaysNegative && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={toggleSign}
+              className="w-full h-14"
+            >
+              +/-
+            </Button>
+          )}
+        </div>
+        
         <Button
           type="button"
           variant="default"
-          onClick={onClose}
-          className={allowNegative ? "" : "col-span-2"}
+          onClick={handleDone}
+          className="h-14"
         >
           Done
         </Button>
