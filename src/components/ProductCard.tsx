@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { formatPrice } from "@/lib/utils";
 import { useState } from "react";
 import { Button } from "./ui/button";
+import { Edit, Trash2 } from "lucide-react";
+import { ProductDialog } from "./ProductDialog";
 
 interface ProductCardProps {
   product: {
@@ -71,16 +73,29 @@ export function ProductCard({ product, onDelete }: ProductCardProps) {
           </p>
         </div>
       </Link>
-      {onDelete && (
-        <div className="p-4 border-t">
-          <Button
-            variant="destructive"
-            size="sm"
-            className="w-full"
-            onClick={() => onDelete(product.id)}
-          >
-            Delete
-          </Button>
+      {(onDelete || product.id) && (
+        <div className="p-4 border-t flex gap-2">
+          <ProductDialog 
+            mode="edit" 
+            product={product}
+            trigger={
+              <Button variant="outline" size="sm" className="flex-1">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            }
+          />
+          {onDelete && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="flex-1"
+              onClick={() => onDelete(product.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          )}
         </div>
       )}
     </div>

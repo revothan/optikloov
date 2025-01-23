@@ -1,9 +1,9 @@
 import { Suspense, lazy, useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ProductDialog } from "@/components/ProductDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { InvoiceDialog } from "@/components/InvoiceDialog";
 import { ProductSkeleton } from "@/components/ProductSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProductCard } from "@/components/ProductCard";
@@ -28,63 +27,34 @@ import { formatPrice } from "@/lib/utils";
 const CustomerTable = lazy(() => import("@/components/CustomerList"));
 const InvoiceList = lazy(() => import("@/components/InvoiceList"));
 
-const ITEMS_PER_PAGE = 12;
-
 export default function Admin() {
   const session = useSession();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
 
-  // Prefetch next page
-  const prefetchNextPage = async (page: number) => {
-    await queryClient.prefetchQuery({
-      queryKey: ["products", page + 1],
-      queryFn: () => fetchProducts(page + 1),
-    });
-  };
-
-  // Optimized product fetching with pagination
-  const fetchProducts = async (page: number) => {
-    const start = (page - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE - 1;
-
-    const { data, error, count } = await supabase
-      .from("products")
-      .select("*", { count: "exact" })
-      .order("created_at", { ascending: false })
-      .range(start, end);
-
-    if (error) throw error;
-    return { data, count };
-  };
-
-  // Fetch products with pagination
+  // Fetch all products
   const {
     data: productsData,
     isLoading: productsLoading,
     error: productsError,
+    refetch
   } = useQuery({
-    queryKey: ["products", currentPage],
-    queryFn: () => fetchProducts(currentPage),
-    staleTime: 30000, // Consider data fresh for 30 seconds
-  });
+    queryKey: ["products"],
+    queryFn: async () => {
+      const { data, error, count } = await supabase
+        .from("products")
+        .select("*", { count: "exact" });
 
-  // Prefetch next page when current page is loaded
-  useEffect(() => {
-    if (productsData?.count && currentPage * ITEMS_PER_PAGE < productsData.count) {
-      prefetchNextPage(currentPage);
-    }
-  }, [currentPage, productsData]);
+      if (error) throw error;
+      return { data, count };
+    },
+  });
 
   const handleDeleteProduct = async (id: string) => {
     try {
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (error) throw error;
       toast.success("Product deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+      refetch();
     } catch (error) {
       console.error("Error deleting product:", error);
       toast.error("Failed to delete product");
@@ -94,23 +64,22 @@ export default function Admin() {
   // Filter products based on search query
   const filteredProducts = productsData?.data?.filter(
     (product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.barcode?.toLowerCase().includes(searchQuery.toLowerCase())
+      product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.sku?.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
-  // Calculate statistics
-  const totalProducts = productsData?.count || 0;
-  const totalValue = filteredProducts.reduce(
+  // Calculate total value of ALL products
+  const totalValue = productsData?.data?.reduce(
     (sum, product) => sum + (product.store_price || 0),
     0
-  );
+  ) || 0;
 
   if (productsError) {
     return (
       <div className="container mx-auto p-8 text-center">
         <p className="text-red-500">Error loading products</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ["products"] })}>
+        <Button onClick={() => refetch()}>
           Retry
         </Button>
       </div>
@@ -129,7 +98,7 @@ export default function Admin() {
         <StatsCard
           icon={Package}
           title="Total Products"
-          value={totalProducts}
+          value={productsData?.count || 0}
           description="Active products in inventory"
           loading={productsLoading}
         />
@@ -174,28 +143,6 @@ export default function Admin() {
                   ))
                 )}
               </div>
-
-              {/* Pagination */}
-              {productsData?.count > ITEMS_PER_PAGE && (
-                <div className="mt-6 flex justify-center gap-2">
-                  <Button
-                    variant="outline"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    disabled={
-                      currentPage * ITEMS_PER_PAGE >= (productsData?.count || 0)
-                    }
-                    onClick={() => setCurrentPage((p) => p + 1)}
-                  >
-                    Next
-                  </Button>
-                </div>
-              )}
             </div>
           </TabsContent>
 
@@ -208,10 +155,6 @@ export default function Admin() {
           <TabsContent value="invoices">
             <Suspense fallback={<div>Loading invoices...</div>}>
               <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold">Invoices</h2>
-                  <InvoiceDialog />
-                </div>
                 <InvoiceList />
               </div>
             </Suspense>
