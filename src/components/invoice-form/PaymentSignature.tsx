@@ -8,6 +8,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PaymentSignatureProps {
   form: UseFormReturn<any>;
@@ -19,6 +26,8 @@ interface PaymentSignatureProps {
     remainingBalance: number;
   };
 }
+
+const PEMERIKSA_OPTIONS = ["Mira", "Dzaky", "Danny", "Wulan"];
 
 export function PaymentSignature({ form, totals }: PaymentSignatureProps) {
   return (
@@ -51,10 +60,21 @@ export function PaymentSignature({ form, totals }: PaymentSignatureProps) {
           name="acknowledged_by"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Diketahui Oleh</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
+              <FormLabel>Pemeriksa</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih pemeriksa" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {PEMERIKSA_OPTIONS.map((name) => (
+                    <SelectItem key={name} value={name}>
+                      {name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

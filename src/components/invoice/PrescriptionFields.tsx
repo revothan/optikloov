@@ -7,9 +7,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { NumericKeypadDialog } from "./NumericKeypadDialog";
-import { useState } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PrescriptionFieldsProps {
   form: UseFormReturn<any>;
@@ -18,9 +15,6 @@ interface PrescriptionFieldsProps {
 }
 
 export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProps) {
-  const [activeField, setActiveField] = useState<string | null>(null);
-  const isMobile = useIsMobile();
-
   const formatValue = (value: number | null, type: 'sph' | 'cyl' | 'add') => {
     if (value === null) return '';
     
@@ -59,11 +53,9 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
               <FormControl>
                 <Input
                   type="text"
-                  inputMode={isMobile ? "none" : "decimal"}
                   {...field}
                   value={formatValue(field.value, 'sph')}
                   onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
-                  onFocus={() => setActiveField(`${field.name}`)}
                   className="text-right"
                 />
               </FormControl>
@@ -81,11 +73,9 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
               <FormControl>
                 <Input
                   type="text"
-                  inputMode={isMobile ? "none" : "decimal"}
                   {...field}
                   value={formatValue(field.value, 'cyl')}
                   onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
-                  onFocus={() => setActiveField(`${field.name}`)}
                   className="text-right"
                 />
               </FormControl>
@@ -124,11 +114,9 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
               <FormControl>
                 <Input
                   type="text"
-                  inputMode={isMobile ? "none" : "decimal"}
                   {...field}
                   value={formatValue(field.value, 'add')}
                   onChange={(e) => handleValueChange(`${field.name}`, e.target.value)}
-                  onFocus={() => setActiveField(`${field.name}`)}
                   className="text-right"
                 />
               </FormControl>
@@ -137,23 +125,6 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
           )}
         />
       </div>
-
-      <NumericKeypadDialog
-        open={!!activeField}
-        onClose={() => setActiveField(null)}
-        onValue={(value) => {
-          if (activeField) {
-            handleValueChange(activeField, value);
-          }
-        }}
-        allowNegative={activeField?.includes('sph')}
-        alwaysNegative={activeField?.includes('cyl')}
-        alwaysPositive={activeField?.includes('add_power')}
-        initialValue={activeField ? 
-          String(form.getValues(activeField) || "0")
-          : "0"
-        }
-      />
     </div>
   );
 }
