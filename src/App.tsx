@@ -58,14 +58,16 @@ const App = () => {
                 <>
                   <Route path="/login" element={<Login />} />
                   <Route
-                    path="/"
+                    path="/admin"
                     element={
                       <ProtectedRoute>
                         <Admin />
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="*" element={<Navigate to="/" />} />
+                  {/* Redirect root to /admin on admin subdomain */}
+                  <Route path="/" element={<Navigate to="/admin" replace />} />
+                  <Route path="*" element={<Navigate to="/admin" />} />
                 </>
               ) : (
                 // Main site routes
