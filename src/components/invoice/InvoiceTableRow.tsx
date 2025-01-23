@@ -2,6 +2,23 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { 
+  Download, 
+  Printer, 
+  Share2, 
+  Mail, 
+  MessageCircle,
+  MoreHorizontal,
+  Trash
+} from "lucide-react";
+import { toast } from "sonner";
+import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
 
 interface InvoiceTableRowProps {
   invoice: {
@@ -24,6 +41,35 @@ interface InvoiceTableRowProps {
 }
 
 export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Invoice #${invoice.invoice_number}`,
+          text: `Invoice for ${invoice.customer_name}`,
+          url: window.location.href,
+        });
+      } else {
+        toast.error("Sharing is not supported on this device");
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+      toast.error("Failed to share invoice");
+    }
+  };
+
+  const handleEmailShare = () => {
+    const subject = encodeURIComponent(`Invoice #${invoice.invoice_number}`);
+    const body = encodeURIComponent(
+      `Invoice details for ${invoice.customer_name}\nAmount: ${formatPrice(invoice.grand_total)}`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
   return (
     <tr className="border-b">
       <td className="py-4 px-4">
@@ -32,15 +78,9 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
           {({ loading }) => (
-            loading ? (
-              <Button variant="ghost" size="sm" disabled>
-                Loading...
-              </Button>
-            ) : (
-              <Button variant="ghost" size="sm">
-                {invoice.invoice_number}
-              </Button>
-            )
+            <Button variant="ghost" size="sm" disabled={loading}>
+              {loading ? "Loading..." : invoice.invoice_number}
+            </Button>
           )}
         </PDFDownloadLink>
       </td>
@@ -55,13 +95,55 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
         {invoice.remaining_balance ? formatPrice(invoice.remaining_balance) : "-"}
       </td>
       <td className="py-4 px-4">
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={() => onDelete(invoice.id)}
-        >
-          Delete
-        </Button>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handlePrint}>
+                <Printer className="mr-2 h-4 w-4" />
+                Print
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleShare}>
+                <Share2 className="mr-2 h-4 w-4" />
+                Share
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleEmailShare}>
+                <Mail className="mr-2 h-4 w-4" />
+                Email
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <PDFDownloadLink
+                  document={<InvoicePDF invoice={invoice} items={[]} />}
+                  fileName={`invoice-${invoice.invoice_number}.pdf`}
+                >
+                  {({ loading }) => (
+                    <div className="flex items-center">
+                      <Download className="mr-2 h-4 w-4" />
+                      {loading ? "Loading..." : "Download PDF"}
+                    </div>
+                  )}
+                </PDFDownloadLink>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDelete(invoice.id)}
+                className="text-red-600 focus:text-red-600"
+              >
+                <Trash className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          {invoice.customer_phone && (
+            <WhatsAppButton
+              phone={invoice.customer_phone}
+              name={invoice.customer_name}
+            />
+          )}
+        </div>
       </td>
     </tr>
   );
