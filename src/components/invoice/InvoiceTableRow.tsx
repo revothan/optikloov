@@ -85,7 +85,11 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
           document={<InvoicePDF invoice={invoice} items={[]} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
-          {renderPDFDownload}
+          {({ loading }) => (
+            <Button variant="ghost" size="sm" disabled={loading}>
+              {loading ? "Loading..." : invoice.invoice_number}
+            </Button>
+          )}
         </PDFDownloadLink>
       </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>
@@ -124,7 +128,12 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                   document={<InvoicePDF invoice={invoice} items={[]} />}
                   fileName={`invoice-${invoice.invoice_number}.pdf`}
                 >
-                  {renderPDFDownloadMenuItem}
+                  {({ loading }) => (
+                    <div className="flex items-center">
+                      <Download className="mr-2 h-4 w-4" />
+                      {loading ? "Loading..." : "Download PDF"}
+                    </div>
+                  )}
                 </PDFDownloadLink>
               </DropdownMenuItem>
               <DropdownMenuItem

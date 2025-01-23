@@ -62,7 +62,9 @@ export function ProductSelect({
     );
   }, [products, searchQuery]);
 
-  const selectedProduct = products?.find((product) => product.id === value);
+  const selectedProduct = Array.isArray(products) 
+    ? products.find((product) => product.id === value)
+    : undefined;
 
   if (isError) {
     return (
