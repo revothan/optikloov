@@ -1,115 +1,130 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import {
-  Mail,
-  Facebook,
-  Instagram,
-  MessageSquare,
-  ArrowLeft,
-} from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
+import { metaPixelEvents } from "@/lib/meta-pixel";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const Contact = () => {
+export default function Contact() {
+  const handleLocationClick = () => {
+    metaPixelEvents.storeLocationView();
+    window.open("https://maps.app.goo.gl/hcD6zrygFpeKo2Nn6", "_blank");
+  };
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <div className="container mx-auto px-4 pt-32 pb-16">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 animate-in fade-in slide-in-from-bottom duration-700">
-            Hubungi Kami
-          </h1>
+      <main className="flex-grow pt-24 pb-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-3xl font-bold mb-8 text-center">Contact Us</h1>
 
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom duration-700 delay-200">
-            {/* WhatsApp */}
-            <a
-              href="https://wa.me/6281283335568"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center p-6 bg-white rounded-xl border hover:border-green-500 transition-colors group"
-            >
-              <MessageSquare className="w-8 h-8 text-green-500 mr-4" />
+            <div className="space-y-8">
               <div>
-                <h3 className="text-lg font-semibold group-hover:text-green-500 transition-colors">
-                  WhatsApp
-                </h3>
-                <p className="text-gray-600">+62 812-8333-5568</p>
-              </div>
-            </a>
+                <h2 className="text-xl font-semibold mb-4">Get in Touch</h2>
+                <p className="text-gray-600 mb-6">
+                  Have questions about our products or services? We're here to
+                  help!
+                </p>
 
-            {/* Email */}
-            <a
-              href="mailto:optik.loov@gmail.com"
-              className="flex items-center p-6 bg-white rounded-xl border hover:border-blue-500 transition-colors group"
-            >
-              <Mail className="w-8 h-8 text-blue-500 mr-4" />
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-black/5 p-3 rounded-lg">
+                      <Phone className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Phone</p>
+                      <a
+                        href="tel:+6281283335568"
+                        className="text-gray-600 hover:text-black"
+                      >
+                        +62 812-8333-5568
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="bg-black/5 p-3 rounded-lg">
+                      <Mail className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Email</p>
+                      <a
+                        href="mailto:optikloov@gmail.com"
+                        className="text-gray-600 hover:text-black"
+                      >
+                        optikloov@gmail.com
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="bg-black/5 p-3 rounded-lg">
+                      <MapPin className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Location</p>
+                      <button
+                        onClick={handleLocationClick}
+                        className="text-left text-gray-600 hover:text-black"
+                      >
+                        Ruko Downtown Drive Gading Serpong
+                        <br />
+                        Blok DDBLV No. 016
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="bg-black/5 p-3 rounded-lg">
+                      <Instagram className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Instagram</p>
+                      <a
+                        href="https://instagram.com/optikloov"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 hover:text-black"
+                      >
+                        @optikloov
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="bg-black/5 p-3 rounded-lg">
+                      <Facebook className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Facebook</p>
+                      <a
+                        href="https://facebook.com/optikloov"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 hover:text-black"
+                      >
+                        Optik Loov
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div>
-                <h3 className="text-lg font-semibold group-hover:text-blue-500 transition-colors">
-                  Email
-                </h3>
-                <p className="text-gray-600">optik.loov@gmail.com</p>
+                <h2 className="text-xl font-semibold mb-4">Business Hours</h2>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Monday - Sunday</span>
+                    <span className="font-medium">10:00 - 21:00</span>
+                  </div>
+                </div>
               </div>
-            </a>
-
-            {/* Facebook */}
-            <a
-              href="https://www.facebook.com/people/Optik-Loov/61568572959018/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center p-6 bg-white rounded-xl border hover:border-[#1877F2] transition-colors group"
-            >
-              <Facebook className="w-8 h-8 text-[#1877F2] mr-4" />
-              <div>
-                <h3 className="text-lg font-semibold group-hover:text-[#1877F2] transition-colors">
-                  Facebook
-                </h3>
-                <p className="text-gray-600">@optikloov</p>
-              </div>
-            </a>
-
-            {/* Instagram */}
-            <a
-              href="https://instagram.com/optikloov"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center p-6 bg-white rounded-xl border hover:border-[#E4405F] transition-colors group"
-            >
-              <Instagram className="w-8 h-8 text-[#E4405F] mr-4" />
-              <div>
-                <h3 className="text-lg font-semibold group-hover:text-[#E4405F] transition-colors">
-                  Instagram
-                </h3>
-                <p className="text-gray-600">@optikloov</p>
-              </div>
-            </a>
-          </div>
-
-          {/* Store Address */}
-          <div className="mt-12 p-6 bg-gray-50 rounded-xl animate-in fade-in slide-in-from-bottom duration-700 delay-300">
-            <h2 className="text-xl font-semibold mb-4">Kunjungi Toko Kami</h2>
-            <p className="text-gray-600 mb-4">
-              Ruko Downtown Drive Blok DDBLV No 016
-              <br />
-              Banten, Tangerang, Indonesia, 15334
-            </p>
-            <Button
-              className="bg-black text-white hover:bg-black/90"
-              onClick={() =>
-                window.open(
-                  "https://maps.app.goo.gl/hcD6zrygFpeKo2Nn6",
-                  "_blank"
-                )
-              }
-            >
-              Petunjuk Arah
-            </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
+
       <Footer />
     </div>
   );
-};
-
-export default Contact;
+}

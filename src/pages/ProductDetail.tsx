@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { metaPixelEvents } from "@/lib/meta-pixel";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -37,6 +38,16 @@ export default function ProductDetailPage() {
     window.open(`https://wa.me/6281283335568?text=${message}`, "_blank");
   };
 
+  useEffect(() => {
+    if (product) {
+      metaPixelEvents.viewProduct({
+        content_name: `${product.brand} ${product.name}`,
+        content_type: 'product',
+        content_ids: [product.id]
+      });
+    }
+  }, [product]);
+
   if (isLoading) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -62,7 +73,6 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Collect all available images
   const images = [
     product.image_url,
     product.photo_1,
@@ -94,7 +104,6 @@ export default function ProductDetailPage() {
           </Button>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Image Gallery */}
             <div className="space-y-4">
               <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-50">
                 {!imagesLoaded[images[currentImageIndex]] && (
@@ -130,7 +139,6 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              {/* Thumbnail Navigation */}
               {images.length > 1 && (
                 <div className="grid grid-cols-4 gap-2">
                   {images.map((image, index) => (
@@ -161,7 +169,6 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* Product Info */}
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-bold mb-2">
@@ -185,7 +192,6 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-              {/* Contact Info */}
               <div className="pt-6 border-t">
                 <h3 className="text-lg font-semibold mb-4">
                   Interested in this product?
