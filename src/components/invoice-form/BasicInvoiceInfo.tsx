@@ -22,7 +22,7 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
           <FormItem>
             <FormLabel>Nomor Invoice</FormLabel>
             <FormControl>
-              <Input {...field} />
+              <Input {...field} readOnly className="bg-gray-100" />
             </FormControl>
             <FormMessage />
           </FormItem>
