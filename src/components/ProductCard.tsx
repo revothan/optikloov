@@ -6,8 +6,10 @@ import { Edit, Trash2 } from "lucide-react";
 import { ProductDialog } from "./ProductDialog";
 import { Tables } from "@/integrations/supabase/types";
 
+type MinimalProduct = Pick<Tables<"products">, "id" | "name" | "brand" | "image_url" | "online_price" | "category">;
+
 interface ProductCardProps {
-  product: Tables<"products">;
+  product: MinimalProduct;
   onDelete?: (id: string) => Promise<void>;
 }
 
@@ -16,10 +18,11 @@ export function ProductCard({ product, onDelete }: ProductCardProps) {
 
   const translateCategory = (category: string) => {
     const categories: { [key: string]: string } = {
+      'Frame': 'Frame',
+      'Lensa': 'Lensa',
+      'Soft Lens': 'Soft Lens',
       'Sunglasses': 'Kacamata Hitam',
-      'Eyeglasses': 'Kacamata',
-      'Contact Lenses': 'Lensa Kontak',
-      'Accessories': 'Aksesoris',
+      'Others': 'Lainnya',
     };
     return categories[category] || category;
   };
@@ -71,7 +74,7 @@ export function ProductCard({ product, onDelete }: ProductCardProps) {
         <div className="p-4 border-t flex gap-2">
           <ProductDialog 
             mode="edit" 
-            product={product}
+            product={product as Tables<"products">}
             trigger={
               <Button variant="outline" size="sm" className="flex-1">
                 <Edit className="h-4 w-4 mr-2" />

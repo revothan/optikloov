@@ -2,7 +2,6 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
-import { ReactElement } from "react";
 
 interface InvoiceTableRowProps {
   invoice: {
@@ -33,10 +32,16 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
           {({ loading }) => (
-            <Button variant="ghost" size="sm" disabled={loading}>
-              {loading ? "Loading..." : invoice.invoice_number}
-            </Button>
-          ) as ReactElement}
+            loading ? (
+              <Button variant="ghost" size="sm" disabled>
+                Loading...
+              </Button>
+            ) : (
+              <Button variant="ghost" size="sm">
+                {invoice.invoice_number}
+              </Button>
+            )
+          )}
         </PDFDownloadLink>
       </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>
