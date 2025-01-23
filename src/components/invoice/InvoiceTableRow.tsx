@@ -36,7 +36,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
             <Button variant="ghost" size="sm" disabled={loading}>
               {loading ? "Loading..." : invoice.invoice_number}
             </Button>
-          )}
+          ) as ReactElement}
         </PDFDownloadLink>
       </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>

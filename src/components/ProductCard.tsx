@@ -4,16 +4,10 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import { ProductDialog } from "./ProductDialog";
+import { Tables } from "@/integrations/supabase/types";
 
 interface ProductCardProps {
-  product: {
-    id: string;
-    name: string;
-    brand: string;
-    image_url: string;
-    online_price: number;
-    category: string;
-  };
+  product: Tables<"products">;
   onDelete?: (id: string) => Promise<void>;
 }
 
@@ -42,7 +36,7 @@ export function ProductCard({ product, onDelete }: ProductCardProps) {
             <div className="absolute inset-0 bg-gray-100 animate-pulse" />
           )}
           <img
-            src={product.image_url}
+            src={product.image_url || ''}
             alt={product.name}
             loading="lazy"
             onLoad={() => setImageLoaded(true)}
@@ -69,7 +63,7 @@ export function ProductCard({ product, onDelete }: ProductCardProps) {
 
           {/* Harga */}
           <p className="text-lg font-semibold text-gray-900">
-            {formatPrice(product.online_price)}
+            {formatPrice(product.online_price || 0)}
           </p>
         </div>
       </Link>
