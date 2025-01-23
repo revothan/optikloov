@@ -8,6 +8,7 @@ import { ProductDialog } from "@/components/ProductDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LogoutButton } from "@/components/LogoutButton";
 import {
   Loader2,
   Package,
