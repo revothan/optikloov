@@ -67,7 +67,8 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
             products:product_id (
               id,
               name,
-              brand
+              brand,
+              category
             )
           `)
           .eq('invoice_id', invoice.id);
@@ -140,7 +141,6 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
   return (
     <tr className="border-b">
       <td className="py-4 px-4">
-        {/* @ts-ignore */}
         <PDFDownloadLink
           document={<InvoicePDF invoice={invoice} items={items} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
@@ -188,7 +188,6 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                 Email
               </DropdownMenuItem>
               <DropdownMenuItem>
-                {/* @ts-ignore */}
                 <PDFDownloadLink
                   document={<InvoicePDF invoice={invoice} items={items} />}
                   fileName={`invoice-${invoice.invoice_number}.pdf`}

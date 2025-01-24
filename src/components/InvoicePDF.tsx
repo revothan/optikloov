@@ -33,34 +33,9 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
     loadItems();
   }, [onLoadComplete]);
 
-  // Group items by product_id and eye_side
-  const groupedItems = items.reduce((acc, item) => {
-    const key = item.product_id;
-    if (!acc[key]) {
-      acc[key] = {
-        ...item,
-        eyes: {}
-      };
-    }
-    acc[key].eyes[item.eye_side] = {
-      sph: item.sph,
-      cyl: item.cyl,
-      axis: item.axis,
-      add_power: item.add_power,
-      pd: item.pd,
-      sh: item.sh,
-      prism: item.prism,
-      v_frame: item.v_frame,
-      f_size: item.f_size
-    };
-    return acc;
-  }, {});
-
-  const uniqueProducts = Object.values(groupedItems);
-
   return (
     <Document>
-      <Page size="A5" style={styles.page}>
+      <Page size="A5" orientation="landscape" style={styles.page}>
         <InvoiceHeader 
           invoiceNumber={invoice.invoice_number}
           saleDate={invoice.sale_date}
@@ -73,9 +48,9 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
           paymentType={invoice.payment_type}
         />
 
-        <ItemsTable items={uniqueProducts} />
+        <ItemsTable items={items} />
 
-        <PrescriptionDetails items={uniqueProducts} />
+        <PrescriptionDetails items={items} />
 
         <PaymentDetails
           totalAmount={invoice.total_amount}

@@ -54,7 +54,10 @@ interface PrescriptionDetailsProps {
 
 export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
   // Filter items to only show those with prescription details (Lensa category)
-  const lensItems = items.filter(item => item.products?.category === 'Lensa');
+  const lensItems = items.filter(item => 
+    item.products?.category === 'Lensa' && 
+    (item.sph || item.cyl || item.axis || item.add_power || item.pd || item.sh || item.prism || item.v_frame || item.f_size)
+  );
   
   if (lensItems.length === 0) return null;
 
@@ -75,33 +78,33 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
               <Text style={styles.tableCell}>ADD</Text>
             </View>
             
-            {item.eyes.right && (
+            {item.eye_side === 'right' && (
               <View style={styles.tableRow}>
                 <Text style={styles.tableCell}>Right Eye (OD)</Text>
-                <Text style={styles.tableCell}>{item.eyes.right.sph ?? '-'}</Text>
-                <Text style={styles.tableCell}>{item.eyes.right.cyl ?? '-'}</Text>
-                <Text style={styles.tableCell}>{item.eyes.right.axis ?? '-'}</Text>
-                <Text style={styles.tableCell}>{item.eyes.right.add_power ?? '-'}</Text>
+                <Text style={styles.tableCell}>{item.sph || '-'}</Text>
+                <Text style={styles.tableCell}>{item.cyl || '-'}</Text>
+                <Text style={styles.tableCell}>{item.axis || '-'}</Text>
+                <Text style={styles.tableCell}>{item.add_power || '-'}</Text>
               </View>
             )}
             
-            {item.eyes.left && (
+            {item.eye_side === 'left' && (
               <View style={styles.tableRow}>
                 <Text style={styles.tableCell}>Left Eye (OS)</Text>
-                <Text style={styles.tableCell}>{item.eyes.left.sph ?? '-'}</Text>
-                <Text style={styles.tableCell}>{item.eyes.left.cyl ?? '-'}</Text>
-                <Text style={styles.tableCell}>{item.eyes.left.axis ?? '-'}</Text>
-                <Text style={styles.tableCell}>{item.eyes.left.add_power ?? '-'}</Text>
+                <Text style={styles.tableCell}>{item.sph || '-'}</Text>
+                <Text style={styles.tableCell}>{item.cyl || '-'}</Text>
+                <Text style={styles.tableCell}>{item.axis || '-'}</Text>
+                <Text style={styles.tableCell}>{item.add_power || '-'}</Text>
               </View>
             )}
           </View>
 
           <View style={styles.commonDetails}>
-            <Text style={styles.commonDetail}>PD: {item.eyes.right?.pd || item.eyes.left?.pd || '-'}</Text>
-            <Text style={styles.commonDetail}>SH: {item.eyes.right?.sh || item.eyes.left?.sh || '-'}</Text>
-            <Text style={styles.commonDetail}>PRISM: {item.eyes.right?.prism || item.eyes.left?.prism || '-'}</Text>
-            <Text style={styles.commonDetail}>V FRAME: {item.eyes.right?.v_frame || item.eyes.left?.v_frame || '-'}</Text>
-            <Text style={styles.commonDetail}>F SIZE: {item.eyes.right?.f_size || item.eyes.left?.f_size || '-'}</Text>
+            <Text style={styles.commonDetail}>PD: {item.pd || '-'}</Text>
+            <Text style={styles.commonDetail}>SH: {item.sh || '-'}</Text>
+            <Text style={styles.commonDetail}>PRISM: {item.prism || '-'}</Text>
+            <Text style={styles.commonDetail}>V FRAME: {item.v_frame || '-'}</Text>
+            <Text style={styles.commonDetail}>F SIZE: {item.f_size || '-'}</Text>
           </View>
         </View>
       ))}
