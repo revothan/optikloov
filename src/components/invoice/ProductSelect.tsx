@@ -50,6 +50,7 @@ export function ProductSelect({
     data: products = [],
     isLoading,
     isError,
+    refetch,
   } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
@@ -61,6 +62,14 @@ export function ProductSelect({
       return data || [];
     },
   });
+
+  const generateUUID = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  };
 
   const filteredProducts = useMemo(() => {
     if (!Array.isArray(products)) return [];
@@ -74,14 +83,6 @@ export function ProductSelect({
     if (!Array.isArray(products)) return undefined;
     return products.find((product) => product.id === value);
   }, [products, value]);
-
-  const generateUUID = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  };
 
   const handleProductSelect = (product: Product) => {
     onChange(product.id);
@@ -97,12 +98,19 @@ export function ProductSelect({
     if (customProductName.trim()) {
       try {
         const customProductId = generateUUID();
+        const { data: userData } = await supabase.auth.getUser();
+        
+        if (!userData.user?.id) {
+          toast.error("User not authenticated");
+          return;
+        }
+
         const { error: insertError } = await supabase.from("products").insert({
           id: customProductId,
           name: customProductName,
           store_price: 0,
           category: "Custom",
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: userData.user.id,
         });
 
         if (insertError) throw insertError;
@@ -114,10 +122,12 @@ export function ProductSelect({
           category: "Custom",
         };
 
+        await refetch(); // Refresh the products list
         handleProductSelect(customProduct);
         setCustomProductName("");
         setIsCustomProduct(false);
         setOpen(false);
+        toast.success("Custom product created successfully");
       } catch (error) {
         console.error("Error creating custom product:", error);
         toast.error("Failed to create custom product");
