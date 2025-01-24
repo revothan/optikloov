@@ -1,7 +1,10 @@
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function PaymentSignature({ form, totals }) {
+  const examiners = ["Mira", "Dzaky", "Wulan", "Danny"];
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -11,9 +14,20 @@ export function PaymentSignature({ form, totals }) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Pemeriksa</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih pemeriksa" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {examiners.map((examiner) => (
+                    <SelectItem key={examiner} value={examiner}>
+                      {examiner}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </FormItem>
           )}
         />
