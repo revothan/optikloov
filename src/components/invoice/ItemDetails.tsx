@@ -40,7 +40,7 @@ export function ItemDetails({ form, index, calculateItemTotal }: ItemDetailsProp
   }, [discountValue, discountType, form, index]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         control={form.control}
         name={`items.${index}.quantity`}
@@ -88,14 +88,14 @@ export function ItemDetails({ form, index, calculateItemTotal }: ItemDetailsProp
         )}
       />
 
-      <div className="space-y-2">
+      <div className="space-y-2 md:col-span-2">
         <FormLabel>Discount</FormLabel>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-start">
           <Select
             value={discountType}
             onValueChange={(value: 'fixed' | 'percentage') => setDiscountType(value)}
           >
-            <SelectTrigger className="w-[100px]">
+            <SelectTrigger className="w-[120px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -105,26 +105,26 @@ export function ItemDetails({ form, index, calculateItemTotal }: ItemDetailsProp
           </Select>
           <div className="relative flex-1">
             {discountType === 'fixed' && (
-              <span className="absolute left-3 top-2.5">Rp</span>
+              <span className="absolute left-3 top-2.5 text-gray-500">Rp</span>
             )}
             <Input
               type="number"
-              className={discountType === 'fixed' ? 'pl-12' : 'pr-8'}
+              min="0"
+              className={`${discountType === 'fixed' ? 'pl-12' : 'pr-8'} w-full`}
               value={discountValue}
               onChange={(e) => {
-                // Remove leading zeros and update the value
                 const value = e.target.value.replace(/^0+/, '');
                 setDiscountValue(value);
               }}
             />
             {discountType === 'percentage' && (
-              <span className="absolute right-3 top-2.5">%</span>
+              <span className="absolute right-3 top-2.5 text-gray-500">%</span>
             )}
           </div>
         </div>
       </div>
 
-      <div className="col-span-full text-right text-sm text-muted-foreground">
+      <div className="md:col-span-2 text-right text-sm text-muted-foreground">
         Total: {formatPrice(calculateItemTotal(index))}
       </div>
     </div>
