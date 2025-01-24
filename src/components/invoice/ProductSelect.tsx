@@ -74,10 +74,6 @@ export function ProductSelect({
     setSearchQuery("");
   };
 
-  const handleScroll = (e: React.WheelEvent) => {
-    e.stopPropagation();
-  };
-
   if (isError) {
     return (
       <FormItem className="flex flex-col">
@@ -128,7 +124,7 @@ export function ProductSelect({
           side="bottom"
           sideOffset={4}
         >
-          <div className="flex flex-col max-h-[300px]" onWheel={handleScroll}>
+          <div className="flex flex-col max-h-[300px]">
             <div className="flex items-center border-b p-2 sticky top-0 bg-background z-10">
               <Input
                 placeholder="Search products..."
@@ -149,8 +145,12 @@ export function ProductSelect({
                       key={product.id}
                       type="button"
                       variant="ghost"
-                      className="justify-start font-normal"
+                      className="justify-start font-normal py-6 px-4 hover:bg-accent hover:text-accent-foreground"
                       onClick={() => handleProductSelect(product)}
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        handleProductSelect(product);
+                      }}
                     >
                       <Check
                         className={cn(

@@ -13,13 +13,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     marginBottom: 10,
+    textAlign: 'center',
   },
   companyName: {
     fontSize: 16,
     marginBottom: 5,
+    textAlign: 'center',
   },
   details: {
     marginBottom: 20,
+    padding: 10,
+    border: '1 solid #999',
   },
   table: {
     display: "flex",
@@ -35,6 +39,7 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     backgroundColor: "#f0f0f0",
+    fontWeight: 'bold',
   },
   tableCell: {
     flex: 1,
@@ -43,14 +48,28 @@ const styles = StyleSheet.create({
   totals: {
     marginTop: 20,
     alignItems: "flex-end",
+    padding: 10,
+    border: '1 solid #999',
   },
   prescription: {
     marginTop: 20,
     marginBottom: 20,
+    padding: 10,
+    border: '1 solid #999',
   },
   prescriptionTitle: {
     fontSize: 14,
     marginBottom: 10,
+    fontWeight: 'bold',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 30,
+    right: 30,
+    textAlign: 'center',
+    borderTop: '1 solid #999',
+    paddingTop: 10,
   },
 });
 
@@ -100,13 +119,14 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
         <View style={styles.header}>
           <Text style={styles.title}>Invoice #{invoice.invoice_number}</Text>
           <Text style={styles.companyName}>OPTIK LOOV</Text>
-          <Text>Date: {format(new Date(invoice.sale_date), "dd MMM yyyy")}</Text>
+          <Text style={{ textAlign: 'center' }}>Date: {format(new Date(invoice.sale_date), "dd MMM yyyy")}</Text>
         </View>
 
         <View style={styles.details}>
           <Text>Customer: {invoice.customer_name}</Text>
           <Text>Address: {invoice.customer_address || '-'}</Text>
           <Text>Phone: {invoice.customer_phone || '-'}</Text>
+          <Text>Payment Type: {invoice.payment_type || '-'}</Text>
         </View>
 
         <View style={styles.table}>
@@ -188,6 +208,11 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
           <Text>Grand Total: {formatPrice(invoice.grand_total)}</Text>
           <Text>Down Payment: {formatPrice(invoice.down_payment || 0)}</Text>
           <Text>Remaining Balance: {formatPrice(invoice.remaining_balance || 0)}</Text>
+        </View>
+
+        <View style={styles.footer}>
+          <Text>Acknowledged by: {invoice.acknowledged_by || '_________________'}</Text>
+          <Text>Received by: {invoice.received_by || '_________________'}</Text>
         </View>
       </Page>
     </Document>
