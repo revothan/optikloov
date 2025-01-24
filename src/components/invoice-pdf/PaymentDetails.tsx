@@ -4,11 +4,18 @@ import { formatPrice } from "@/lib/utils";
 const styles = StyleSheet.create({
   totals: {
     marginTop: 10,
-    alignItems: "flex-end",
     padding: 5,
     border: '1 solid #999',
     fontSize: 8,
   },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 20,
+  },
+  label: {
+    color: '#666',
+  }
 });
 
 interface PaymentDetailsProps {
@@ -28,11 +35,17 @@ export function PaymentDetails({
 }: PaymentDetailsProps) {
   return (
     <View style={styles.totals}>
-      <Text>Total Amount: {formatPrice(totalAmount)}</Text>
-      <Text>Discount: {formatPrice(discountAmount)}</Text>
-      <Text>Grand Total: {formatPrice(grandTotal)}</Text>
-      <Text>Down Payment: {formatPrice(downPayment)}</Text>
-      <Text>Remaining Balance: {formatPrice(remainingBalance)}</Text>
+      <View style={styles.row}>
+        <Text style={styles.label}>Total: {formatPrice(totalAmount)}</Text>
+        <Text style={styles.label}>Disc: {formatPrice(discountAmount)}</Text>
+      </View>
+      <View style={styles.row}>
+        <Text>Grand Total: {formatPrice(grandTotal)}</Text>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.label}>DP: {formatPrice(downPayment)}</Text>
+        <Text>Balance: {formatPrice(remainingBalance)}</Text>
+      </View>
     </View>
   );
 }
