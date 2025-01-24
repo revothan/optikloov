@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { PDFDownloadLink, PDFViewer, pdf } from "@react-pdf/renderer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,8 +54,39 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
     checkSession();
   }, [navigate]);
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    try {
+      // Generate the PDF blob
+      const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
+      
+      // Create a URL for the blob
+      const url = URL.createObjectURL(blob);
+      
+      // Create an iframe
+      const printFrame = document.createElement('iframe');
+      printFrame.style.display = 'none';
+      document.body.appendChild(printFrame);
+      
+      // Load the PDF in the iframe and print it
+      printFrame.src = url;
+      printFrame.onload = () => {
+        try {
+          printFrame.contentWindow?.print();
+        } catch (error) {
+          console.error('Print error:', error);
+          toast.error('Failed to print invoice');
+        } finally {
+          // Cleanup
+          setTimeout(() => {
+            document.body.removeChild(printFrame);
+            URL.revokeObjectURL(url);
+          }, 100);
+        }
+      };
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast.error('Failed to generate PDF for printing');
+    }
   };
 
   const handleShare = async () => {
