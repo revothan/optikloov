@@ -90,6 +90,7 @@ export function ProductSelect({
       };
       handleProductSelect(customProduct);
       setCustomProductName("");
+      setIsCustomProduct(false);
     }
   };
 
@@ -131,7 +132,7 @@ export function ProductSelect({
                   Loading...
                 </>
               ) : (
-                selectedProduct?.name || "Select product..."
+                selectedProduct?.name || value?.startsWith("custom-") ? customProductName : "Select product..."
               )}
             </Button>
           </FormControl>
@@ -158,6 +159,12 @@ export function ProductSelect({
                   value={customProductName}
                   onChange={(e) => setCustomProductName(e.target.value)}
                   className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleCustomProductSubmit();
+                    }
+                  }}
                 />
                 <Button
                   type="button"
