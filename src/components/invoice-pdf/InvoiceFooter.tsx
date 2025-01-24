@@ -15,14 +15,12 @@ const styles = StyleSheet.create({
 
 interface InvoiceFooterProps {
   acknowledgedBy?: string;
-  receivedBy?: string;
 }
 
-export function InvoiceFooter({ acknowledgedBy, receivedBy }: InvoiceFooterProps) {
+export function InvoiceFooter({ acknowledgedBy }: InvoiceFooterProps) {
   return (
     <View style={styles.footer}>
       <Text>Pemeriksa: {acknowledgedBy || '_________________'}</Text>
-      <Text>Diterima Oleh: {receivedBy || '_________________'}</Text>
     </View>
   );
 }

@@ -1,9 +1,20 @@
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState, useEffect } from "react";
 
 export function PaymentSignature({ form, totals }) {
   const examiners = ["Mira", "Dzaky", "Wulan", "Danny"];
+  const [paymentOption, setPaymentOption] = useState("custom");
+
+  // Update down payment when payment option changes
+  useEffect(() => {
+    if (paymentOption === "full") {
+      form.setValue("down_payment", totals.grandTotal.toString());
+    } else if (paymentOption === "custom") {
+      form.setValue("down_payment", "0");
+    }
+  }, [paymentOption, totals.grandTotal, form]);
 
   return (
     <div className="space-y-4">
@@ -32,18 +43,41 @@ export function PaymentSignature({ form, totals }) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="received_by"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Diterima Oleh</FormLabel>
+        <div className="space-y-2">
+          <FormLabel>Down Payment</FormLabel>
+          <div className="flex gap-2">
+            <Select value={paymentOption} onValueChange={setPaymentOption}>
               <FormControl>
-                <Input {...field} />
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Payment" />
+                </SelectTrigger>
               </FormControl>
-            </FormItem>
-          )}
-        />
+              <SelectContent>
+                <SelectItem value="custom">Custom</SelectItem>
+                <SelectItem value="full">LUNAS</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormField
+              control={form.control}
+              name="down_payment"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="number"
+                      disabled={paymentOption === "full"}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/^0+/, '');
+                        field.onChange(value || "0");
+                      }}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="space-y-2">
