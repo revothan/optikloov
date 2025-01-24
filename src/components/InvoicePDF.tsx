@@ -62,7 +62,6 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
 
         <InvoiceFooter
           acknowledgedBy={invoice.acknowledged_by}
-          receivedBy={invoice.received_by}
         />
       </Page>
     </Document>
