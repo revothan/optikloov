@@ -62,7 +62,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const queryClient = useQueryClient();
 
   // Query to get the latest invoice number
-  const { data: latestInvoice } = useQuery({
+  const { data: latestInvoice, isLoading: isLoadingInvoice } = useQuery({
     queryKey: ["latest-invoice-number"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -87,7 +87,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      invoice_number: latestInvoice ? generateNextInvoiceNumber(latestInvoice) : "0125",
+      invoice_number: isLoadingInvoice ? "0125" : latestInvoice ? generateNextInvoiceNumber(latestInvoice) : "0125",
       sale_date: new Date().toISOString().split("T")[0],
       customer_name: "",
       customer_phone: "",
@@ -99,6 +99,13 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       items: [],
     },
   });
+
+  // Update invoice number when latestInvoice changes
+  useEffect(() => {
+    if (!isLoadingInvoice && latestInvoice) {
+      form.setValue("invoice_number", generateNextInvoiceNumber(latestInvoice));
+    }
+  }, [latestInvoice, isLoadingInvoice, form]);
 
   // Set up field array for dynamic item handling
   const { fields, append, remove, swap, move, insert, prepend } = useFieldArray({
@@ -165,7 +172,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
       if (invoiceError) throw invoiceError;
 
-      // Create invoice items with updated prescription fields
+      // Create invoice items
       const { error: itemsError } = await supabase.from("invoice_items").insert(
         values.items.map((item) => ({
           invoice_id: invoice.id,
