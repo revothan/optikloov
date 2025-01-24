@@ -56,18 +56,13 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
 
   const handlePrint = async () => {
     try {
-      // Generate the PDF blob
       const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
-      
-      // Create a URL for the blob
       const url = URL.createObjectURL(blob);
       
-      // Create an iframe
       const printFrame = document.createElement('iframe');
       printFrame.style.display = 'none';
       document.body.appendChild(printFrame);
       
-      // Load the PDF in the iframe and print it
       printFrame.src = url;
       printFrame.onload = () => {
         try {
@@ -76,7 +71,6 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
           console.error('Print error:', error);
           toast.error('Failed to print invoice');
         } finally {
-          // Cleanup
           setTimeout(() => {
             document.body.removeChild(printFrame);
             URL.revokeObjectURL(url);
