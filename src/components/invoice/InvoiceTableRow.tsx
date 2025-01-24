@@ -115,6 +115,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
   return (
     <tr className="border-b">
       <td className="py-4 px-4">
+        {/* @ts-expect-error - PDFDownloadLink render prop type issue */}
         <PDFDownloadLink
           document={<InvoicePDF invoice={invoice} items={items} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
@@ -158,6 +159,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                 Email
               </DropdownMenuItem>
               <DropdownMenuItem>
+                {/* @ts-expect-error - PDFDownloadLink render prop type issue */}
                 <PDFDownloadLink
                   document={<InvoicePDF invoice={invoice} items={items} />}
                   fileName={`invoice-${invoice.invoice_number}.pdf`}
