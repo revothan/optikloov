@@ -86,64 +86,73 @@ export type Database = {
       }
       invoice_items: {
         Row: {
-          add_power: number | null
-          axis: number | null
           created_at: string
-          cyl: number | null
           discount: number
-          eye_side: string | null
           f_size: string | null
           id: string
           invoice_id: string
+          left_eye_add_power: number | null
+          left_eye_axis: number | null
+          left_eye_cyl: number | null
+          left_eye_sph: number | null
           pd: number | null
           price: number
           prism: number | null
           product_id: string
           quantity: number
+          right_eye_add_power: number | null
+          right_eye_axis: number | null
+          right_eye_cyl: number | null
+          right_eye_sph: number | null
           sh: number | null
-          sph: number | null
           total: number
           updated_at: string
           v_frame: string | null
         }
         Insert: {
-          add_power?: number | null
-          axis?: number | null
           created_at?: string
-          cyl?: number | null
           discount?: number
-          eye_side?: string | null
           f_size?: string | null
           id?: string
           invoice_id: string
+          left_eye_add_power?: number | null
+          left_eye_axis?: number | null
+          left_eye_cyl?: number | null
+          left_eye_sph?: number | null
           pd?: number | null
           price: number
           prism?: number | null
           product_id: string
           quantity: number
+          right_eye_add_power?: number | null
+          right_eye_axis?: number | null
+          right_eye_cyl?: number | null
+          right_eye_sph?: number | null
           sh?: number | null
-          sph?: number | null
           total: number
           updated_at?: string
           v_frame?: string | null
         }
         Update: {
-          add_power?: number | null
-          axis?: number | null
           created_at?: string
-          cyl?: number | null
           discount?: number
-          eye_side?: string | null
           f_size?: string | null
           id?: string
           invoice_id?: string
+          left_eye_add_power?: number | null
+          left_eye_axis?: number | null
+          left_eye_cyl?: number | null
+          left_eye_sph?: number | null
           pd?: number | null
           price?: number
           prism?: number | null
           product_id?: string
           quantity?: number
+          right_eye_add_power?: number | null
+          right_eye_axis?: number | null
+          right_eye_cyl?: number | null
+          right_eye_sph?: number | null
           sh?: number | null
-          sph?: number | null
           total?: number
           updated_at?: string
           v_frame?: string | null

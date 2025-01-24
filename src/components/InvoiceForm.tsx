@@ -165,48 +165,29 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
       if (invoiceError) throw invoiceError;
 
-      // Create invoice items with all fields included
+      // Create invoice items with updated prescription fields
       const { error: itemsError } = await supabase.from("invoice_items").insert(
-        values.items.flatMap((item) => {
-          // Common fields for both eyes
-          const commonFields = {
-            pd: item.pd,
-            sh: item.sh,
-            prism: item.prism,
-            v_frame: item.v_frame,
-            f_size: item.f_size,
-          };
-
-          const baseItem = {
-            invoice_id: invoice.id,
-            product_id: item.product_id,
-            quantity: item.quantity,
-            price: item.price,
-            discount: item.discount || 0,
-            total: item.quantity * item.price - (item.discount || 0),
-            ...commonFields,
-          };
-
-          // Create two records - one for each eye
-          return [
-            {
-              ...baseItem,
-              eye_side: "left",
-              sph: item.left_eye?.sph || null,
-              cyl: item.left_eye?.cyl || null,
-              axis: item.left_eye?.axis || null,
-              add_power: item.left_eye?.add_power || null,
-            },
-            {
-              ...baseItem,
-              eye_side: "right",
-              sph: item.right_eye?.sph || null,
-              cyl: item.right_eye?.cyl || null,
-              axis: item.right_eye?.axis || null,
-              add_power: item.right_eye?.add_power || null,
-            },
-          ];
-        }),
+        values.items.map((item) => ({
+          invoice_id: invoice.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: item.price,
+          discount: item.discount || 0,
+          total: item.quantity * item.price - (item.discount || 0),
+          pd: item.pd,
+          sh: item.sh,
+          prism: item.prism,
+          v_frame: item.v_frame,
+          f_size: item.f_size,
+          left_eye_sph: item.left_eye?.sph || null,
+          left_eye_cyl: item.left_eye?.cyl || null,
+          left_eye_axis: item.left_eye?.axis || null,
+          left_eye_add_power: item.left_eye?.add_power || null,
+          right_eye_sph: item.right_eye?.sph || null,
+          right_eye_cyl: item.right_eye?.cyl || null,
+          right_eye_axis: item.right_eye?.axis || null,
+          right_eye_add_power: item.right_eye?.add_power || null,
+        }))
       );
 
       if (itemsError) throw itemsError;
