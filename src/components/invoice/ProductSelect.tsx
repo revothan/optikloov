@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 
 interface Product {
   id: string;
@@ -77,7 +78,7 @@ export function ProductSelect({
   const generateUUID = () => {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      const v = c === c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     });
   };
@@ -92,18 +93,35 @@ export function ProductSelect({
     }
   };
 
-  const handleCustomProductSubmit = () => {
+  const handleCustomProductSubmit = async () => {
     if (customProductName.trim()) {
-      const customProduct = {
-        id: generateUUID(),
-        name: customProductName,
-        store_price: 0,
-        category: "Custom",
-      };
-      handleProductSelect(customProduct);
-      setCustomProductName("");
-      setIsCustomProduct(false);
-      setOpen(false);
+      try {
+        const customProductId = generateUUID();
+        const { error: insertError } = await supabase.from("products").insert({
+          id: customProductId,
+          name: customProductName,
+          store_price: 0,
+          category: "Custom",
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+        });
+
+        if (insertError) throw insertError;
+
+        const customProduct = {
+          id: customProductId,
+          name: customProductName,
+          store_price: 0,
+          category: "Custom",
+        };
+
+        handleProductSelect(customProduct);
+        setCustomProductName("");
+        setIsCustomProduct(false);
+        setOpen(false);
+      } catch (error) {
+        console.error("Error creating custom product:", error);
+        toast.error("Failed to create custom product");
+      }
     }
   };
 
