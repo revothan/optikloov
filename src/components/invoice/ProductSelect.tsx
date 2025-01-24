@@ -74,12 +74,20 @@ export function ProductSelect({
     return products.find((product) => product.id === value);
   }, [products, value]);
 
+  const generateUUID = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  };
+
   const handleProductSelect = (product: Product) => {
     onChange(product.id);
     onProductSelect(product);
     setOpen(false);
     setSearchQuery("");
-    if (product.id.startsWith('custom-')) {
+    if (product.id.includes('-')) {
       setSelectedCustomName(product.name);
     }
   };
@@ -87,7 +95,7 @@ export function ProductSelect({
   const handleCustomProductSubmit = () => {
     if (customProductName.trim()) {
       const customProduct = {
-        id: `custom-${Date.now()}`,
+        id: generateUUID(),
         name: customProductName,
         store_price: 0,
         category: "Custom",
@@ -101,7 +109,7 @@ export function ProductSelect({
 
   const getDisplayName = () => {
     if (isLoading) return "Loading...";
-    if (value?.startsWith("custom-")) return selectedCustomName;
+    if (value?.includes('-')) return selectedCustomName;
     return selectedProduct?.name || "Select product...";
   };
 
