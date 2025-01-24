@@ -15,51 +15,7 @@ interface CommonFieldsProps {
 
 export function CommonFields({ form, index }: CommonFieldsProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-      <FormField
-        control={form.control}
-        name={`items.${index}.mpd_right`}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>MPD Right</FormLabel>
-            <FormControl>
-              <Input
-                type="number"
-                step="0.5"
-                {...field}
-                onChange={(e) =>
-                  field.onChange(e.target.value ? parseFloat(e.target.value) : null)
-                }
-                value={field.value ?? ""}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name={`items.${index}.mpd_left`}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>MPD Left</FormLabel>
-            <FormControl>
-              <Input
-                type="number"
-                step="0.5"
-                {...field}
-                onChange={(e) =>
-                  field.onChange(e.target.value ? parseFloat(e.target.value) : null)
-                }
-                value={field.value ?? ""}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
       <FormField
         control={form.control}
         name={`items.${index}.sh`}

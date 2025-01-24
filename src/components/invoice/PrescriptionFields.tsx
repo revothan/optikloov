@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { useRef } from "react";
 
 interface PrescriptionFieldsProps {
   form: UseFormReturn<any>;
@@ -23,29 +22,26 @@ export function PrescriptionFields({
   const handleValueChange = (
     fieldName: string,
     value: string,
-    type: "sph" | "cyl" | "add",
+    type: "sph" | "cyl" | "add" | "mpd",
   ) => {
     const fieldPath = `items.${index}.${side}_eye.${fieldName.split(".").pop()}`;
 
-    // Handle sign-only input
     if (value === "-" || value === "+") {
       form.setValue(fieldPath, value);
       return;
     }
 
-    // Handle zero values
     if (value === "0" || value === "0.0" || value === "0.00") {
       form.setValue(fieldPath, "0.00");
       return;
     }
 
-    // Keep the raw input value during typing
     form.setValue(fieldPath, value);
   };
 
   const formatDisplayValue = (
     value: any,
-    type: "sph" | "cyl" | "add",
+    type: "sph" | "cyl" | "add" | "mpd",
   ): string => {
     if (typeof value === "string") return value;
 
@@ -60,6 +56,8 @@ export function PrescriptionFields({
           return value === 0 ? "0.00" : `-${absValue}`;
         case "add":
           return value === 0 ? "0.00" : `+${absValue}`;
+        case "mpd":
+          return absValue;
       }
     }
 
@@ -68,7 +66,7 @@ export function PrescriptionFields({
 
   const validateInput = (
     value: string,
-    type: "sph" | "cyl" | "add",
+    type: "sph" | "cyl" | "add" | "mpd",
   ): boolean => {
     switch (type) {
       case "sph":
@@ -77,6 +75,8 @@ export function PrescriptionFields({
         return /^-?\d*\.?\d*$/.test(value);
       case "add":
         return /^\+?\d*\.?\d*$/.test(value);
+      case "mpd":
+        return /^\d*\.?\d*$/.test(value);
       default:
         return false;
     }
@@ -87,7 +87,33 @@ export function PrescriptionFields({
       <h5 className="text-sm font-medium mb-2">
         {side === "left" ? "Left Eye" : "Right Eye"}
       </h5>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <FormField
+          control={form.control}
+          name={`items.${index}.${side === "left" ? "mpd_left" : "mpd_right"}`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>MPD</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.5"
+                  {...field}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    if (validateInput(newValue, "mpd")) {
+                      field.onChange(newValue ? parseFloat(newValue) : null);
+                    }
+                  }}
+                  value={field.value ?? ""}
+                  className="text-right"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name={`items.${index}.${side}_eye.sph`}
