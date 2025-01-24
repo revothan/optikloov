@@ -90,7 +90,7 @@ export function PrescriptionFields({
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <FormField
           control={form.control}
-          name={`items.${index}.${side === "left" ? "mpd_left" : "mpd_right"}`}
+          name={`items.${index}.mpd_${side.toLowerCase()}`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>MPD</FormLabel>
@@ -106,7 +106,6 @@ export function PrescriptionFields({
                     }
                   }}
                   value={field.value ?? ""}
-                  className="text-right"
                 />
               </FormControl>
               <FormMessage />
@@ -142,7 +141,6 @@ export function PrescriptionFields({
                       }
                     }
                   }}
-                  className="text-right"
                 />
               </FormControl>
               <FormMessage />
@@ -178,7 +176,6 @@ export function PrescriptionFields({
                       }
                     }
                   }}
-                  className="text-right"
                 />
               </FormControl>
               <FormMessage />
@@ -240,7 +237,6 @@ export function PrescriptionFields({
                       }
                     }
                   }}
-                  className="text-right"
                 />
               </FormControl>
               <FormMessage />
