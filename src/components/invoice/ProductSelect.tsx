@@ -43,6 +43,7 @@ export function ProductSelect({
   const [searchQuery, setSearchQuery] = useState("");
   const [isCustomProduct, setIsCustomProduct] = useState(false);
   const [customProductName, setCustomProductName] = useState("");
+  const [selectedCustomName, setSelectedCustomName] = useState("");
 
   const {
     data: products = [],
@@ -78,6 +79,9 @@ export function ProductSelect({
     onProductSelect(product);
     setOpen(false);
     setSearchQuery("");
+    if (product.id.startsWith('custom-')) {
+      setSelectedCustomName(product.name);
+    }
   };
 
   const handleCustomProductSubmit = () => {
@@ -97,7 +101,7 @@ export function ProductSelect({
 
   const getDisplayName = () => {
     if (isLoading) return "Loading...";
-    if (value?.startsWith("custom-")) return customProductName;
+    if (value?.startsWith("custom-")) return selectedCustomName;
     return selectedProduct?.name || "Select product...";
   };
 
