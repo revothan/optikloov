@@ -91,7 +91,14 @@ export function ProductSelect({
       handleProductSelect(customProduct);
       setCustomProductName("");
       setIsCustomProduct(false);
+      setOpen(false);
     }
+  };
+
+  const getDisplayName = () => {
+    if (isLoading) return "Loading...";
+    if (value?.startsWith("custom-")) return customProductName;
+    return selectedProduct?.name || "Select product...";
   };
 
   if (isError) {
@@ -132,7 +139,7 @@ export function ProductSelect({
                   Loading...
                 </>
               ) : (
-                selectedProduct?.name || value?.startsWith("custom-") ? customProductName : "Select product..."
+                getDisplayName()
               )}
             </Button>
           </FormControl>
