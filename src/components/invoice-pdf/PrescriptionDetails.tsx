@@ -62,7 +62,7 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
     item.products?.category === 'Lensa' && 
     (item.left_eye_sph || item.left_eye_cyl || item.left_eye_axis || item.left_eye_add_power ||
      item.right_eye_sph || item.right_eye_cyl || item.right_eye_axis || item.right_eye_add_power ||
-     item.pd || item.sh || item.prism || item.v_frame || item.f_size)
+     item.mpd_right || item.mpd_left || item.sh || item.prism || item.v_frame || item.f_size)
   );
   
   if (lensItems.length === 0) return null;
@@ -102,7 +102,8 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
           </View>
 
           <View style={styles.commonDetails}>
-            <Text style={styles.commonDetail}>PD: {item.pd || "0"}</Text>
+            <Text style={styles.commonDetail}>MPD Right: {item.mpd_right || "0"}</Text>
+            <Text style={styles.commonDetail}>MPD Left: {item.mpd_left || "0"}</Text>
             <Text style={styles.commonDetail}>SH: {item.sh || "0"}</Text>
             <Text style={styles.commonDetail}>PRISM: {item.prism || "0"}</Text>
             <Text style={styles.commonDetail}>V FRAME: {item.v_frame || "-"}</Text>
