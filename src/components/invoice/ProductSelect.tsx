@@ -84,6 +84,7 @@ export function ProductSelect({
         >
           Error loading products
         </Button>
+        <FormMessage />
       </FormItem>
     );
   }
@@ -103,6 +104,7 @@ export function ProductSelect({
                 !value && "text-muted-foreground"
               )}
               disabled={isLoading}
+              type="button"
             >
               {isLoading ? (
                 <>
@@ -147,10 +149,6 @@ export function ProductSelect({
                       variant="ghost"
                       className="justify-start font-normal py-6 px-4 hover:bg-accent hover:text-accent-foreground"
                       onClick={() => handleProductSelect(product)}
-                      onTouchEnd={(e) => {
-                        e.preventDefault();
-                        handleProductSelect(product);
-                      }}
                     >
                       <Check
                         className={cn(
