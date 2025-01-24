@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
-import { PDFDownloadLink, PDFViewer, pdf } from "@react-pdf/renderer";
+import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,8 @@ import {
   Share2, 
   Mail, 
   MoreHorizontal,
-  Trash
+  Trash,
+  Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
@@ -41,6 +42,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
   const navigate = useNavigate();
   const [items, setItems] = useState<any[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -56,30 +58,24 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
 
   const handlePrint = async () => {
     try {
+      setIsPrinting(true);
       const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
       const url = URL.createObjectURL(blob);
       
-      const printFrame = document.createElement('iframe');
-      printFrame.style.display = 'none';
-      document.body.appendChild(printFrame);
-      
-      printFrame.src = url;
-      printFrame.onload = () => {
-        try {
-          printFrame.contentWindow?.print();
-        } catch (error) {
-          console.error('Print error:', error);
-          toast.error('Failed to print invoice');
-        } finally {
-          setTimeout(() => {
-            document.body.removeChild(printFrame);
-            URL.revokeObjectURL(url);
-          }, 100);
-        }
-      };
+      const printWindow = window.open(url, '_blank');
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print();
+          URL.revokeObjectURL(url);
+        };
+      } else {
+        toast.error('Please allow pop-ups to print invoices');
+      }
     } catch (error) {
-      console.error('PDF generation error:', error);
-      toast.error('Failed to generate PDF for printing');
+      console.error('Print error:', error);
+      toast.error('Failed to print invoice');
+    } finally {
+      setIsPrinting(false);
     }
   };
 
@@ -146,9 +142,13 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handlePrint}>
-                <Printer className="mr-2 h-4 w-4" />
-                Print
+              <DropdownMenuItem onClick={handlePrint} disabled={isPrinting}>
+                {isPrinting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Printer className="mr-2 h-4 w-4" />
+                )}
+                {isPrinting ? "Printing..." : "Print"}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleShare}>
                 <Share2 className="mr-2 h-4 w-4" />
