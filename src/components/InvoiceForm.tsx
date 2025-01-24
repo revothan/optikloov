@@ -42,11 +42,12 @@ const schema = z.object({
         quantity: z.number().min(1, "Quantity must be at least 1"),
         price: z.number().min(0, "Price cannot be negative"),
         discount: z.number().min(0, "Discount cannot be negative"),
-        pd: z.number().nullable(),
+        mpd_right: z.number().nullable(),
+        mpd_left: z.number().nullable(),
         sh: z.number().nullable(),
-        prism: z.number().nullable(),
         v_frame: z.string().nullable(),
         f_size: z.string().nullable(),
+        prism: z.number().nullable(),
         left_eye: eyeSchema.nullable(),
         right_eye: eyeSchema.nullable(),
       }),
@@ -146,13 +147,16 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
   // Handle form submission
   const onSubmit = async (values: FormData) => {
+    console.log("Form submission started", values);
+    
     if (!session?.user?.id) {
+      console.error("No user session found");
       toast.error("You must be logged in");
       return;
     }
 
     try {
-      // Create the invoice
+      console.log("Creating invoice...");
       const { data: invoice, error: invoiceError } = await supabase
         .from("invoices")
         .insert({
@@ -177,9 +181,14 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
         .select()
         .single();
 
-      if (invoiceError) throw invoiceError;
+      if (invoiceError) {
+        console.error("Invoice creation error:", invoiceError);
+        throw invoiceError;
+      }
 
-      // Create invoice items
+      console.log("Invoice created:", invoice);
+
+      console.log("Creating invoice items...");
       const { error: itemsError } = await supabase.from("invoice_items").insert(
         values.items.map((item) => ({
           invoice_id: invoice.id,
@@ -188,7 +197,8 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
           price: item.price,
           discount: item.discount || 0,
           total: item.quantity * item.price - (item.discount || 0),
-          pd: item.pd,
+          mpd_right: item.mpd_right,
+          mpd_left: item.mpd_left,
           sh: item.sh,
           prism: item.prism,
           v_frame: item.v_frame,
@@ -204,8 +214,12 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
         }))
       );
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error("Invoice items creation error:", itemsError);
+        throw itemsError;
+      }
 
+      console.log("Invoice items created successfully");
       toast.success("Invoice created successfully");
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       queryClient.invalidateQueries({ queryKey: ["latest-invoice-number"] });
