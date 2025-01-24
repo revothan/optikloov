@@ -1,12 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { Check, Loader2, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -17,11 +12,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface Product {
   id: string;
   name: string;
   store_price: number;
+  category: string;
 }
 
 interface ProductSelectProps {
@@ -47,7 +50,7 @@ export function ProductSelect({
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, store_price");
+        .select("id, name, store_price, category");
 
       if (error) throw error;
       return data || [];
@@ -93,13 +96,12 @@ export function ProductSelect({
   return (
     <FormItem className="flex flex-col">
       <FormLabel>Product</FormLabel>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
           <FormControl>
             <Button
               variant="outline"
               role="combobox"
-              aria-expanded={open}
               className={cn(
                 "w-full justify-between bg-background",
                 !value && "text-muted-foreground"
@@ -113,43 +115,41 @@ export function ProductSelect({
                   Loading...
                 </>
               ) : (
-                <>
-                  {selectedProduct ? selectedProduct.name : "Select product..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </>
+                selectedProduct?.name || "Select product..."
               )}
             </Button>
           </FormControl>
-        </PopoverTrigger>
-        <PopoverContent 
-          className="w-[300px] p-0 bg-background z-50" 
-          align="start"
-          side="bottom"
-          sideOffset={4}
-          avoidCollisions={true}
-        >
-          <div className="flex flex-col max-h-[300px]">
-            <div className="flex items-center border-b p-2 sticky top-0 bg-background z-10">
+        </DialogTrigger>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Select Product</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center space-x-2 sticky top-0 bg-background p-2">
+              <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="border-0 focus-visible:ring-0"
+                className="flex-1"
               />
             </div>
-            <ScrollArea className="flex-1 overflow-y-auto">
+            <ScrollArea className="h-[50vh]">
               {filteredProducts.length === 0 ? (
                 <div className="py-6 text-center text-sm text-muted-foreground">
                   No products found.
                 </div>
               ) : (
-                <div className="flex flex-col">
+                <div className="grid grid-cols-1 gap-2">
                   {filteredProducts.map((product) => (
                     <Button
                       key={product.id}
                       type="button"
                       variant="ghost"
-                      className="justify-start font-normal py-6 px-4 hover:bg-accent hover:text-accent-foreground"
+                      className={cn(
+                        "justify-start font-normal py-6 px-4 hover:bg-accent hover:text-accent-foreground",
+                        value === product.id && "bg-accent"
+                      )}
                       onClick={() => handleProductSelect(product)}
                     >
                       <Check
@@ -158,15 +158,20 @@ export function ProductSelect({
                           value === product.id ? "opacity-100" : "opacity-0"
                         )}
                       />
-                      {product.name}
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">{product.name}</span>
+                        <span className="text-sm text-muted-foreground">
+                          Category: {product.category}
+                        </span>
+                      </div>
                     </Button>
                   ))}
                 </div>
               )}
             </ScrollArea>
           </div>
-        </PopoverContent>
-      </Popover>
+        </DialogContent>
+      </Dialog>
       <FormMessage />
     </FormItem>
   );
