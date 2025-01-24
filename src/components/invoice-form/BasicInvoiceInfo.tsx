@@ -88,6 +88,34 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
 
       <FormField
         control={form.control}
+        name="customer_email"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Email Pelanggan</FormLabel>
+            <FormControl>
+              <Input type="email" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="customer_birth_date"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Tanggal Lahir</FormLabel>
+            <FormControl>
+              <Input type="date" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
         name="customer_phone"
         render={({ field }) => (
           <FormItem>

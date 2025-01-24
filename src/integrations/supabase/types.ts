@@ -179,6 +179,8 @@ export type Database = {
           acknowledged_by: string | null
           created_at: string
           customer_address: string | null
+          customer_birth_date: string | null
+          customer_email: string | null
           customer_name: string
           customer_phone: string | null
           discount_amount: number
@@ -200,6 +202,8 @@ export type Database = {
           acknowledged_by?: string | null
           created_at?: string
           customer_address?: string | null
+          customer_birth_date?: string | null
+          customer_email?: string | null
           customer_name: string
           customer_phone?: string | null
           discount_amount?: number
@@ -221,6 +225,8 @@ export type Database = {
           acknowledged_by?: string | null
           created_at?: string
           customer_address?: string | null
+          customer_birth_date?: string | null
+          customer_email?: string | null
           customer_name?: string
           customer_phone?: string | null
           discount_amount?: number

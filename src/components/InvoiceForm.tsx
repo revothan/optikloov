@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import * as z from "zod";
-import { useEffect } from "react"; // Added this import
+import { useEffect } from "react";
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,8 @@ const schema = z.object({
   invoice_number: z.string().min(1, "Invoice number is required"),
   sale_date: z.string().min(1, "Sale date is required"),
   customer_name: z.string().min(1, "Customer name is required"),
+  customer_email: z.string().email().optional().nullable(),
+  customer_birth_date: z.string().optional().nullable(),
   customer_phone: z.string().optional(),
   customer_address: z.string().optional(),
   payment_type: z.string().min(1, "Payment type is required"),
@@ -91,6 +93,8 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       invoice_number: isLoadingInvoice ? "0125" : latestInvoice ? generateNextInvoiceNumber(latestInvoice) : "0125",
       sale_date: new Date().toISOString().split("T")[0],
       customer_name: "",
+      customer_email: "",
+      customer_birth_date: "",
       customer_phone: "",
       customer_address: "",
       payment_type: "",
@@ -155,6 +159,8 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
           invoice_number: values.invoice_number,
           sale_date: values.sale_date,
           customer_name: values.customer_name,
+          customer_email: values.customer_email,
+          customer_birth_date: values.customer_birth_date,
           customer_phone: values.customer_phone,
           customer_address: values.customer_address,
           payment_type: values.payment_type,
