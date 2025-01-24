@@ -9,8 +9,8 @@ import { InvoiceFooter } from "./invoice-pdf/InvoiceFooter";
 
 const styles = StyleSheet.create({
   page: {
-    padding: 30,
-    fontSize: 12,
+    padding: 20,
+    fontSize: 10,
   },
 });
 
@@ -33,21 +33,34 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
     loadItems();
   }, [onLoadComplete]);
 
-  // Group products by product_id to avoid duplication
-  const uniqueProducts = items.reduce<Record<string, any>>((acc, item) => {
-    if (!acc[item.product_id]) {
-      acc[item.product_id] = item;
+  // Group items by product_id and eye_side
+  const groupedItems = items.reduce((acc, item) => {
+    const key = item.product_id;
+    if (!acc[key]) {
+      acc[key] = {
+        ...item,
+        eyes: {}
+      };
     }
+    acc[key].eyes[item.eye_side] = {
+      sph: item.sph,
+      cyl: item.cyl,
+      axis: item.axis,
+      add_power: item.add_power,
+      pd: item.pd,
+      sh: item.sh,
+      prism: item.prism,
+      v_frame: item.v_frame,
+      f_size: item.f_size
+    };
     return acc;
   }, {});
 
-  // Find prescription details for right and left eyes
-  const rightEye = items.find(item => item.eye_side === 'right');
-  const leftEye = items.find(item => item.eye_side === 'left');
+  const uniqueProducts = Object.values(groupedItems);
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A5" style={styles.page}>
         <InvoiceHeader 
           invoiceNumber={invoice.invoice_number}
           saleDate={invoice.sale_date}
@@ -60,12 +73,9 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
           paymentType={invoice.payment_type}
         />
 
-        <ItemsTable items={Object.values(uniqueProducts)} />
+        <ItemsTable items={uniqueProducts} />
 
-        <PrescriptionDetails
-          rightEye={rightEye}
-          leftEye={leftEye}
-        />
+        <PrescriptionDetails items={uniqueProducts} />
 
         <PaymentDetails
           totalAmount={invoice.total_amount}
