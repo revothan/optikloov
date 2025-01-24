@@ -149,7 +149,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
             <Button variant="ghost" size="sm" disabled={loading || isLoading}>
               {loading || isLoading ? "Loading..." : invoice.invoice_number}
             </Button>
-          )}
+          ) as React.ReactNode}
         </PDFDownloadLink>
       </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>
@@ -197,7 +197,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                       <Download className="mr-2 h-4 w-4" />
                       {loading || isLoading ? "Loading..." : "Download PDF"}
                     </div>
-                  )}
+                  ) as React.ReactNode}
                 </PDFDownloadLink>
               </DropdownMenuItem>
               <DropdownMenuItem

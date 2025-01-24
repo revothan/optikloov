@@ -2,32 +2,32 @@ import { Text, View, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   prescription: {
-    marginTop: 10,
-    marginBottom: 10,
-    padding: 8,
+    marginTop: 5,
+    marginBottom: 5,
+    padding: 5,
     border: '1 solid #999',
   },
   prescriptionTitle: {
-    fontSize: 12,
-    marginBottom: 8,
+    fontSize: 10,
+    marginBottom: 5,
     fontWeight: 'bold',
   },
   productTitle: {
-    fontSize: 10,
-    marginTop: 5,
-    marginBottom: 5,
+    fontSize: 8,
+    marginTop: 3,
+    marginBottom: 3,
     fontWeight: 'bold',
   },
   table: {
     width: "100%",
-    marginBottom: 10,
+    marginBottom: 5,
   },
   tableRow: {
     flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: "#000",
     borderBottomStyle: "solid",
-    paddingVertical: 3,
+    paddingVertical: 2,
   },
   tableHeader: {
     backgroundColor: "#f0f0f0",
@@ -35,13 +35,13 @@ const styles = StyleSheet.create({
   },
   tableCell: {
     flex: 1,
-    fontSize: 8,
-    padding: 2,
+    fontSize: 7,
+    padding: 1,
   },
   commonDetails: {
     flexDirection: "row",
-    marginTop: 5,
-    fontSize: 8,
+    marginTop: 3,
+    fontSize: 7,
   },
   commonDetail: {
     flex: 1,
@@ -53,7 +53,11 @@ interface PrescriptionDetailsProps {
 }
 
 export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
-  // Filter items to only show those with prescription details (Lensa category)
+  const formatValue = (value: number | null) => {
+    if (value === null) return "0.00";
+    return value.toFixed(2);
+  };
+
   const lensItems = items.filter(item => 
     item.products?.category === 'Lensa' && 
     (item.left_eye_sph || item.left_eye_cyl || item.left_eye_axis || item.left_eye_add_power ||
@@ -82,27 +86,27 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
             
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>Right Eye (OD)</Text>
-              <Text style={styles.tableCell}>{item.right_eye_sph || '-'}</Text>
-              <Text style={styles.tableCell}>{item.right_eye_cyl || '-'}</Text>
-              <Text style={styles.tableCell}>{item.right_eye_axis || '-'}</Text>
-              <Text style={styles.tableCell}>{item.right_eye_add_power || '-'}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_sph)}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_cyl)}</Text>
+              <Text style={styles.tableCell}>{item.right_eye_axis || "0"}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_add_power)}</Text>
             </View>
             
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>Left Eye (OS)</Text>
-              <Text style={styles.tableCell}>{item.left_eye_sph || '-'}</Text>
-              <Text style={styles.tableCell}>{item.left_eye_cyl || '-'}</Text>
-              <Text style={styles.tableCell}>{item.left_eye_axis || '-'}</Text>
-              <Text style={styles.tableCell}>{item.left_eye_add_power || '-'}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_sph)}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_cyl)}</Text>
+              <Text style={styles.tableCell}>{item.left_eye_axis || "0"}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_add_power)}</Text>
             </View>
           </View>
 
           <View style={styles.commonDetails}>
-            <Text style={styles.commonDetail}>PD: {item.pd || '-'}</Text>
-            <Text style={styles.commonDetail}>SH: {item.sh || '-'}</Text>
-            <Text style={styles.commonDetail}>PRISM: {item.prism || '-'}</Text>
-            <Text style={styles.commonDetail}>V FRAME: {item.v_frame || '-'}</Text>
-            <Text style={styles.commonDetail}>F SIZE: {item.f_size || '-'}</Text>
+            <Text style={styles.commonDetail}>PD: {item.pd || "0"}</Text>
+            <Text style={styles.commonDetail}>SH: {item.sh || "0"}</Text>
+            <Text style={styles.commonDetail}>PRISM: {item.prism || "0"}</Text>
+            <Text style={styles.commonDetail}>V FRAME: {item.v_frame || "-"}</Text>
+            <Text style={styles.commonDetail}>F SIZE: {item.f_size || "-"}</Text>
           </View>
         </View>
       ))}
