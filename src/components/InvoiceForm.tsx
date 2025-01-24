@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useSession } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import * as z from "zod";
 
@@ -61,11 +61,33 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const session = useSession();
   const queryClient = useQueryClient();
 
+  // Query to get the latest invoice number
+  const { data: latestInvoice } = useQuery({
+    queryKey: ["latest-invoice-number"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("invoice_number")
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+      return data?.[0]?.invoice_number || "0124"; // Start from 0124 if no invoices exist
+    },
+  });
+
+  // Generate the next invoice number
+  const generateNextInvoiceNumber = (currentNumber: string) => {
+    const numericPart = parseInt(currentNumber, 10);
+    const nextNumber = numericPart + 1;
+    return nextNumber.toString().padStart(4, "0");
+  };
+
   // Initialize the form with default values
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      invoice_number: "",
+      invoice_number: latestInvoice ? generateNextInvoiceNumber(latestInvoice) : "0125",
       sale_date: new Date().toISOString().split("T")[0],
       customer_name: "",
       customer_phone: "",
@@ -143,54 +165,36 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
       if (invoiceError) throw invoiceError;
 
-      // Create invoice items with all fields included
+      // Create invoice items with updated prescription fields
       const { error: itemsError } = await supabase.from("invoice_items").insert(
-        values.items.flatMap((item) => {
-          // Common fields for both eyes
-          const commonFields = {
-            pd: item.pd,
-            sh: item.sh,
-            prism: item.prism,
-            v_frame: item.v_frame,
-            f_size: item.f_size,
-          };
-
-          const baseItem = {
-            invoice_id: invoice.id,
-            product_id: item.product_id,
-            quantity: item.quantity,
-            price: item.price,
-            discount: item.discount || 0,
-            total: item.quantity * item.price - (item.discount || 0),
-            ...commonFields,
-          };
-
-          // Create two records - one for each eye
-          return [
-            {
-              ...baseItem,
-              eye_side: "left",
-              sph: item.left_eye?.sph || null,
-              cyl: item.left_eye?.cyl || null,
-              axis: item.left_eye?.axis || null,
-              add_power: item.left_eye?.add_power || null,
-            },
-            {
-              ...baseItem,
-              eye_side: "right",
-              sph: item.right_eye?.sph || null,
-              cyl: item.right_eye?.cyl || null,
-              axis: item.right_eye?.axis || null,
-              add_power: item.right_eye?.add_power || null,
-            },
-          ];
-        }),
+        values.items.map((item) => ({
+          invoice_id: invoice.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: item.price,
+          discount: item.discount || 0,
+          total: item.quantity * item.price - (item.discount || 0),
+          pd: item.pd,
+          sh: item.sh,
+          prism: item.prism,
+          v_frame: item.v_frame,
+          f_size: item.f_size,
+          left_eye_sph: item.left_eye?.sph || null,
+          left_eye_cyl: item.left_eye?.cyl || null,
+          left_eye_axis: item.left_eye?.axis || null,
+          left_eye_add_power: item.left_eye?.add_power || null,
+          right_eye_sph: item.right_eye?.sph || null,
+          right_eye_cyl: item.right_eye?.cyl || null,
+          right_eye_axis: item.right_eye?.axis || null,
+          right_eye_add_power: item.right_eye?.add_power || null,
+        }))
       );
 
       if (itemsError) throw itemsError;
 
       toast.success("Invoice created successfully");
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["latest-invoice-number"] });
       onSuccess?.();
     } catch (error) {
       console.error("Error creating invoice:", error);

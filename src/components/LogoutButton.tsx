@@ -1,11 +1,10 @@
-// components/LogoutButton.tsx
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-const LogoutButton = () => {
+export const LogoutButton = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -27,7 +26,7 @@ const LogoutButton = () => {
       className="flex items-center gap-2"
     >
       <LogOut className="h-5 w-5" />
-      <span>Logout</span> {/* Adding "Logout" text */}
+      <span>Logout</span>
     </Button>
   );
 };

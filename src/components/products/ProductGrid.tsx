@@ -2,18 +2,12 @@ import { cn } from "@/lib/utils";
 import { ProductCard } from "@/components/ProductCard";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tables } from "@/integrations/supabase/types";
 
-interface Product {
-  id: string;
-  name: string;
-  brand: string;
-  image_url: string;
-  online_price: number;
-  category: string;
-}
+type MinimalProduct = Pick<Tables<"products">, "id" | "name" | "brand" | "image_url" | "online_price" | "category">;
 
 interface ProductGridProps {
-  products: Product[];
+  products: MinimalProduct[];
   isLoading: boolean;
   error: Error | null;
   view: "grid" | "list";

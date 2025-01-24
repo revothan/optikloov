@@ -8,6 +8,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ProductImageUpload } from "../ProductImageUpload";
 import { FormFields } from "./FormFields";
 import { TabContent } from "./TabContent";
@@ -15,6 +22,14 @@ import { TabContent } from "./TabContent";
 interface BasicInfoTabProps {
   form: UseFormReturn<any>;
 }
+
+const CATEGORIES = [
+  "Frame",
+  "Lensa",
+  "Soft Lens",
+  "Sunglasses",
+  "Others",
+] as const;
 
 export function BasicInfoTab({ form }: BasicInfoTabProps) {
   return (
@@ -35,11 +50,29 @@ export function BasicInfoTab({ form }: BasicInfoTabProps) {
       </TabContent>
 
       <TabContent>
-        <FormFields
-          form={form}
+        <FormField
+          control={form.control}
           name="category"
-          label="Category"
-          placeholder="Product category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category *</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
         />
         <FormFields
           form={form}
@@ -122,4 +155,3 @@ export function BasicInfoTab({ form }: BasicInfoTabProps) {
     </div>
   );
 }
-
