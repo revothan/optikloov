@@ -5,6 +5,7 @@ import { ProductSelect } from "./invoice/ProductSelect";
 import { CommonFields } from "./invoice/CommonFields";
 import { PrescriptionFields } from "./invoice/PrescriptionFields";
 import { ItemDetails } from "./invoice/ItemDetails";
+import { useState } from "react";
 
 interface InvoiceItemFormProps {
   form: UseFormReturn<any>;
@@ -20,6 +21,9 @@ interface InvoiceItemFormProps {
 }
 
 export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
+  // Add state to track selected products' categories
+  const [selectedProductCategories, setSelectedProductCategories] = useState<Record<number, string>>({});
+
   const calculateItemTotal = (index: number) => {
     const quantity = form.watch(`items.${index}.quantity`) || 0;
     const price = form.watch(`items.${index}.price`) || 0;
@@ -31,6 +35,11 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
     if (product) {
       form.setValue(`items.${index}.price`, product.store_price || 0);
       form.setValue(`items.${index}.product_id`, product.id);
+      // Update the selected product's category
+      setSelectedProductCategories(prev => ({
+        ...prev,
+        [index]: product.category
+      }));
     }
   };
 
@@ -90,16 +99,19 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
             calculateItemTotal={calculateItemTotal}
           />
 
-          <div className="col-span-full">
-            <h4 className="font-medium mb-2">Prescription Details</h4>
-            
-            <CommonFields form={form} index={index} />
-            
-            <div className="space-y-4">
-              <PrescriptionFields form={form} index={index} side="left" />
-              <PrescriptionFields form={form} index={index} side="right" />
+          {/* Only show prescription details if the product category is "Lensa" */}
+          {selectedProductCategories[index] === "Lensa" && (
+            <div className="col-span-full">
+              <h4 className="font-medium mb-2">Prescription Details</h4>
+              
+              <CommonFields form={form} index={index} />
+              
+              <div className="space-y-4">
+                <PrescriptionFields form={form} index={index} side="left" />
+                <PrescriptionFields form={form} index={index} side="right" />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       ))}
 
