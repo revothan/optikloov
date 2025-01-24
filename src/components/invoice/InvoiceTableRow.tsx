@@ -95,8 +95,8 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
           {({ loading }) => (
-            <Button variant="ghost" size="sm" disabled={loading}>
-              {loading ? "Loading..." : invoice.invoice_number}
+            <Button variant="ghost" size="sm" disabled={loading} asChild>
+              <span>{loading ? "Loading..." : invoice.invoice_number}</span>
             </Button>
           )}
         </PDFDownloadLink>
@@ -140,7 +140,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                   {({ loading }) => (
                     <div className="flex items-center">
                       <Download className="mr-2 h-4 w-4" />
-                      {loading ? "Loading..." : "Download PDF"}
+                      <span>{loading ? "Loading..." : "Download PDF"}</span>
                     </div>
                   )}
                 </PDFDownloadLink>
