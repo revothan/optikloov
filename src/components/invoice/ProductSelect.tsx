@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Loader2, Search } from "lucide-react";
+import { Check, Loader2, Search, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 
 interface Product {
   id: string;
@@ -40,6 +41,8 @@ export function ProductSelect({
 }: ProductSelectProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCustomProduct, setIsCustomProduct] = useState(false);
+  const [customProductName, setCustomProductName] = useState("");
 
   const {
     data: products = [],
@@ -75,6 +78,19 @@ export function ProductSelect({
     onProductSelect(product);
     setOpen(false);
     setSearchQuery("");
+  };
+
+  const handleCustomProductSubmit = () => {
+    if (customProductName.trim()) {
+      const customProduct = {
+        id: `custom-${Date.now()}`,
+        name: customProductName,
+        store_price: 0,
+        category: "Custom",
+      };
+      handleProductSelect(customProduct);
+      setCustomProductName("");
+    }
   };
 
   if (isError) {
@@ -125,50 +141,81 @@ export function ProductSelect({
             <DialogTitle>Select Product</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col space-y-4">
-            <div className="flex items-center space-x-2 sticky top-0 bg-background p-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1"
-              />
+            <div className="flex items-center justify-between space-x-2">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={isCustomProduct}
+                  onCheckedChange={setIsCustomProduct}
+                />
+                <span className="text-sm">Custom Product</span>
+              </div>
             </div>
-            <ScrollArea className="h-[50vh]">
-              {filteredProducts.length === 0 ? (
-                <div className="py-6 text-center text-sm text-muted-foreground">
-                  No products found.
+
+            {isCustomProduct ? (
+              <div className="flex items-center space-x-2">
+                <Input
+                  placeholder="Enter custom product name..."
+                  value={customProductName}
+                  onChange={(e) => setCustomProductName(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  onClick={handleCustomProductSubmit}
+                  disabled={!customProductName.trim()}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center space-x-2 sticky top-0 bg-background p-2">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1"
+                  />
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-2">
-                  {filteredProducts.map((product) => (
-                    <Button
-                      key={product.id}
-                      type="button"
-                      variant="ghost"
-                      className={cn(
-                        "justify-start font-normal py-6 px-4 hover:bg-accent hover:text-accent-foreground",
-                        value === product.id && "bg-accent"
-                      )}
-                      onClick={() => handleProductSelect(product)}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          value === product.id ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium">{product.name}</span>
-                        <span className="text-sm text-muted-foreground">
-                          Category: {product.category}
-                        </span>
-                      </div>
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
+                <ScrollArea className="h-[50vh]">
+                  {filteredProducts.length === 0 ? (
+                    <div className="py-6 text-center text-sm text-muted-foreground">
+                      No products found.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-2">
+                      {filteredProducts.map((product) => (
+                        <Button
+                          key={product.id}
+                          type="button"
+                          variant="ghost"
+                          className={cn(
+                            "justify-start font-normal py-6 px-4 hover:bg-accent hover:text-accent-foreground",
+                            value === product.id && "bg-accent"
+                          )}
+                          onClick={() => handleProductSelect(product)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              value === product.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">{product.name}</span>
+                            <span className="text-sm text-muted-foreground">
+                              Category: {product.category}
+                            </span>
+                          </div>
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>
