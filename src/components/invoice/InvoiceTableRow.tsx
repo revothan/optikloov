@@ -18,6 +18,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InvoiceTableRowProps {
   invoice: {
@@ -35,6 +38,22 @@ interface InvoiceTableRowProps {
 }
 
 export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
+  const navigate = useNavigate();
+  const [items, setItems] = useState<any[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setIsAuthenticated(false);
+        navigate('/login');
+      }
+    };
+
+    checkSession();
+  }, [navigate]);
+
   const handlePrint = () => {
     window.print();
   };
@@ -64,11 +83,15 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <tr className="border-b">
       <td className="py-4 px-4">
         <PDFDownloadLink
-          document={<InvoicePDF invoice={invoice} items={[]} />}
+          document={<InvoicePDF invoice={invoice} items={items} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
           {({ loading }) => (
@@ -111,7 +134,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <PDFDownloadLink
-                  document={<InvoicePDF invoice={invoice} items={[]} />}
+                  document={<InvoicePDF invoice={invoice} items={items} />}
                   fileName={`invoice-${invoice.invoice_number}.pdf`}
                 >
                   {({ loading }) => (
