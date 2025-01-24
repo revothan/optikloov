@@ -43,6 +43,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
   const [items, setItems] = useState<any[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -55,6 +56,34 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
 
     checkSession();
   }, [navigate]);
+
+  useEffect(() => {
+    const loadInvoiceItems = async () => {
+      try {
+        const { data: invoiceItems, error } = await supabase
+          .from('invoice_items')
+          .select(`
+            *,
+            products:product_id (
+              id,
+              name,
+              brand
+            )
+          `)
+          .eq('invoice_id', invoice.id);
+
+        if (error) throw error;
+        setItems(invoiceItems || []);
+      } catch (error) {
+        console.error('Error loading invoice items:', error);
+        toast.error('Failed to load invoice items');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadInvoiceItems();
+  }, [invoice.id]);
 
   const handlePrint = async () => {
     try {
@@ -111,14 +140,14 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
   return (
     <tr className="border-b">
       <td className="py-4 px-4">
-        {/* @ts-expect-error - PDFDownloadLink render prop type issue */}
+        {/* @ts-ignore */}
         <PDFDownloadLink
           document={<InvoicePDF invoice={invoice} items={items} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
           {({ loading }) => (
-            <Button variant="ghost" size="sm" disabled={loading}>
-              {loading ? "Loading..." : invoice.invoice_number}
+            <Button variant="ghost" size="sm" disabled={loading || isLoading}>
+              {loading || isLoading ? "Loading..." : invoice.invoice_number}
             </Button>
           )}
         </PDFDownloadLink>
@@ -142,7 +171,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handlePrint} disabled={isPrinting}>
+              <DropdownMenuItem onClick={handlePrint} disabled={isPrinting || isLoading}>
                 {isPrinting ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -159,7 +188,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                 Email
               </DropdownMenuItem>
               <DropdownMenuItem>
-                {/* @ts-expect-error - PDFDownloadLink render prop type issue */}
+                {/* @ts-ignore */}
                 <PDFDownloadLink
                   document={<InvoicePDF invoice={invoice} items={items} />}
                   fileName={`invoice-${invoice.invoice_number}.pdf`}
@@ -167,7 +196,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                   {({ loading }) => (
                     <div className="flex items-center">
                       <Download className="mr-2 h-4 w-4" />
-                      {loading ? "Loading..." : "Download PDF"}
+                      {loading || isLoading ? "Loading..." : "Download PDF"}
                     </div>
                   )}
                 </PDFDownloadLink>
