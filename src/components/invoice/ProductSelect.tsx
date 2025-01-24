@@ -81,6 +81,7 @@ export function ProductSelect({
         <Button
           variant="outline"
           className="w-full justify-between text-destructive"
+          type="button"
         >
           Error loading products
         </Button>
@@ -105,6 +106,7 @@ export function ProductSelect({
               )}
               disabled={isLoading}
               type="button"
+              onClick={() => setOpen(true)}
             >
               {isLoading ? (
                 <>
