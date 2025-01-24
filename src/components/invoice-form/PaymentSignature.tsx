@@ -1,81 +1,19 @@
-import { UseFormReturn } from "react-hook-form";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { formatPrice } from "@/lib/utils";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
-interface PaymentSignatureProps {
-  form: UseFormReturn<any>;
-  totals: {
-    totalAmount: number;
-    discountAmount: number;
-    grandTotal: number;
-    downPayment: number;
-    remainingBalance: number;
-  };
-}
-
-const PEMERIKSA_OPTIONS = ["Mira", "Dzaky", "Danny", "Wulan"];
-
-export function PaymentSignature({ form, totals }: PaymentSignatureProps) {
+export function PaymentSignature({ form, totals }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="space-y-4">
-        <FormField
-          control={form.control}
-          name="down_payment"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Uang Muka (DP)</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5">Rp</span>
-                  <Input
-                    type="number"
-                    className="pl-12"
-                    placeholder="0"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="acknowledged_by"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Pemeriksa</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih pemeriksa" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {PEMERIKSA_OPTIONS.map((name) => (
-                    <SelectItem key={name} value={name}>
-                      {name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
             </FormItem>
           )}
         />
@@ -89,27 +27,31 @@ export function PaymentSignature({ form, totals }: PaymentSignatureProps) {
               <FormControl>
                 <Input {...field} />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
       </div>
 
-      <div className="space-y-2 text-right">
-        <div className="text-sm text-muted-foreground">
-          Total: {formatPrice(totals.totalAmount)}
+      <div className="space-y-2">
+        <div className="flex justify-between">
+          <span>Total Amount:</span>
+          <span>{totals.totalAmount.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</span>
         </div>
-        <div className="text-sm text-muted-foreground">
-          Discount: {formatPrice(totals.discountAmount)}
+        <div className="flex justify-between">
+          <span>Discount Amount:</span>
+          <span>{totals.discountAmount.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</span>
         </div>
-        <div className="text-lg font-semibold">
-          Grand Total: {formatPrice(totals.grandTotal)}
+        <div className="flex justify-between font-bold">
+          <span>Grand Total:</span>
+          <span>{totals.grandTotal.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</span>
         </div>
-        <div className="text-sm text-muted-foreground">
-          Down Payment: {formatPrice(totals.downPayment)}
+        <div className="flex justify-between">
+          <span>Down Payment:</span>
+          <span>{totals.downPayment.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</span>
         </div>
-        <div className="text-sm font-medium">
-          Remaining: {formatPrice(totals.remainingBalance)}
+        <div className="flex justify-between font-bold">
+          <span>Remaining Balance:</span>
+          <span>{totals.remainingBalance.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</span>
         </div>
       </div>
     </div>

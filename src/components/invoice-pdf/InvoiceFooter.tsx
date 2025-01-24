@@ -20,8 +20,8 @@ interface InvoiceFooterProps {
 export function InvoiceFooter({ acknowledgedBy, receivedBy }: InvoiceFooterProps) {
   return (
     <View style={styles.footer}>
-      <Text>Acknowledged by: {acknowledgedBy || '_________________'}</Text>
-      <Text>Received by: {receivedBy || '_________________'}</Text>
+      <Text>Pemeriksa: {acknowledgedBy || '_________________'}</Text>
+      <Text>Diterima Oleh: {receivedBy || '_________________'}</Text>
     </View>
   );
 }
