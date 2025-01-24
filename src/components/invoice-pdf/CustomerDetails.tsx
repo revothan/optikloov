@@ -2,9 +2,10 @@ import { Text, View, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   details: {
-    marginBottom: 20,
-    padding: 10,
+    marginBottom: 10,
+    padding: 5,
     border: '1 solid #999',
+    fontSize: 8,
   },
 });
 

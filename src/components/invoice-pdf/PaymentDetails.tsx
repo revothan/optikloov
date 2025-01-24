@@ -3,10 +3,11 @@ import { formatPrice } from "@/lib/utils";
 
 const styles = StyleSheet.create({
   totals: {
-    marginTop: 20,
+    marginTop: 10,
     alignItems: "flex-end",
-    padding: 10,
+    padding: 5,
     border: '1 solid #999',
+    fontSize: 8,
   },
 });
 

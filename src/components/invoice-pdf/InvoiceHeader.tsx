@@ -3,16 +3,16 @@ import { format } from "date-fns";
 
 const styles = StyleSheet.create({
   header: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   title: {
-    fontSize: 20,
-    marginBottom: 10,
+    fontSize: 14,
+    marginBottom: 5,
     textAlign: 'center',
   },
   companyName: {
-    fontSize: 16,
-    marginBottom: 5,
+    fontSize: 12,
+    marginBottom: 2,
     textAlign: 'center',
   },
 });
@@ -27,7 +27,7 @@ export function InvoiceHeader({ invoiceNumber, saleDate }: InvoiceHeaderProps) {
     <View style={styles.header}>
       <Text style={styles.title}>Invoice #{invoiceNumber}</Text>
       <Text style={styles.companyName}>OPTIK LOOV</Text>
-      <Text style={{ textAlign: 'center' }}>
+      <Text style={{ textAlign: 'center', fontSize: 8 }}>
         Date: {format(new Date(saleDate), "dd MMM yyyy")}
       </Text>
     </View>
