@@ -122,10 +122,11 @@ export function ProductSelect({
           </FormControl>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-[300px] p-0 bg-background" 
+          className="w-[300px] p-0 bg-background z-50" 
           align="start"
           side="bottom"
           sideOffset={4}
+          avoidCollisions={true}
         >
           <div className="flex flex-col max-h-[300px]">
             <div className="flex items-center border-b p-2 sticky top-0 bg-background z-10">
