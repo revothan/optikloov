@@ -101,12 +101,11 @@ export function ProductSelect({
               role="combobox"
               aria-expanded={open}
               className={cn(
-                "w-full justify-between",
+                "w-full justify-between bg-background",
                 !value && "text-muted-foreground"
               )}
               disabled={isLoading}
               type="button"
-              onClick={() => setOpen(true)}
             >
               {isLoading ? (
                 <>
@@ -123,7 +122,7 @@ export function ProductSelect({
           </FormControl>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-[300px] p-0" 
+          className="w-[300px] p-0 bg-background" 
           align="start"
           side="bottom"
           sideOffset={4}
