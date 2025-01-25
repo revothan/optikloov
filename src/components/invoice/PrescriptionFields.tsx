@@ -90,31 +90,6 @@ export function PrescriptionFields({
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <FormField
           control={form.control}
-          name={`items.${index}.mpd_${side.toLowerCase()}`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>MPD</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.5"
-                  {...field}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    if (validateInput(newValue, "mpd")) {
-                      field.onChange(newValue ? parseFloat(newValue) : null);
-                    }
-                  }}
-                  value={field.value ?? ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name={`items.${index}.${side}_eye.sph`}
           render={({ field }) => (
             <FormItem>
@@ -234,6 +209,41 @@ export function PrescriptionFields({
                           `items.${index}.${side}_eye.add_power`,
                           num,
                         );
+                      }
+                    }
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name={`items.${index}.${side}_eye.mpd`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>MPD</FormLabel>
+              <FormControl>
+                <Input
+                  type="text"
+                  {...field}
+                  value={formatDisplayValue(field.value, "mpd")}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    if (validateInput(newValue, "mpd")) {
+                      handleValueChange(`${field.name}`, newValue, "mpd");
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const value = e.target.value;
+                    if (value === "0.00") {
+                      form.setValue(`items.${index}.${side}_eye.mpd`, 0);
+                    } else {
+                      const num = parseFloat(value);
+                      if (!isNaN(num)) {
+                        form.setValue(`items.${index}.${side}_eye.mpd`, num);
                       }
                     }
                   }}

@@ -55,14 +55,24 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
               quantity: 1,
               price: 0,
               discount: 0,
-              mpd_right: null,
-              mpd_left: null,
               sh: null,
               v_frame: null,
               f_size: null,
               prism: null,
-              left_eye: null,
-              right_eye: null,
+              left_eye: {
+                sph: null,
+                cyl: null,
+                axis: null,
+                add_power: null,
+                mpd: null
+              },
+              right_eye: {
+                sph: null,
+                cyl: null,
+                axis: null,
+                add_power: null,
+                mpd: null
+              },
             })
           }
         >

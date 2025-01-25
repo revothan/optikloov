@@ -46,15 +46,6 @@ const styles = StyleSheet.create({
   commonDetail: {
     flex: 1,
   },
-  mpdDetails: {
-    flexDirection: "row",
-    marginTop: 3,
-    marginBottom: 3,
-    fontSize: 7,
-  },
-  mpdDetail: {
-    flex: 1,
-  },
 });
 
 interface PrescriptionDetailsProps {
@@ -62,7 +53,7 @@ interface PrescriptionDetailsProps {
 }
 
 export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
-  const formatValue = (value: number | null, type: 'sph' | 'cyl' | 'add') => {
+  const formatValue = (value: number | null, type: 'sph' | 'cyl' | 'add' | 'mpd') => {
     if (value === null) return "0.00";
     const absValue = Math.abs(value).toFixed(2);
     
@@ -73,6 +64,8 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
         return value === 0 ? "0.00" : `-${absValue}`;
       case 'add':
         return value === 0 ? "0.00" : `+${absValue}`;
+      case 'mpd':
+        return absValue;
       default:
         return value.toFixed(2);
     }
@@ -80,9 +73,9 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
 
   const lensItems = items.filter(item => 
     item.products?.category === 'Lensa' && 
-    (item.left_eye_sph || item.left_eye_cyl || item.left_eye_axis || item.left_eye_add_power ||
-     item.right_eye_sph || item.right_eye_cyl || item.right_eye_axis || item.right_eye_add_power ||
-     item.mpd_right || item.mpd_left || item.sh || item.prism || item.v_frame || item.f_size)
+    (item.left_eye_sph || item.left_eye_cyl || item.left_eye_axis || item.left_eye_add_power || item.left_eye_mpd ||
+     item.right_eye_sph || item.right_eye_cyl || item.right_eye_axis || item.right_eye_add_power || item.right_eye_mpd ||
+     item.sh || item.prism || item.v_frame || item.f_size)
   );
   
   if (lensItems.length === 0) return null;
@@ -94,11 +87,6 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
       {lensItems.map((item, index) => (
         <View key={index}>
           <Text style={styles.productTitle}>{item.products?.name}</Text>
-          
-          <View style={styles.mpdDetails}>
-            <Text style={styles.mpdDetail}>MPD Right: {item.mpd_right || "0"}</Text>
-            <Text style={styles.mpdDetail}>MPD Left: {item.mpd_left || "0"}</Text>
-          </View>
 
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
@@ -107,6 +95,7 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
               <Text style={styles.tableCell}>CYL</Text>
               <Text style={styles.tableCell}>AXIS</Text>
               <Text style={styles.tableCell}>ADD</Text>
+              <Text style={styles.tableCell}>MPD</Text>
             </View>
             
             <View style={styles.tableRow}>
@@ -115,6 +104,7 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
               <Text style={styles.tableCell}>{formatValue(item.right_eye_cyl, 'cyl')}</Text>
               <Text style={styles.tableCell}>{item.right_eye_axis || "0"}</Text>
               <Text style={styles.tableCell}>{formatValue(item.right_eye_add_power, 'add')}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_mpd, 'mpd')}</Text>
             </View>
             
             <View style={styles.tableRow}>
@@ -123,6 +113,7 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
               <Text style={styles.tableCell}>{formatValue(item.left_eye_cyl, 'cyl')}</Text>
               <Text style={styles.tableCell}>{item.left_eye_axis || "0"}</Text>
               <Text style={styles.tableCell}>{formatValue(item.left_eye_add_power, 'add')}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_mpd, 'mpd')}</Text>
             </View>
           </View>
 

@@ -94,9 +94,8 @@ export type Database = {
           left_eye_add_power: number | null
           left_eye_axis: number | null
           left_eye_cyl: number | null
+          left_eye_mpd: number | null
           left_eye_sph: number | null
-          mpd_left: number | null
-          mpd_right: number | null
           price: number
           prism: number | null
           product_id: string
@@ -104,6 +103,7 @@ export type Database = {
           right_eye_add_power: number | null
           right_eye_axis: number | null
           right_eye_cyl: number | null
+          right_eye_mpd: number | null
           right_eye_sph: number | null
           sh: number | null
           total: number
@@ -119,9 +119,8 @@ export type Database = {
           left_eye_add_power?: number | null
           left_eye_axis?: number | null
           left_eye_cyl?: number | null
+          left_eye_mpd?: number | null
           left_eye_sph?: number | null
-          mpd_left?: number | null
-          mpd_right?: number | null
           price: number
           prism?: number | null
           product_id: string
@@ -129,6 +128,7 @@ export type Database = {
           right_eye_add_power?: number | null
           right_eye_axis?: number | null
           right_eye_cyl?: number | null
+          right_eye_mpd?: number | null
           right_eye_sph?: number | null
           sh?: number | null
           total: number
@@ -144,9 +144,8 @@ export type Database = {
           left_eye_add_power?: number | null
           left_eye_axis?: number | null
           left_eye_cyl?: number | null
+          left_eye_mpd?: number | null
           left_eye_sph?: number | null
-          mpd_left?: number | null
-          mpd_right?: number | null
           price?: number
           prism?: number | null
           product_id?: string
@@ -154,6 +153,7 @@ export type Database = {
           right_eye_add_power?: number | null
           right_eye_axis?: number | null
           right_eye_cyl?: number | null
+          right_eye_mpd?: number | null
           right_eye_sph?: number | null
           sh?: number | null
           total?: number
