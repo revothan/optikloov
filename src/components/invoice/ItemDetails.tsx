@@ -73,12 +73,19 @@ export function ItemDetails({ form, index, calculateItemTotal }: ItemDetailsProp
               <div className="relative">
                 <span className="absolute left-3 top-2.5">Rp</span>
                 <Input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   className="pl-12"
-                  {...field}
+                  value={field.value === 0 ? '' : field.value}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/^0+/, ''); // Remove leading zeros
-                    field.onChange(parseFloat(value) || 0);
+                    let value = e.target.value;
+                    // Remove any non-numeric characters except decimal point
+                    value = value.replace(/[^\d.]/g, '');
+                    // Remove leading zeros
+                    value = value.replace(/^0+(?=\d)/, '');
+                    // Convert to number and update field
+                    const numericValue = parseFloat(value) || 0;
+                    field.onChange(numericValue);
                   }}
                 />
               </div>
@@ -108,12 +115,16 @@ export function ItemDetails({ form, index, calculateItemTotal }: ItemDetailsProp
               <span className="absolute left-3 top-2.5 text-gray-500">Rp</span>
             )}
             <Input
-              type="number"
-              min="0"
+              type="text"
+              inputMode="numeric"
               className={`${discountType === 'fixed' ? 'pl-12' : 'pr-8'} w-full`}
               value={discountValue}
               onChange={(e) => {
-                const value = e.target.value.replace(/^0+/, ''); // Remove leading zeros
+                let value = e.target.value;
+                // Remove any non-numeric characters except decimal point
+                value = value.replace(/[^\d.]/g, '');
+                // Remove leading zeros
+                value = value.replace(/^0+(?=\d)/, '');
                 setDiscountValue(value);
               }}
             />
