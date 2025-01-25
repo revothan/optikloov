@@ -5,10 +5,12 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 10,
   },
-  title: {
-    fontSize: 12,
-    marginBottom: 2,
-    textAlign: 'center',
+  invoiceInfo: {
+    textAlign: 'right',
+    marginBottom: 10,
+  },
+  invoiceText: {
+    fontSize: 8,
   },
   companyName: {
     fontSize: 10,
@@ -21,11 +23,6 @@ const styles = StyleSheet.create({
     marginBottom: 1,
     textAlign: 'center',
   },
-  date: {
-    fontSize: 7,
-    textAlign: 'center',
-    marginTop: 4,
-  }
 });
 
 interface InvoiceHeaderProps {
@@ -36,10 +33,14 @@ interface InvoiceHeaderProps {
 export function InvoiceHeader({ invoiceNumber, saleDate }: InvoiceHeaderProps) {
   return (
     <View style={styles.header}>
-      <Text style={styles.title}>Invoice #{invoiceNumber}</Text>
-      <Text style={styles.date}>
-        Date: {format(new Date(saleDate), "dd MMM yyyy")}
-      </Text>
+      <View style={styles.invoiceInfo}>
+        <Text style={styles.invoiceText}>
+          Invoice No. {invoiceNumber}
+        </Text>
+        <Text style={styles.invoiceText}>
+          Date: {format(new Date(saleDate), "dd MMM yyyy")}
+        </Text>
+      </View>
       
       <Text style={styles.companyName}>OPTIK LOOV</Text>
       <Text style={styles.storeInfo}>
