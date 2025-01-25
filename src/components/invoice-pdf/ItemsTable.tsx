@@ -32,6 +32,10 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'right',
   },
+  mpdCell: {
+    flex: 0.8,
+    textAlign: 'right',
+  },
 });
 
 interface ItemsTableProps {
@@ -44,6 +48,8 @@ export function ItemsTable({ items }: ItemsTableProps) {
       <View style={[styles.tableRow, styles.tableHeader]}>
         <Text style={[styles.tableCell, styles.productCell]}>Product</Text>
         <Text style={[styles.tableCell, styles.brandCell]}>Brand</Text>
+        <Text style={[styles.tableCell, styles.mpdCell]}>MPD R</Text>
+        <Text style={[styles.tableCell, styles.mpdCell]}>MPD L</Text>
         <Text style={[styles.tableCell, styles.numberCell]}>Qty</Text>
         <Text style={[styles.tableCell, styles.numberCell]}>Price</Text>
         <Text style={[styles.tableCell, styles.numberCell]}>Disc</Text>
@@ -53,6 +59,8 @@ export function ItemsTable({ items }: ItemsTableProps) {
         <View key={index} style={styles.tableRow}>
           <Text style={[styles.tableCell, styles.productCell]}>{item.products?.name || '-'}</Text>
           <Text style={[styles.tableCell, styles.brandCell]}>{item.products?.brand || '-'}</Text>
+          <Text style={[styles.tableCell, styles.mpdCell]}>{item.mpd_right || '-'}</Text>
+          <Text style={[styles.tableCell, styles.mpdCell]}>{item.mpd_left || '-'}</Text>
           <Text style={[styles.tableCell, styles.numberCell]}>{item.quantity}</Text>
           <Text style={[styles.tableCell, styles.numberCell]}>{formatPrice(item.price)}</Text>
           <Text style={[styles.tableCell, styles.numberCell]}>{formatPrice(item.discount)}</Text>

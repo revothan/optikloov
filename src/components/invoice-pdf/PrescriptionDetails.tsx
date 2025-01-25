@@ -53,9 +53,20 @@ interface PrescriptionDetailsProps {
 }
 
 export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
-  const formatValue = (value: number | null) => {
+  const formatValue = (value: number | null, type: 'sph' | 'cyl' | 'add') => {
     if (value === null) return "0.00";
-    return value.toFixed(2);
+    const absValue = Math.abs(value).toFixed(2);
+    
+    switch (type) {
+      case 'sph':
+        return value >= 0 ? `+${absValue}` : `-${absValue}`;
+      case 'cyl':
+        return value === 0 ? "0.00" : `-${absValue}`;
+      case 'add':
+        return value === 0 ? "0.00" : `+${absValue}`;
+      default:
+        return value.toFixed(2);
+    }
   };
 
   const lensItems = items.filter(item => 
@@ -86,24 +97,22 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
             
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>Right Eye (OD)</Text>
-              <Text style={styles.tableCell}>{formatValue(item.right_eye_sph)}</Text>
-              <Text style={styles.tableCell}>{formatValue(item.right_eye_cyl)}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_sph, 'sph')}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_cyl, 'cyl')}</Text>
               <Text style={styles.tableCell}>{item.right_eye_axis || "0"}</Text>
-              <Text style={styles.tableCell}>{formatValue(item.right_eye_add_power)}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_add_power, 'add')}</Text>
             </View>
             
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>Left Eye (OS)</Text>
-              <Text style={styles.tableCell}>{formatValue(item.left_eye_sph)}</Text>
-              <Text style={styles.tableCell}>{formatValue(item.left_eye_cyl)}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_sph, 'sph')}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_cyl, 'cyl')}</Text>
               <Text style={styles.tableCell}>{item.left_eye_axis || "0"}</Text>
-              <Text style={styles.tableCell}>{formatValue(item.left_eye_add_power)}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_add_power, 'add')}</Text>
             </View>
           </View>
 
           <View style={styles.commonDetails}>
-            <Text style={styles.commonDetail}>MPD Right: {item.mpd_right || "0"}</Text>
-            <Text style={styles.commonDetail}>MPD Left: {item.mpd_left || "0"}</Text>
             <Text style={styles.commonDetail}>SH: {item.sh || "0"}</Text>
             <Text style={styles.commonDetail}>PRISM: {item.prism || "0"}</Text>
             <Text style={styles.commonDetail}>V FRAME: {item.v_frame || "-"}</Text>
