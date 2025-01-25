@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
-import { eyeSchema, schema } from "./invoiceFormSchema";
+import { schema } from "./invoiceFormSchema";
 
 type FormData = z.infer<typeof schema>;
 
@@ -83,12 +83,10 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           price: item.price,
           discount: item.discount || 0,
           total: item.quantity * item.price - (item.discount || 0),
-          mpd_right: item.mpd_right,
-          mpd_left: item.mpd_left,
           sh: item.sh,
-          prism: item.prism,
           v_frame: item.v_frame,
           f_size: item.f_size,
+          prism: item.prism,
           left_eye_sph: item.left_eye?.sph || null,
           left_eye_cyl: item.left_eye?.cyl || null,
           left_eye_axis: item.left_eye?.axis || null,
