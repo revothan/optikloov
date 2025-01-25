@@ -151,7 +151,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     
     if (!session?.user?.id) {
       console.error("No user session found");
-      toast.error("You must be logged in");
+      toast.error("You must be logged in to create an invoice");
       return;
     }
 
@@ -183,7 +183,14 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
       if (invoiceError) {
         console.error("Invoice creation error:", invoiceError);
-        throw invoiceError;
+        toast.error("Failed to create invoice: " + invoiceError.message);
+        return;
+      }
+
+      if (!invoice) {
+        console.error("No invoice data returned");
+        toast.error("Failed to create invoice: No data returned");
+        return;
       }
 
       console.log("Invoice created:", invoice);
@@ -216,17 +223,24 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
       if (itemsError) {
         console.error("Invoice items creation error:", itemsError);
-        throw itemsError;
+        toast.error("Failed to create invoice items: " + itemsError.message);
+        return;
       }
 
       console.log("Invoice items created successfully");
       toast.success("Invoice created successfully");
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       queryClient.invalidateQueries({ queryKey: ["latest-invoice-number"] });
-      onSuccess?.();
+      
+      // Reset form after successful submission
+      form.reset();
+      
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error("Error creating invoice:", error);
-      toast.error("Failed to create invoice");
+      toast.error("Failed to create invoice: " + (error as Error).message);
     }
   };
 
@@ -250,7 +264,11 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
         <PaymentSignature form={form} totals={totals} />
 
-        <Button type="submit" className="w-full">
+        <Button 
+          type="submit" 
+          className="w-full"
+          disabled={form.formState.isSubmitting || fields.length === 0}
+        >
           {form.formState.isSubmitting ? (
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
