@@ -4,19 +4,18 @@ import { formatPrice } from "@/lib/utils";
 const styles = StyleSheet.create({
   container: {
     marginTop: 10,
-    padding: 5,
-    border: '1 solid #999',
+    padding: 10,
     fontSize: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   leftSection: {
     flexDirection: 'column',
-    gap: 2,
+    gap: 4,
   },
   rightSection: {
     flexDirection: 'column',
-    gap: 2,
+    gap: 4,
     alignItems: 'flex-end',
   },
   label: {

@@ -197,7 +197,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                 <Mail className="mr-2 h-4 w-4" />
                 Email
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <PDFDownloadLink
                   document={<InvoicePDF invoice={invoice} items={items} />}
                   fileName={`invoice-${invoice.invoice_number}.pdf`}
