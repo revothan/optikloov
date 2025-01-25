@@ -69,13 +69,18 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const { data: latestInvoice, isLoading: isLoadingInvoice } = useQuery({
     queryKey: ["latest-invoice-number"],
     queryFn: async () => {
+      console.log("Fetching latest invoice number...");
       const { data, error } = await supabase
         .from("invoices")
         .select("invoice_number")
         .order("created_at", { ascending: false })
         .limit(1);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching latest invoice:", error);
+        throw error;
+      }
+      console.log("Latest invoice data:", data);
       return data?.[0]?.invoice_number || "0124"; // Start from 0124 if no invoices exist
     },
   });
@@ -147,7 +152,8 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
   // Handle form submission
   const onSubmit = async (values: FormData) => {
-    console.log("Form submission started", values);
+    console.log("Form submission started with values:", values);
+    console.log("Current session:", session);
     
     if (!session?.user?.id) {
       console.error("No user session found");
@@ -156,7 +162,12 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     }
 
     try {
-      console.log("Creating invoice...");
+      console.log("Creating invoice with data:", {
+        ...values,
+        user_id: session.user.id,
+        totals,
+      });
+
       const { data: invoice, error: invoiceError } = await supabase
         .from("invoices")
         .insert({
@@ -193,7 +204,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
         return;
       }
 
-      console.log("Invoice created:", invoice);
+      console.log("Invoice created successfully:", invoice);
 
       console.log("Creating invoice items...");
       const { error: itemsError } = await supabase.from("invoice_items").insert(
