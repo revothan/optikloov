@@ -11,35 +11,35 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#000",
     borderBottomStyle: "solid",
-    paddingVertical: 3, // Increased padding
+    paddingVertical: 3,
   },
   tableHeader: {
     backgroundColor: "#f0f0f0",
     fontWeight: 'bold',
   },
   tableCell: {
-    fontSize: 9, // Increased from 7
-    padding: 2, // Increased padding
+    fontSize: 8,
+    padding: 2,
   },
   productCell: {
     flex: 2,
-    fontSize: 9, // Increased from 7
+    fontSize: 8,
     fontFamily: 'Helvetica-Bold',
   },
   brandCell: {
     flex: 1,
-    fontSize: 9, // Increased from 7
+    fontSize: 8,
   },
   numberCell: {
     flex: 1,
     textAlign: 'left',
-    fontSize: 9, // Increased from 7
+    fontSize: 8,
   },
   priceCell: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    fontSize: 9, // Increased from 7
+    fontSize: 8,
   },
 });
 
