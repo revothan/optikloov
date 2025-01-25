@@ -11,6 +11,7 @@ import { BasicInvoiceInfo } from "./invoice-form/BasicInvoiceInfo";
 import { PaymentSignature } from "./invoice-form/PaymentSignature";
 import { schema } from "./invoice/invoiceFormSchema";
 import { toast } from "sonner";
+import { useSession } from "@supabase/auth-helpers-react";
 import type { z } from "zod";
 
 type FormData = z.infer<typeof schema>;
@@ -20,6 +21,8 @@ interface InvoiceFormProps {
 }
 
 export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
+  const session = useSession();
+
   // Query to get the latest invoice number
   const { data: latestInvoice, isLoading: isLoadingInvoice } = useQuery({
     queryKey: ["latest-invoice-number"],
@@ -106,6 +109,11 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const totals = calculateTotals();
 
   const onSubmit = async (values: FormData) => {
+    if (!session?.user?.id) {
+      toast.error("You must be logged in to create an invoice");
+      return;
+    }
+
     console.log("Form submission started with values:", values);
     try {
       // Insert the invoice
@@ -128,6 +136,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
           grand_total: totals.grandTotal,
           paid_amount: totals.downPayment,
           remaining_balance: totals.remainingBalance,
+          user_id: session.user.id,
         })
         .select()
         .single();
