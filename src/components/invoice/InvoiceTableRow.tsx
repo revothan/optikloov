@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
-import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -195,7 +195,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                   {({ loading }) => (
                     <div className="flex items-center">
                       <Download className="mr-2 h-4 w-4" />
-                      {loading || isLoading ? "Loading..." : "Download PDF"}
+                      {loading ? "Loading..." : "Download PDF"}
                     </div>
                   )}
                 </PDFDownloadLink>
