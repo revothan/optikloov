@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Loader2, Search } from "lucide-react";
+import { Check, Loader2, Search, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 
 interface Product {
   id: string;
@@ -40,11 +42,15 @@ export function ProductSelect({
 }: ProductSelectProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCustomProduct, setIsCustomProduct] = useState(false);
+  const [customProductName, setCustomProductName] = useState("");
+  const [selectedCustomName, setSelectedCustomName] = useState("");
 
   const {
     data: products = [],
     isLoading,
     isError,
+    refetch,
   } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
@@ -56,6 +62,14 @@ export function ProductSelect({
       return data || [];
     },
   });
+
+  const generateUUID = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  };
 
   const filteredProducts = useMemo(() => {
     if (!Array.isArray(products)) return [];
@@ -75,6 +89,56 @@ export function ProductSelect({
     onProductSelect(product);
     setOpen(false);
     setSearchQuery("");
+    if (product.id.includes('-')) {
+      setSelectedCustomName(product.name);
+    }
+  };
+
+  const handleCustomProductSubmit = async () => {
+    if (customProductName.trim()) {
+      try {
+        const customProductId = generateUUID();
+        const { data: userData } = await supabase.auth.getUser();
+        
+        if (!userData.user?.id) {
+          toast.error("User not authenticated");
+          return;
+        }
+
+        const { error: insertError } = await supabase.from("products").insert({
+          id: customProductId,
+          name: customProductName,
+          store_price: 0,
+          category: "Custom",
+          user_id: userData.user.id,
+        });
+
+        if (insertError) throw insertError;
+
+        const customProduct = {
+          id: customProductId,
+          name: customProductName,
+          store_price: 0,
+          category: "Custom",
+        };
+
+        await refetch(); // Refresh the products list
+        handleProductSelect(customProduct);
+        setCustomProductName("");
+        setIsCustomProduct(false);
+        setOpen(false);
+        toast.success("Custom product created successfully");
+      } catch (error) {
+        console.error("Error creating custom product:", error);
+        toast.error("Failed to create custom product");
+      }
+    }
+  };
+
+  const getDisplayName = () => {
+    if (isLoading) return "Loading...";
+    if (value?.includes('-')) return selectedCustomName;
+    return selectedProduct?.name || "Select product...";
   };
 
   if (isError) {
@@ -115,7 +179,7 @@ export function ProductSelect({
                   Loading...
                 </>
               ) : (
-                selectedProduct?.name || "Select product..."
+                getDisplayName()
               )}
             </Button>
           </FormControl>
@@ -125,50 +189,87 @@ export function ProductSelect({
             <DialogTitle>Select Product</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col space-y-4">
-            <div className="flex items-center space-x-2 sticky top-0 bg-background p-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1"
-              />
+            <div className="flex items-center justify-between space-x-2">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={isCustomProduct}
+                  onCheckedChange={setIsCustomProduct}
+                />
+                <span className="text-sm">Custom Product</span>
+              </div>
             </div>
-            <ScrollArea className="h-[50vh]">
-              {filteredProducts.length === 0 ? (
-                <div className="py-6 text-center text-sm text-muted-foreground">
-                  No products found.
+
+            {isCustomProduct ? (
+              <div className="flex items-center space-x-2">
+                <Input
+                  placeholder="Enter custom product name..."
+                  value={customProductName}
+                  onChange={(e) => setCustomProductName(e.target.value)}
+                  className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleCustomProductSubmit();
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  onClick={handleCustomProductSubmit}
+                  disabled={!customProductName.trim()}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center space-x-2 sticky top-0 bg-background p-2">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1"
+                  />
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-2">
-                  {filteredProducts.map((product) => (
-                    <Button
-                      key={product.id}
-                      type="button"
-                      variant="ghost"
-                      className={cn(
-                        "justify-start font-normal py-6 px-4 hover:bg-accent hover:text-accent-foreground",
-                        value === product.id && "bg-accent"
-                      )}
-                      onClick={() => handleProductSelect(product)}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          value === product.id ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium">{product.name}</span>
-                        <span className="text-sm text-muted-foreground">
-                          Category: {product.category}
-                        </span>
-                      </div>
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
+                <ScrollArea className="h-[50vh]">
+                  {filteredProducts.length === 0 ? (
+                    <div className="py-6 text-center text-sm text-muted-foreground">
+                      No products found.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-2">
+                      {filteredProducts.map((product) => (
+                        <Button
+                          key={product.id}
+                          type="button"
+                          variant="ghost"
+                          className={cn(
+                            "justify-start font-normal py-6 px-4 hover:bg-accent hover:text-accent-foreground",
+                            value === product.id && "bg-accent"
+                          )}
+                          onClick={() => handleProductSelect(product)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              value === product.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">{product.name}</span>
+                            <span className="text-sm text-muted-foreground">
+                              Category: {product.category}
+                            </span>
+                          </div>
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

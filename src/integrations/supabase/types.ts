@@ -94,8 +94,8 @@ export type Database = {
           left_eye_add_power: number | null
           left_eye_axis: number | null
           left_eye_cyl: number | null
+          left_eye_mpd: number | null
           left_eye_sph: number | null
-          pd: number | null
           price: number
           prism: number | null
           product_id: string
@@ -103,6 +103,7 @@ export type Database = {
           right_eye_add_power: number | null
           right_eye_axis: number | null
           right_eye_cyl: number | null
+          right_eye_mpd: number | null
           right_eye_sph: number | null
           sh: number | null
           total: number
@@ -118,8 +119,8 @@ export type Database = {
           left_eye_add_power?: number | null
           left_eye_axis?: number | null
           left_eye_cyl?: number | null
+          left_eye_mpd?: number | null
           left_eye_sph?: number | null
-          pd?: number | null
           price: number
           prism?: number | null
           product_id: string
@@ -127,6 +128,7 @@ export type Database = {
           right_eye_add_power?: number | null
           right_eye_axis?: number | null
           right_eye_cyl?: number | null
+          right_eye_mpd?: number | null
           right_eye_sph?: number | null
           sh?: number | null
           total: number
@@ -142,8 +144,8 @@ export type Database = {
           left_eye_add_power?: number | null
           left_eye_axis?: number | null
           left_eye_cyl?: number | null
+          left_eye_mpd?: number | null
           left_eye_sph?: number | null
-          pd?: number | null
           price?: number
           prism?: number | null
           product_id?: string
@@ -151,6 +153,7 @@ export type Database = {
           right_eye_add_power?: number | null
           right_eye_axis?: number | null
           right_eye_cyl?: number | null
+          right_eye_mpd?: number | null
           right_eye_sph?: number | null
           sh?: number | null
           total?: number
@@ -179,6 +182,8 @@ export type Database = {
           acknowledged_by: string | null
           created_at: string
           customer_address: string | null
+          customer_birth_date: string | null
+          customer_email: string | null
           customer_name: string
           customer_phone: string | null
           discount_amount: number
@@ -200,6 +205,8 @@ export type Database = {
           acknowledged_by?: string | null
           created_at?: string
           customer_address?: string | null
+          customer_birth_date?: string | null
+          customer_email?: string | null
           customer_name: string
           customer_phone?: string | null
           discount_amount?: number
@@ -221,6 +228,8 @@ export type Database = {
           acknowledged_by?: string | null
           created_at?: string
           customer_address?: string | null
+          customer_birth_date?: string | null
+          customer_email?: string | null
           customer_name?: string
           customer_phone?: string | null
           discount_amount?: number

@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { useRef } from "react";
 
 interface PrescriptionFieldsProps {
   form: UseFormReturn<any>;
@@ -23,34 +22,46 @@ export function PrescriptionFields({
   const handleValueChange = (
     fieldName: string,
     value: string,
-    type: "sph" | "cyl" | "add",
+    type: "sph" | "cyl" | "add" | "mpd",
   ) => {
     const fieldPath = `items.${index}.${side}_eye.${fieldName.split(".").pop()}`;
 
-    // Handle sign-only input
     if (value === "-" || value === "+") {
       form.setValue(fieldPath, value);
       return;
     }
 
-    // Handle zero values
     if (value === "0" || value === "0.0" || value === "0.00") {
-      form.setValue(fieldPath, "0.00");
+      // For MPD, use "0" without decimals
+      if (type === "mpd") {
+        form.setValue(fieldPath, "0");
+      } else {
+        form.setValue(fieldPath, "0.00");
+      }
       return;
     }
 
-    // Keep the raw input value during typing
     form.setValue(fieldPath, value);
   };
 
   const formatDisplayValue = (
     value: any,
-    type: "sph" | "cyl" | "add",
+    type: "sph" | "cyl" | "add" | "mpd",
   ): string => {
     if (typeof value === "string") return value;
 
     if (typeof value === "number") {
-      if (value === 0) return "0.00";
+      if (value === 0) {
+        // For MPD, return "0" without decimals
+        if (type === "mpd") return "0";
+        return "0.00";
+      }
+      
+      // For MPD, don't use decimal points
+      if (type === "mpd") {
+        return value.toString();
+      }
+      
       const absValue = Math.abs(value).toFixed(2);
 
       switch (type) {
@@ -60,6 +71,8 @@ export function PrescriptionFields({
           return value === 0 ? "0.00" : `-${absValue}`;
         case "add":
           return value === 0 ? "0.00" : `+${absValue}`;
+        default:
+          return absValue;
       }
     }
 
@@ -68,7 +81,7 @@ export function PrescriptionFields({
 
   const validateInput = (
     value: string,
-    type: "sph" | "cyl" | "add",
+    type: "sph" | "cyl" | "add" | "mpd",
   ): boolean => {
     switch (type) {
       case "sph":
@@ -77,6 +90,8 @@ export function PrescriptionFields({
         return /^-?\d*\.?\d*$/.test(value);
       case "add":
         return /^\+?\d*\.?\d*$/.test(value);
+      case "mpd":
+        return /^\d*$/.test(value); // Only allow whole numbers for MPD
       default:
         return false;
     }
@@ -87,7 +102,7 @@ export function PrescriptionFields({
       <h5 className="text-sm font-medium mb-2">
         {side === "left" ? "Left Eye" : "Right Eye"}
       </h5>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <FormField
           control={form.control}
           name={`items.${index}.${side}_eye.sph`}
@@ -116,7 +131,6 @@ export function PrescriptionFields({
                       }
                     }
                   }}
-                  className="text-right"
                 />
               </FormControl>
               <FormMessage />
@@ -152,7 +166,6 @@ export function PrescriptionFields({
                       }
                     }
                   }}
-                  className="text-right"
                 />
               </FormControl>
               <FormMessage />
@@ -214,7 +227,41 @@ export function PrescriptionFields({
                       }
                     }
                   }}
-                  className="text-right"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name={`items.${index}.${side}_eye.mpd`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>MPD</FormLabel>
+              <FormControl>
+                <Input
+                  type="text"
+                  {...field}
+                  value={formatDisplayValue(field.value, "mpd")}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    if (validateInput(newValue, "mpd")) {
+                      handleValueChange(`${field.name}`, newValue, "mpd");
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const value = e.target.value;
+                    if (value === "0") {
+                      form.setValue(`items.${index}.${side}_eye.mpd`, 0);
+                    } else {
+                      const num = parseInt(value);
+                      if (!isNaN(num)) {
+                        form.setValue(`items.${index}.${side}_eye.mpd`, num);
+                      }
+                    }
+                  }}
                 />
               </FormControl>
               <FormMessage />

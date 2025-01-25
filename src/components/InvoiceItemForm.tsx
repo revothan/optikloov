@@ -21,7 +21,6 @@ interface InvoiceItemFormProps {
 }
 
 export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
-  // Add state to track selected products' categories
   const [selectedProductCategories, setSelectedProductCategories] = useState<Record<number, string>>({});
 
   const calculateItemTotal = (index: number) => {
@@ -35,7 +34,6 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
     if (product) {
       form.setValue(`items.${index}.price`, product.store_price || 0);
       form.setValue(`items.${index}.product_id`, product.id);
-      // Update the selected product's category
       setSelectedProductCategories(prev => ({
         ...prev,
         [index]: product.category
@@ -57,13 +55,24 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
               quantity: 1,
               price: 0,
               discount: 0,
-              pd: null,
               sh: null,
               v_frame: null,
               f_size: null,
               prism: null,
-              left_eye: null,
-              right_eye: null,
+              left_eye: {
+                sph: null,
+                cyl: null,
+                axis: null,
+                add_power: null,
+                mpd: null
+              },
+              right_eye: {
+                sph: null,
+                cyl: null,
+                axis: null,
+                add_power: null,
+                mpd: null
+              },
             })
           }
         >
@@ -99,7 +108,6 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
             calculateItemTotal={calculateItemTotal}
           />
 
-          {/* Only show prescription details if the product category is "Lensa" */}
           {selectedProductCategories[index] === "Lensa" && (
             <div className="col-span-full">
               <h4 className="font-medium mb-2">Prescription Details</h4>

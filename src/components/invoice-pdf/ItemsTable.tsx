@@ -1,9 +1,8 @@
-import { Text, View, StyleSheet } from "@react-pdf/renderer";
+import { View, Text, StyleSheet } from "@react-pdf/renderer";
 import { formatPrice } from "@/lib/utils";
 
 const styles = StyleSheet.create({
   table: {
-    display: "flex",
     width: "100%",
     marginBottom: 10,
   },
@@ -12,15 +11,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#000",
     borderBottomStyle: "solid",
-    paddingVertical: 3,
+    paddingVertical: 2,
   },
   tableHeader: {
     backgroundColor: "#f0f0f0",
     fontWeight: 'bold',
   },
   tableCell: {
-    fontSize: 8,
-    padding: 2,
+    fontSize: 7,
+    padding: 1,
   },
   productCell: {
     flex: 2,
@@ -49,7 +48,7 @@ export function ItemsTable({ items }: ItemsTableProps) {
         <Text style={[styles.tableCell, styles.numberCell]}>Disc</Text>
         <Text style={[styles.tableCell, styles.numberCell]}>Total</Text>
       </View>
-      {items.map((item: any, index: number) => (
+      {items.map((item, index) => (
         <View key={index} style={styles.tableRow}>
           <Text style={[styles.tableCell, styles.productCell]}>{item.products?.name || '-'}</Text>
           <Text style={[styles.tableCell, styles.brandCell]}>{item.products?.brand || '-'}</Text>

@@ -43,6 +43,7 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
 
         <CustomerDetails
           name={invoice.customer_name}
+          email={invoice.customer_email}
           address={invoice.customer_address}
           phone={invoice.customer_phone}
           paymentType={invoice.payment_type}
@@ -62,7 +63,6 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
 
         <InvoiceFooter
           acknowledgedBy={invoice.acknowledged_by}
-          receivedBy={invoice.received_by}
         />
       </Page>
     </Document>

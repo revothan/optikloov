@@ -53,16 +53,33 @@ interface PrescriptionDetailsProps {
 }
 
 export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
-  const formatValue = (value: number | null) => {
-    if (value === null) return "0.00";
-    return value.toFixed(2);
+  const formatValue = (value: number | null, type: 'sph' | 'cyl' | 'add' | 'mpd') => {
+    if (value === null) return type === 'mpd' ? "0" : "0.00";
+    
+    // For MPD, return whole number
+    if (type === 'mpd') {
+      return Math.round(value).toString();
+    }
+    
+    const absValue = Math.abs(value).toFixed(2);
+    
+    switch (type) {
+      case 'sph':
+        return value >= 0 ? `+${absValue}` : `-${absValue}`;
+      case 'cyl':
+        return value === 0 ? "0.00" : `-${absValue}`;
+      case 'add':
+        return value === 0 ? "0.00" : `+${absValue}`;
+      default:
+        return value.toFixed(2);
+    }
   };
 
   const lensItems = items.filter(item => 
     item.products?.category === 'Lensa' && 
-    (item.left_eye_sph || item.left_eye_cyl || item.left_eye_axis || item.left_eye_add_power ||
-     item.right_eye_sph || item.right_eye_cyl || item.right_eye_axis || item.right_eye_add_power ||
-     item.pd || item.sh || item.prism || item.v_frame || item.f_size)
+    (item.left_eye_sph || item.left_eye_cyl || item.left_eye_axis || item.left_eye_add_power || item.left_eye_mpd ||
+     item.right_eye_sph || item.right_eye_cyl || item.right_eye_axis || item.right_eye_add_power || item.right_eye_mpd ||
+     item.sh || item.prism || item.v_frame || item.f_size)
   );
   
   if (lensItems.length === 0) return null;
@@ -74,7 +91,7 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
       {lensItems.map((item, index) => (
         <View key={index}>
           <Text style={styles.productTitle}>{item.products?.name}</Text>
-          
+
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <Text style={styles.tableCell}>Eye</Text>
@@ -82,27 +99,29 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
               <Text style={styles.tableCell}>CYL</Text>
               <Text style={styles.tableCell}>AXIS</Text>
               <Text style={styles.tableCell}>ADD</Text>
+              <Text style={styles.tableCell}>MPD</Text>
             </View>
             
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>Right Eye (OD)</Text>
-              <Text style={styles.tableCell}>{formatValue(item.right_eye_sph)}</Text>
-              <Text style={styles.tableCell}>{formatValue(item.right_eye_cyl)}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_sph, 'sph')}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_cyl, 'cyl')}</Text>
               <Text style={styles.tableCell}>{item.right_eye_axis || "0"}</Text>
-              <Text style={styles.tableCell}>{formatValue(item.right_eye_add_power)}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_add_power, 'add')}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_mpd, 'mpd')}</Text>
             </View>
             
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>Left Eye (OS)</Text>
-              <Text style={styles.tableCell}>{formatValue(item.left_eye_sph)}</Text>
-              <Text style={styles.tableCell}>{formatValue(item.left_eye_cyl)}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_sph, 'sph')}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_cyl, 'cyl')}</Text>
               <Text style={styles.tableCell}>{item.left_eye_axis || "0"}</Text>
-              <Text style={styles.tableCell}>{formatValue(item.left_eye_add_power)}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_add_power, 'add')}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_mpd, 'mpd')}</Text>
             </View>
           </View>
 
           <View style={styles.commonDetails}>
-            <Text style={styles.commonDetail}>PD: {item.pd || "0"}</Text>
             <Text style={styles.commonDetail}>SH: {item.sh || "0"}</Text>
             <Text style={styles.commonDetail}>PRISM: {item.prism || "0"}</Text>
             <Text style={styles.commonDetail}>V FRAME: {item.v_frame || "-"}</Text>

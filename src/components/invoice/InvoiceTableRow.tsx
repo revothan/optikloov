@@ -34,6 +34,7 @@ interface InvoiceTableRowProps {
     down_payment?: number;
     remaining_balance?: number;
     customer_phone?: string;
+    sale_date: string;
   };
   onDelete: (id: string) => Promise<void>;
 }
@@ -138,6 +139,18 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
     return null;
   }
 
+  const getPaymentStatus = () => {
+    if (!invoice.remaining_balance || invoice.remaining_balance <= 0) {
+      return <span className="text-green-600 font-medium">LUNAS</span>;
+    }
+    return (
+      <div className="flex flex-col">
+        <span className="text-yellow-600 font-medium">Remaining:</span>
+        <span className="text-yellow-600">{formatPrice(invoice.remaining_balance)}</span>
+      </div>
+    );
+  };
+
   return (
     <tr className="border-b">
       <td className="py-4 px-4">
@@ -146,22 +159,19 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
           {({ loading }) => (
-            <Button variant="ghost" size="sm" disabled={loading || isLoading}>
-              {loading || isLoading ? "Loading..." : invoice.invoice_number}
-            </Button>
-          ) as React.ReactNode}
+            <div>
+              <Button variant="ghost" size="sm" disabled={loading || isLoading}>
+                {loading || isLoading ? "Loading..." : invoice.invoice_number}
+              </Button>
+            </div>
+          )}
         </PDFDownloadLink>
       </td>
+      <td className="py-4 px-4">
+        {new Date(invoice.sale_date).toLocaleDateString('id-ID')}
+      </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>
-      <td className="py-4 px-4">{formatPrice(invoice.total_amount)}</td>
-      <td className="py-4 px-4">{formatPrice(invoice.discount_amount)}</td>
-      <td className="py-4 px-4">{formatPrice(invoice.grand_total)}</td>
-      <td className="py-4 px-4">
-        {invoice.down_payment ? formatPrice(invoice.down_payment) : "-"}
-      </td>
-      <td className="py-4 px-4">
-        {invoice.remaining_balance ? formatPrice(invoice.remaining_balance) : "-"}
-      </td>
+      <td className="py-4 px-4">{getPaymentStatus()}</td>
       <td className="py-4 px-4">
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -195,9 +205,9 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                   {({ loading }) => (
                     <div className="flex items-center">
                       <Download className="mr-2 h-4 w-4" />
-                      {loading || isLoading ? "Loading..." : "Download PDF"}
+                      {loading ? "Loading..." : "Download PDF"}
                     </div>
-                  ) as React.ReactNode}
+                  )}
                 </PDFDownloadLink>
               </DropdownMenuItem>
               <DropdownMenuItem
