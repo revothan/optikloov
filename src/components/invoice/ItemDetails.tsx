@@ -77,8 +77,8 @@ export function ItemDetails({ form, index, calculateItemTotal }: ItemDetailsProp
                   className="pl-12"
                   {...field}
                   onChange={(e) => {
-                    const value = parseFloat(e.target.value) || 0;
-                    field.onChange(value);
+                    const value = e.target.value.replace(/^0+/, ''); // Remove leading zeros
+                    field.onChange(parseFloat(value) || 0);
                   }}
                 />
               </div>
@@ -113,7 +113,7 @@ export function ItemDetails({ form, index, calculateItemTotal }: ItemDetailsProp
               className={`${discountType === 'fixed' ? 'pl-12' : 'pr-8'} w-full`}
               value={discountValue}
               onChange={(e) => {
-                const value = e.target.value.replace(/^0+/, '');
+                const value = e.target.value.replace(/^0+/, ''); // Remove leading zeros
                 setDiscountValue(value);
               }}
             />
