@@ -42,6 +42,11 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
     },
   });
 
+  // Function to capitalize first letter of each word
+  const capitalizeWords = (str: string) => {
+    return str.replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <FormField
@@ -79,7 +84,13 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
           <FormItem>
             <FormLabel>Nama Pelanggan</FormLabel>
             <FormControl>
-              <Input {...field} />
+              <Input 
+                {...field} 
+                onChange={(e) => {
+                  const capitalizedValue = capitalizeWords(e.target.value);
+                  field.onChange(capitalizedValue);
+                }}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
