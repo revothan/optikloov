@@ -149,7 +149,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
       console.log("Invoice created successfully:", invoice);
 
-      // Insert invoice items
+      // Insert invoice items with MPD values
       const { error: itemsError } = await supabase.from("invoice_items").insert(
         values.items.map((item) => ({
           invoice_id: invoice.id,
@@ -166,10 +166,12 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
           left_eye_cyl: item.left_eye?.cyl || null,
           left_eye_axis: item.left_eye?.axis || null,
           left_eye_add_power: item.left_eye?.add_power || null,
+          left_eye_mpd: item.left_eye?.mpd || null,  // Add MPD values
           right_eye_sph: item.right_eye?.sph || null,
           right_eye_cyl: item.right_eye?.cyl || null,
           right_eye_axis: item.right_eye?.axis || null,
           right_eye_add_power: item.right_eye?.add_power || null,
+          right_eye_mpd: item.right_eye?.mpd || null,  // Add MPD values
         }))
       );
 
