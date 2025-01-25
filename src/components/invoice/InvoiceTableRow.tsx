@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
-import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -89,14 +89,15 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
   const handlePrint = async () => {
     try {
       setIsPrinting(true);
-      const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
-      const url = URL.createObjectURL(blob);
+      const pdfBlob = await new Promise((resolve) => {
+        const doc = <InvoicePDF invoice={invoice} items={items} />;
+        resolve(doc);
+      });
       
-      const printWindow = window.open(url, '_blank');
+      const printWindow = window.open('', '_blank');
       if (printWindow) {
         printWindow.onload = () => {
           printWindow.print();
-          URL.revokeObjectURL(url);
         };
       } else {
         toast.error('Please allow pop-ups to print invoices');
@@ -146,9 +147,11 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
           fileName={`invoice-${invoice.invoice_number}.pdf`}
         >
           {({ loading }) => (
-            <Button variant="ghost" size="sm" disabled={loading || isLoading}>
-              {loading || isLoading ? "Loading..." : invoice.invoice_number}
-            </Button>
+            <div>
+              <Button variant="ghost" size="sm" disabled={loading || isLoading}>
+                {loading || isLoading ? "Loading..." : invoice.invoice_number}
+              </Button>
+            </div>
           )}
         </PDFDownloadLink>
       </td>
@@ -187,7 +190,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                 <Mail className="mr-2 h-4 w-4" />
                 Email
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem>
                 <PDFDownloadLink
                   document={<InvoicePDF invoice={invoice} items={items} />}
                   fileName={`invoice-${invoice.invoice_number}.pdf`}
