@@ -54,7 +54,13 @@ interface PrescriptionDetailsProps {
 
 export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
   const formatValue = (value: number | null, type: 'sph' | 'cyl' | 'add' | 'mpd') => {
-    if (value === null) return "0.00";
+    if (value === null) return type === 'mpd' ? "0" : "0.00";
+    
+    // For MPD, return whole number
+    if (type === 'mpd') {
+      return Math.round(value).toString();
+    }
+    
     const absValue = Math.abs(value).toFixed(2);
     
     switch (type) {
@@ -64,8 +70,6 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
         return value === 0 ? "0.00" : `-${absValue}`;
       case 'add':
         return value === 0 ? "0.00" : `+${absValue}`;
-      case 'mpd':
-        return absValue;
       default:
         return value.toFixed(2);
     }

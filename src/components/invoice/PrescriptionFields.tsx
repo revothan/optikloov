@@ -32,7 +32,12 @@ export function PrescriptionFields({
     }
 
     if (value === "0" || value === "0.0" || value === "0.00") {
-      form.setValue(fieldPath, "0.00");
+      // For MPD, use "0" without decimals
+      if (type === "mpd") {
+        form.setValue(fieldPath, "0");
+      } else {
+        form.setValue(fieldPath, "0.00");
+      }
       return;
     }
 
@@ -46,7 +51,17 @@ export function PrescriptionFields({
     if (typeof value === "string") return value;
 
     if (typeof value === "number") {
-      if (value === 0) return "0.00";
+      if (value === 0) {
+        // For MPD, return "0" without decimals
+        if (type === "mpd") return "0";
+        return "0.00";
+      }
+      
+      // For MPD, don't use decimal points
+      if (type === "mpd") {
+        return value.toString();
+      }
+      
       const absValue = Math.abs(value).toFixed(2);
 
       switch (type) {
@@ -56,7 +71,7 @@ export function PrescriptionFields({
           return value === 0 ? "0.00" : `-${absValue}`;
         case "add":
           return value === 0 ? "0.00" : `+${absValue}`;
-        case "mpd":
+        default:
           return absValue;
       }
     }
@@ -76,7 +91,7 @@ export function PrescriptionFields({
       case "add":
         return /^\+?\d*\.?\d*$/.test(value);
       case "mpd":
-        return /^\d*\.?\d*$/.test(value);
+        return /^\d*$/.test(value); // Only allow whole numbers for MPD
       default:
         return false;
     }
@@ -238,10 +253,10 @@ export function PrescriptionFields({
                   }}
                   onBlur={(e) => {
                     const value = e.target.value;
-                    if (value === "0.00") {
+                    if (value === "0") {
                       form.setValue(`items.${index}.${side}_eye.mpd`, 0);
                     } else {
-                      const num = parseFloat(value);
+                      const num = parseInt(value);
                       if (!isNaN(num)) {
                         form.setValue(`items.${index}.${side}_eye.mpd`, num);
                       }
