@@ -3,7 +3,7 @@ import { Text, View, StyleSheet } from "@react-pdf/renderer";
 const styles = StyleSheet.create({
   footer: {
     position: 'absolute',
-    bottom: 40,
+    top: 40,
     right: 20,
     textAlign: 'center',
     fontSize: 8,
