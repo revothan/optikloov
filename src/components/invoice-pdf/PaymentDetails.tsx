@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     marginBottom: 2,
   },
   label: {
@@ -43,10 +43,11 @@ export function PaymentDetails({
   return (
     <View style={styles.totals}>
       <View style={styles.row}>
-        <View style={styles.amountGroup}>
-          <Text style={styles.label}>Total: {formatPrice(totalAmount)}</Text>
-          <Text style={styles.label}>Disc: {formatPrice(discountAmount)}</Text>
-        </View>
+        <Text style={styles.label}>Total: {formatPrice(totalAmount)}</Text>
+      </View>
+      
+      <View style={styles.row}>
+        <Text style={styles.label}>Disc: {formatPrice(discountAmount)}</Text>
       </View>
       
       <View style={styles.row}>
@@ -54,12 +55,13 @@ export function PaymentDetails({
       </View>
       
       <View style={styles.row}>
-        <View style={styles.amountGroup}>
-          <Text style={styles.label}>DP: {formatPrice(downPayment)}</Text>
-          <Text style={styles.boldText}>
-            Sisa Pembayaran: {remainingBalance === 0 ? "LUNAS" : formatPrice(remainingBalance)}
-          </Text>
-        </View>
+        <Text style={styles.label}>DP: {formatPrice(downPayment)}</Text>
+      </View>
+
+      <View style={styles.row}>
+        <Text style={styles.boldText}>
+          Sisa Pembayaran: {remainingBalance === 0 ? "LUNAS" : formatPrice(remainingBalance)}
+        </Text>
       </View>
     </View>
   );
