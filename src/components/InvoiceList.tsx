@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { InvoiceTableHeader } from "./invoice/InvoiceTableHeader";
 import { InvoiceTableRow } from "./invoice/InvoiceTableRow";
+import { useEffect } from "react";
 
 export default function InvoiceList() {
   const queryClient = useQueryClient();
@@ -21,6 +22,30 @@ export default function InvoiceList() {
     },
     staleTime: 30000, // Consider data fresh for 30 seconds
   });
+
+  // Subscribe to real-time changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'invoices'
+        },
+        () => {
+          // Invalidate and refetch invoices when any change occurs
+          queryClient.invalidateQueries({ queryKey: ["invoices"] });
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on component unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const handleDelete = async (id: string) => {
     try {
