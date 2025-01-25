@@ -3,26 +3,28 @@ import { formatPrice } from "@/lib/utils";
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
-    padding: 10,
+    marginTop: 5,
+    padding: 8,
     fontSize: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   leftSection: {
     flexDirection: 'column',
-    gap: 4,
+    gap: 2,
   },
   rightSection: {
     flexDirection: 'column',
-    gap: 4,
+    gap: 2,
     alignItems: 'flex-end',
   },
   label: {
     color: '#666',
+    fontSize: 7,
   },
   boldText: {
     fontFamily: 'Helvetica-Bold',
+    fontSize: 7,
   }
 });
 
@@ -43,13 +45,11 @@ export function PaymentDetails({
 }: PaymentDetailsProps) {
   return (
     <View style={styles.container}>
-      {/* Left section for Total and Discount */}
       <View style={styles.leftSection}>
         <Text style={styles.label}>Total: {formatPrice(totalAmount)}</Text>
         <Text style={styles.label}>Disc: {formatPrice(discountAmount)}</Text>
       </View>
 
-      {/* Right section for Grand Total, DP, and Remaining Balance */}
       <View style={styles.rightSection}>
         <Text style={styles.boldText}>Grand Total: {formatPrice(grandTotal)}</Text>
         <Text style={styles.label}>DP: {formatPrice(downPayment)}</Text>
