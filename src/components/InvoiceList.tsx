@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { InvoiceTableHeader } from "./invoice/InvoiceTableHeader";
 import { InvoiceTableRow } from "./invoice/InvoiceTableRow";
 import { useEffect } from "react";
@@ -29,21 +30,42 @@ export default function InvoiceList() {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
           schema: 'public',
           table: 'invoices'
         },
         (payload) => {
           console.log('Real-time change received:', payload);
+          // Invalidate and refetch invoices when any change occurs
           queryClient.invalidateQueries({ queryKey: ["invoices"] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to invoice changes');
+        }
+      });
 
+    // Cleanup subscription on component unmount
     return () => {
+      console.log('Cleaning up subscription');
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase.from("invoices").delete().eq("id", id);
+      if (error) throw error;
+      
+      toast.success("Invoice deleted successfully");
+      // No need to manually invalidate query here as the real-time subscription will handle it
+    } catch (error) {
+      console.error("Error deleting invoice:", error);
+      toast.error("Failed to delete invoice");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -76,11 +98,12 @@ export default function InvoiceList() {
             <InvoiceTableRow
               key={invoice.id}
               invoice={invoice}
+              onDelete={handleDelete}
             />
           ))}
           {!invoices?.length && (
             <tr>
-              <td colSpan={5} className="text-center text-muted-foreground p-4">
+              <td colSpan={7} className="text-center text-muted-foreground p-4">
                 No invoices found
               </td>
             </tr>
