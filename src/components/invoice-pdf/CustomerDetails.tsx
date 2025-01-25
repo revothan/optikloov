@@ -7,6 +7,9 @@ const styles = StyleSheet.create({
     border: '1 solid #999',
     fontSize: 8,
   },
+  text: {
+    textAlign: 'justify',
+  }
 });
 
 interface CustomerDetailsProps {
@@ -20,11 +23,11 @@ interface CustomerDetailsProps {
 export function CustomerDetails({ name, address, phone, paymentType, email }: CustomerDetailsProps) {
   return (
     <View style={styles.details}>
-      <Text>Customer: {name}</Text>
-      <Text>Email: {email || '-'}</Text>
-      <Text>Address: {address || '-'}</Text>
-      <Text>Phone: {phone || '-'}</Text>
-      <Text>Payment Type: {paymentType || '-'}</Text>
+      <Text style={styles.text}>Customer: {name}</Text>
+      <Text style={styles.text}>Email: {email || '-'}</Text>
+      <Text style={styles.text}>Address: {address || '-'}</Text>
+      <Text style={styles.text}>Phone: {phone || '-'}</Text>
+      <Text style={styles.text}>Payment Type: {paymentType || '-'}</Text>
     </View>
   );
 }
