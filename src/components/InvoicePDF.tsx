@@ -9,7 +9,7 @@ import { InvoiceFooter } from "./invoice-pdf/InvoiceFooter";
 
 const styles = StyleSheet.create({
   page: {
-    padding: 10,
+    padding: 20,
     fontSize: 7,
   },
 });
@@ -39,6 +39,7 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
         <InvoiceHeader 
           invoiceNumber={invoice.invoice_number}
           saleDate={invoice.sale_date}
+          acknowledgedBy={invoice.acknowledged_by}
         />
 
         <CustomerDetails
@@ -61,9 +62,7 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
           remainingBalance={invoice.remaining_balance}
         />
 
-        <InvoiceFooter
-          acknowledgedBy={invoice.acknowledged_by}
-        />
+        <InvoiceFooter />
       </Page>
     </Document>
   );

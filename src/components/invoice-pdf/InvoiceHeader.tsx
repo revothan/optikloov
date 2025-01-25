@@ -13,15 +13,24 @@ const styles = StyleSheet.create({
   },
   rightSection: {
     width: '40%',
-    textAlign: 'right',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
   },
   invoiceText: {
     fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 4,
+    textAlign: 'right',
   },
   dateText: {
     fontSize: 10,
+    marginBottom: 4,
+    textAlign: 'right',
+  },
+  inspectorText: {
+    fontSize: 8,
+    textAlign: 'right',
   },
   companyName: {
     fontSize: 14,
@@ -37,9 +46,10 @@ const styles = StyleSheet.create({
 interface InvoiceHeaderProps {
   invoiceNumber: string;
   saleDate: string;
+  acknowledgedBy?: string;
 }
 
-export function InvoiceHeader({ invoiceNumber, saleDate }: InvoiceHeaderProps) {
+export function InvoiceHeader({ invoiceNumber, saleDate, acknowledgedBy }: InvoiceHeaderProps) {
   return (
     <View style={styles.header}>
       <View style={styles.leftSection}>
@@ -61,6 +71,9 @@ export function InvoiceHeader({ invoiceNumber, saleDate }: InvoiceHeaderProps) {
         </Text>
         <Text style={styles.dateText}>
           Date: {format(new Date(saleDate), "dd MMM yyyy")}
+        </Text>
+        <Text style={styles.inspectorText}>
+          Pemeriksa: {acknowledgedBy || '_________________'}
         </Text>
       </View>
     </View>
