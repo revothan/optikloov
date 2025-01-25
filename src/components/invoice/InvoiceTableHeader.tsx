@@ -9,12 +9,10 @@ export function InvoiceTableHeader() {
     <TableHeader>
       <TableRow>
         <TableHead>Invoice Number</TableHead>
-        <TableHead>Date</TableHead>
         <TableHead>Customer</TableHead>
-        <TableHead>Total Amount</TableHead>
-        <TableHead>Payment Type</TableHead>
-        <TableHead>Status</TableHead>
-        <TableHead>Actions</TableHead>
+        <TableHead>Down Payment</TableHead>
+        <TableHead>Grand Total</TableHead>
+        <TableHead>Sisa Pembayaran</TableHead>
       </TableRow>
     </TableHeader>
   );
