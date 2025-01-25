@@ -3,19 +3,19 @@ import { formatPrice } from "@/lib/utils";
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
-    padding: 10,
-    fontSize: 8,
+    marginTop: 6,
+    padding: 6,
+    fontSize: 7,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   leftSection: {
     flexDirection: 'column',
-    gap: 4,
+    gap: 2,
   },
   rightSection: {
     flexDirection: 'column',
-    gap: 4,
+    gap: 2,
     alignItems: 'flex-end',
   },
   label: {

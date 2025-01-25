@@ -9,7 +9,7 @@ import { InvoiceFooter } from "./invoice-pdf/InvoiceFooter";
 
 const styles = StyleSheet.create({
   page: {
-    padding: 20,
+    padding: 16,
     fontSize: 7,
   },
 });

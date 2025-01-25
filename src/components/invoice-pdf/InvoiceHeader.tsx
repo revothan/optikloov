@@ -3,7 +3,7 @@ import { format } from "date-fns";
 
 const styles = StyleSheet.create({
   header: {
-    marginBottom: 10,
+    marginBottom: 8,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -18,27 +18,27 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   invoiceText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 2,
     textAlign: 'right',
   },
   dateText: {
-    fontSize: 10,
-    marginBottom: 4,
+    fontSize: 8,
+    marginBottom: 2,
     textAlign: 'right',
   },
   inspectorText: {
-    fontSize: 8,
+    fontSize: 7,
     textAlign: 'right',
   },
   companyName: {
-    fontSize: 14,
-    marginBottom: 4,
+    fontSize: 12,
+    marginBottom: 2,
     fontWeight: 'bold',
   },
   storeInfo: {
-    fontSize: 7,
+    fontSize: 6,
     marginBottom: 1,
   },
 });
