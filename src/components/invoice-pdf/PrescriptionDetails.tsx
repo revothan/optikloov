@@ -46,6 +46,15 @@ const styles = StyleSheet.create({
   commonDetail: {
     flex: 1,
   },
+  mpdDetails: {
+    flexDirection: "row",
+    marginTop: 3,
+    marginBottom: 3,
+    fontSize: 7,
+  },
+  mpdDetail: {
+    flex: 1,
+  },
 });
 
 interface PrescriptionDetailsProps {
@@ -86,6 +95,11 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
         <View key={index}>
           <Text style={styles.productTitle}>{item.products?.name}</Text>
           
+          <View style={styles.mpdDetails}>
+            <Text style={styles.mpdDetail}>MPD Right: {item.mpd_right || "0"}</Text>
+            <Text style={styles.mpdDetail}>MPD Left: {item.mpd_left || "0"}</Text>
+          </View>
+
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <Text style={styles.tableCell}>Eye</Text>
