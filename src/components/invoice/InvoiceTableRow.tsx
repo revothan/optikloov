@@ -36,18 +36,20 @@ export function InvoiceTableRow({ invoice }: InvoiceTableRowProps) {
       <TableCell>{invoice.down_payment ? formatPrice(invoice.down_payment) : "-"}</TableCell>
       <TableCell>{getPaymentStatus()}</TableCell>
       <TableCell>
-        <ContextMenu>
-          <ContextMenuTrigger>
-            <button className="p-2 hover:bg-gray-100 rounded-full">
-              <MoreVertical className="h-4 w-4" />
-            </button>
-          </ContextMenuTrigger>
-          <ContextMenuContent>
-            <ContextMenuItem>View Details</ContextMenuItem>
-            <ContextMenuItem>Print Invoice</ContextMenuItem>
-            <ContextMenuItem className="text-red-600">Delete</ContextMenuItem>
-          </ContextMenuContent>
-        </ContextMenu>
+        <div className="relative">
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <button className="p-2 hover:bg-gray-100 rounded-full">
+                <MoreVertical className="h-4 w-4" />
+              </button>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem>View Details</ContextMenuItem>
+              <ContextMenuItem>Print Invoice</ContextMenuItem>
+              <ContextMenuItem className="text-red-600">Delete</ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+        </div>
       </TableCell>
     </TableRow>
   );
