@@ -1,5 +1,12 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { formatPrice } from "@/lib/utils";
+import { MoreVertical } from "lucide-react";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 interface InvoiceTableRowProps {
   invoice: {
@@ -28,6 +35,20 @@ export function InvoiceTableRow({ invoice }: InvoiceTableRowProps) {
       <TableCell>{formatPrice(invoice.grand_total)}</TableCell>
       <TableCell>{invoice.down_payment ? formatPrice(invoice.down_payment) : "-"}</TableCell>
       <TableCell>{getPaymentStatus()}</TableCell>
+      <TableCell>
+        <ContextMenu>
+          <ContextMenuTrigger>
+            <button className="p-2 hover:bg-gray-100 rounded-full">
+              <MoreVertical className="h-4 w-4" />
+            </button>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem>View Details</ContextMenuItem>
+            <ContextMenuItem>Print Invoice</ContextMenuItem>
+            <ContextMenuItem className="text-red-600">Delete</ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+      </TableCell>
     </TableRow>
   );
 }
