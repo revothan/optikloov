@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet } from "@react-pdf/renderer";
+import { View, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   footer: {
@@ -16,9 +16,5 @@ interface InvoiceFooterProps {
 }
 
 export function InvoiceFooter({ acknowledgedBy }: InvoiceFooterProps) {
-  return (
-    <View style={styles.footer}>
-      <Text>© Optik Loov</Text>
-    </View>
-  );
+  return <View style={styles.footer} />;
 }
