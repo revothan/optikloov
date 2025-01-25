@@ -29,7 +29,12 @@ const styles = StyleSheet.create({
   },
   numberCell: {
     flex: 1,
-    textAlign: 'right',
+    textAlign: 'left',
+  },
+  priceCell: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
   },
 });
 
@@ -38,6 +43,10 @@ interface ItemsTableProps {
 }
 
 export function ItemsTable({ items }: ItemsTableProps) {
+  const formatPriceWithAlignment = (amount: number) => {
+    return `Rp ${amount.toLocaleString('id-ID')}`;
+  };
+
   return (
     <View style={styles.table}>
       <View style={[styles.tableRow, styles.tableHeader]}>
@@ -53,9 +62,9 @@ export function ItemsTable({ items }: ItemsTableProps) {
           <Text style={[styles.tableCell, styles.productCell]}>{item.products?.name || '-'}</Text>
           <Text style={[styles.tableCell, styles.brandCell]}>{item.products?.brand || '-'}</Text>
           <Text style={[styles.tableCell, styles.numberCell]}>{item.quantity}</Text>
-          <Text style={[styles.tableCell, styles.numberCell]}>{formatPrice(item.price)}</Text>
-          <Text style={[styles.tableCell, styles.numberCell]}>{formatPrice(item.discount)}</Text>
-          <Text style={[styles.tableCell, styles.numberCell]}>{formatPrice(item.total)}</Text>
+          <Text style={[styles.tableCell, styles.numberCell]}>{formatPriceWithAlignment(item.price)}</Text>
+          <Text style={[styles.tableCell, styles.numberCell]}>{formatPriceWithAlignment(item.discount)}</Text>
+          <Text style={[styles.tableCell, styles.numberCell]}>{formatPriceWithAlignment(item.total)}</Text>
         </View>
       ))}
     </View>
