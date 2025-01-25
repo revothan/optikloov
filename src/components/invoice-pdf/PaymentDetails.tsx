@@ -10,11 +10,18 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 20,
+    justifyContent: 'space-between',
+    marginBottom: 2,
   },
   label: {
     color: '#666',
+  },
+  amountGroup: {
+    flexDirection: 'row',
+    gap: 20,
+  },
+  boldText: {
+    fontFamily: 'Helvetica-Bold',
   }
 });
 
@@ -36,15 +43,23 @@ export function PaymentDetails({
   return (
     <View style={styles.totals}>
       <View style={styles.row}>
-        <Text style={styles.label}>Total: {formatPrice(totalAmount)}</Text>
-        <Text style={styles.label}>Disc: {formatPrice(discountAmount)}</Text>
+        <View style={styles.amountGroup}>
+          <Text style={styles.label}>Total: {formatPrice(totalAmount)}</Text>
+          <Text style={styles.label}>Disc: {formatPrice(discountAmount)}</Text>
+        </View>
       </View>
+      
       <View style={styles.row}>
-        <Text>Grand Total: {formatPrice(grandTotal)}</Text>
+        <Text style={styles.boldText}>Grand Total: {formatPrice(grandTotal)}</Text>
       </View>
+      
       <View style={styles.row}>
-        <Text style={styles.label}>DP: {formatPrice(downPayment)}</Text>
-        <Text>Balance: {formatPrice(remainingBalance)}</Text>
+        <View style={styles.amountGroup}>
+          <Text style={styles.label}>DP: {formatPrice(downPayment)}</Text>
+          <Text style={styles.boldText}>
+            Sisa Pembayaran: {remainingBalance === 0 ? "LUNAS" : formatPrice(remainingBalance)}
+          </Text>
+        </View>
       </View>
     </View>
   );
