@@ -157,7 +157,6 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
         <PDFDownloadLink
           document={<InvoicePDF invoice={invoice} items={items} />}
           fileName={`invoice-${invoice.invoice_number}.pdf`}
-          className="hover:text-primary"
         >
           {({ loading }) => (
             <Button variant="ghost" size="sm" disabled={loading || isLoading}>
@@ -170,9 +169,7 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
         {new Date(invoice.sale_date).toLocaleDateString('id-ID')}
       </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>
-      <td className="py-4 px-4">
-        {getPaymentStatus()}
-      </td>
+      <td className="py-4 px-4">{getPaymentStatus()}</td>
       <td className="py-4 px-4">
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -202,7 +199,6 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
                 <PDFDownloadLink
                   document={<InvoicePDF invoice={invoice} items={items} />}
                   fileName={`invoice-${invoice.invoice_number}.pdf`}
-                  className="flex items-center w-full"
                 >
                   {({ loading }) => (
                     <div className="flex items-center">

@@ -3,12 +3,13 @@ import { format } from "date-fns";
 
 const styles = StyleSheet.create({
   header: {
+    marginBottom: 10,
+    display: 'flex',
     flexDirection: 'row',
-    marginBottom: 5,
     justifyContent: 'space-between',
   },
   leftSection: {
-    width: '60%',
+    flex: 1,
   },
   rightSection: {
     width: '40%',
@@ -17,27 +18,28 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   invoiceText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
-    marginBottom: 2,
+    marginBottom: 4,
     textAlign: 'right',
   },
   dateText: {
-    fontSize: 8,
-    marginBottom: 2,
+    fontSize: 10,
+    marginBottom: 4,
     textAlign: 'right',
   },
   inspectorText: {
-    fontSize: 7,
+    fontSize: 8,
     textAlign: 'right',
   },
   companyName: {
-    fontSize: 12,
+    fontSize: 14,
+    marginBottom: 4,
     fontWeight: 'bold',
-    marginBottom: 2,
   },
-  companyDetails: {
+  storeInfo: {
     fontSize: 7,
+    marginBottom: 1,
   },
 });
 
@@ -51,20 +53,21 @@ export function InvoiceHeader({ invoiceNumber, saleDate, acknowledgedBy }: Invoi
   return (
     <View style={styles.header}>
       <View style={styles.leftSection}>
-        <Text style={styles.companyName}>Optik Loov</Text>
-        <Text style={styles.companyDetails}>
-          Jl. Raya Darmo No.116, Surabaya
+        <Text style={styles.companyName}>OPTIK LOOV</Text>
+        <Text style={styles.storeInfo}>
+          Alamat: Ruko Downtown Drive, kecamatan No.016 Blok DDBLV, Medang,
         </Text>
-        <Text style={styles.companyDetails}>
-          Telp. (031) 567 8901
+        <Text style={styles.storeInfo}>
+          Kec. Pagedangan, Kabupaten Tangerang, Banten 15334
         </Text>
-        <Text style={styles.companyDetails}>
-          Email: optikloov@gmail.com
-        </Text>
+        <Text style={styles.storeInfo}>Telp/WA: 0812 8333 5568</Text>
+        <Text style={styles.storeInfo}>Website: optikloov.com</Text>
+        <Text style={styles.storeInfo}>Email: optik.loov@gmail.com</Text>
       </View>
+      
       <View style={styles.rightSection}>
         <Text style={styles.invoiceText}>
-          Invoice No: {invoiceNumber}
+          Invoice No. {invoiceNumber}
         </Text>
         <Text style={styles.dateText}>
           Date: {format(new Date(saleDate), "dd MMM yyyy")}

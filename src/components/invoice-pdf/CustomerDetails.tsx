@@ -2,16 +2,15 @@ import { Text, View, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   details: {
-    marginBottom: 5,
-    marginTop: 5,
+    marginBottom: 10,
     padding: 5,
     border: '1 solid #999',
-    fontSize: 7,
+    fontSize: 8,
   },
   text: {
     textAlign: 'justify',
     width: '100%',
-    marginBottom: 1,
+    marginBottom: 2,
   }
 });
 
