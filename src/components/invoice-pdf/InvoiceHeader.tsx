@@ -3,54 +3,79 @@ import { format } from "date-fns";
 
 const styles = StyleSheet.create({
   header: {
-    marginBottom: 10,
+    marginBottom: 8,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  title: {
+  leftSection: {
+    flex: 1,
+  },
+  rightSection: {
+    width: '40%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+  },
+  invoiceText: {
     fontSize: 12,
+    fontWeight: 'bold',
     marginBottom: 2,
-    textAlign: 'center',
+    textAlign: 'right',
+  },
+  dateText: {
+    fontSize: 8,
+    marginBottom: 2,
+    textAlign: 'right',
+  },
+  inspectorText: {
+    fontSize: 7,
+    textAlign: 'right',
   },
   companyName: {
-    fontSize: 10,
+    fontSize: 12,
     marginBottom: 2,
-    textAlign: 'center',
     fontWeight: 'bold',
   },
   storeInfo: {
-    fontSize: 7,
+    fontSize: 6,
     marginBottom: 1,
-    textAlign: 'center',
   },
-  date: {
-    fontSize: 7,
-    textAlign: 'center',
-    marginTop: 4,
-  }
 });
 
 interface InvoiceHeaderProps {
   invoiceNumber: string;
   saleDate: string;
+  acknowledgedBy?: string;
 }
 
-export function InvoiceHeader({ invoiceNumber, saleDate }: InvoiceHeaderProps) {
+export function InvoiceHeader({ invoiceNumber, saleDate, acknowledgedBy }: InvoiceHeaderProps) {
   return (
     <View style={styles.header}>
-      <Text style={styles.title}>Invoice #{invoiceNumber}</Text>
-      <Text style={styles.date}>
-        Date: {format(new Date(saleDate), "dd MMM yyyy")}
-      </Text>
+      <View style={styles.leftSection}>
+        <Text style={styles.companyName}>OPTIK LOOV</Text>
+        <Text style={styles.storeInfo}>
+          Alamat: Ruko Downtown Drive, kecamatan No.016 Blok DDBLV, Medang,
+        </Text>
+        <Text style={styles.storeInfo}>
+          Kec. Pagedangan, Kabupaten Tangerang, Banten 15334
+        </Text>
+        <Text style={styles.storeInfo}>Telp/WA: 0812 8333 5568</Text>
+        <Text style={styles.storeInfo}>Website: optikloov.com</Text>
+        <Text style={styles.storeInfo}>Email: optik.loov@gmail.com</Text>
+      </View>
       
-      <Text style={styles.companyName}>OPTIK LOOV</Text>
-      <Text style={styles.storeInfo}>
-        Alamat: Ruko Downtown Drive, kecamatan No.016 Blok DDBLV, Medang,
-      </Text>
-      <Text style={styles.storeInfo}>
-        Kec. Pagedangan, Kabupaten Tangerang, Banten 15334
-      </Text>
-      <Text style={styles.storeInfo}>WhatsApp: 0812 8333 5568</Text>
-      <Text style={styles.storeInfo}>Website: optikloov.com</Text>
-      <Text style={styles.storeInfo}>Email: optik.loov@gmail.com</Text>
+      <View style={styles.rightSection}>
+        <Text style={styles.invoiceText}>
+          Invoice No. {invoiceNumber}
+        </Text>
+        <Text style={styles.dateText}>
+          Date: {format(new Date(saleDate), "dd MMM yyyy")}
+        </Text>
+        <Text style={styles.inspectorText}>
+          Pemeriksa: {acknowledgedBy || '_________________'}
+        </Text>
+      </View>
     </View>
   );
 }

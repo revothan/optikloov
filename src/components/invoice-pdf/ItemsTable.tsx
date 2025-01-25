@@ -11,25 +11,35 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#000",
     borderBottomStyle: "solid",
-    paddingVertical: 2,
+    paddingVertical: 3,
   },
   tableHeader: {
     backgroundColor: "#f0f0f0",
     fontWeight: 'bold',
   },
   tableCell: {
-    fontSize: 7,
-    padding: 1,
+    fontSize: 8,
+    padding: 2,
   },
   productCell: {
     flex: 2,
+    fontSize: 8,
+    fontFamily: 'Helvetica-Bold',
   },
   brandCell: {
     flex: 1,
+    fontSize: 8,
   },
   numberCell: {
     flex: 1,
-    textAlign: 'right',
+    textAlign: 'left',
+    fontSize: 8,
+  },
+  priceCell: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    fontSize: 8,
   },
 });
 
@@ -38,6 +48,10 @@ interface ItemsTableProps {
 }
 
 export function ItemsTable({ items }: ItemsTableProps) {
+  const formatPriceWithAlignment = (amount: number) => {
+    return `Rp ${amount.toLocaleString('id-ID')}`;
+  };
+
   return (
     <View style={styles.table}>
       <View style={[styles.tableRow, styles.tableHeader]}>
@@ -53,9 +67,9 @@ export function ItemsTable({ items }: ItemsTableProps) {
           <Text style={[styles.tableCell, styles.productCell]}>{item.products?.name || '-'}</Text>
           <Text style={[styles.tableCell, styles.brandCell]}>{item.products?.brand || '-'}</Text>
           <Text style={[styles.tableCell, styles.numberCell]}>{item.quantity}</Text>
-          <Text style={[styles.tableCell, styles.numberCell]}>{formatPrice(item.price)}</Text>
-          <Text style={[styles.tableCell, styles.numberCell]}>{formatPrice(item.discount)}</Text>
-          <Text style={[styles.tableCell, styles.numberCell]}>{formatPrice(item.total)}</Text>
+          <Text style={[styles.tableCell, styles.numberCell]}>{formatPriceWithAlignment(item.price)}</Text>
+          <Text style={[styles.tableCell, styles.numberCell]}>{formatPriceWithAlignment(item.discount)}</Text>
+          <Text style={[styles.tableCell, styles.numberCell]}>{formatPriceWithAlignment(item.total)}</Text>
         </View>
       ))}
     </View>
