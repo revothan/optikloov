@@ -146,7 +146,13 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
           <FormItem>
             <FormLabel>Alamat</FormLabel>
             <FormControl>
-              <Input {...field} />
+              <Input 
+                {...field} 
+                onChange={(e) => {
+                  const capitalizedValue = capitalizeWords(e.target.value);
+                  field.onChange(capitalizedValue);
+                }}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
