@@ -25,16 +25,14 @@ export const schema = z.object({
         product_id: z.string().min(1, "Product is required"),
         quantity: z.number().min(1, "Quantity must be at least 1"),
         price: z.number().min(0, "Price cannot be negative"),
-        discount: z.number().min(0, "Discount cannot be negative"),
-        mpd_right: z.number().nullable(),
-        mpd_left: z.number().nullable(),
+        discount: z.number().min(0, "Discount cannot be negative").optional(),
         sh: z.number().nullable(),
         v_frame: z.string().nullable(),
         f_size: z.string().nullable(),
         prism: z.number().nullable(),
         left_eye: eyeSchema.nullable(),
         right_eye: eyeSchema.nullable(),
-      }),
+      })
     )
     .min(1, "At least one item is required"),
 });
