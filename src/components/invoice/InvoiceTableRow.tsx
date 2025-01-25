@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -89,15 +89,14 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
   const handlePrint = async () => {
     try {
       setIsPrinting(true);
-      const pdfBlob = await new Promise((resolve) => {
-        const doc = <InvoicePDF invoice={invoice} items={items} />;
-        resolve(doc);
-      });
+      const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
+      const url = URL.createObjectURL(blob);
       
-      const printWindow = window.open('', '_blank');
+      const printWindow = window.open(url, '_blank');
       if (printWindow) {
         printWindow.onload = () => {
           printWindow.print();
+          URL.revokeObjectURL(url);
         };
       } else {
         toast.error('Please allow pop-ups to print invoices');
