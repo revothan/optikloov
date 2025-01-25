@@ -5,6 +5,7 @@ export const eyeSchema = z.object({
   cyl: z.number().nullable(),
   axis: z.number().nullable(),
   add_power: z.number().nullable(),
+  mpd: z.number().nullable(),
 });
 
 export const schema = z.object({
