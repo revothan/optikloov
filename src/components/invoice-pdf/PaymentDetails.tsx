@@ -2,23 +2,25 @@ import { Text, View, StyleSheet } from "@react-pdf/renderer";
 import { formatPrice } from "@/lib/utils";
 
 const styles = StyleSheet.create({
-  totals: {
+  container: {
     marginTop: 10,
     padding: 5,
     border: '1 solid #999',
     fontSize: 8,
-  },
-  row: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginBottom: 2,
+    justifyContent: 'space-between',
+  },
+  leftSection: {
+    flexDirection: 'column',
+    gap: 2,
+  },
+  rightSection: {
+    flexDirection: 'column',
+    gap: 2,
+    alignItems: 'flex-end',
   },
   label: {
     color: '#666',
-  },
-  amountGroup: {
-    flexDirection: 'row',
-    gap: 20,
   },
   boldText: {
     fontFamily: 'Helvetica-Bold',
@@ -41,24 +43,17 @@ export function PaymentDetails({
   remainingBalance = 0,
 }: PaymentDetailsProps) {
   return (
-    <View style={styles.totals}>
-      <View style={styles.row}>
+    <View style={styles.container}>
+      {/* Left section for Total and Discount */}
+      <View style={styles.leftSection}>
         <Text style={styles.label}>Total: {formatPrice(totalAmount)}</Text>
-      </View>
-      
-      <View style={styles.row}>
         <Text style={styles.label}>Disc: {formatPrice(discountAmount)}</Text>
       </View>
-      
-      <View style={styles.row}>
-        <Text style={styles.boldText}>Grand Total: {formatPrice(grandTotal)}</Text>
-      </View>
-      
-      <View style={styles.row}>
-        <Text style={styles.label}>DP: {formatPrice(downPayment)}</Text>
-      </View>
 
-      <View style={styles.row}>
+      {/* Right section for Grand Total, DP, and Remaining Balance */}
+      <View style={styles.rightSection}>
+        <Text style={styles.boldText}>Grand Total: {formatPrice(grandTotal)}</Text>
+        <Text style={styles.label}>DP: {formatPrice(downPayment)}</Text>
         <Text style={styles.boldText}>
           Sisa Pembayaran: {remainingBalance === 0 ? "LUNAS" : formatPrice(remainingBalance)}
         </Text>
