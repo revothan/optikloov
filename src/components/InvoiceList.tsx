@@ -26,7 +26,7 @@ export default function InvoiceList() {
   // Subscribe to real-time changes
   useEffect(() => {
     const channel = supabase
-      .channel('schema-db-changes')
+      .channel('invoice-changes')
       .on(
         'postgres_changes',
         {
@@ -34,15 +34,22 @@ export default function InvoiceList() {
           schema: 'public',
           table: 'invoices'
         },
-        () => {
+        (payload) => {
+          console.log('Real-time change received:', payload);
           // Invalidate and refetch invoices when any change occurs
           queryClient.invalidateQueries({ queryKey: ["invoices"] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to invoice changes');
+        }
+      });
 
     // Cleanup subscription on component unmount
     return () => {
+      console.log('Cleaning up subscription');
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
@@ -53,7 +60,7 @@ export default function InvoiceList() {
       if (error) throw error;
       
       toast.success("Invoice deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      // No need to manually invalidate query here as the real-time subscription will handle it
     } catch (error) {
       console.error("Error deleting invoice:", error);
       toast.error("Failed to delete invoice");
