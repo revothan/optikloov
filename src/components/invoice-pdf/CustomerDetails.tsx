@@ -9,6 +9,8 @@ const styles = StyleSheet.create({
   },
   text: {
     textAlign: 'justify',
+    width: '100%',
+    marginBottom: 2,
   }
 });
 
