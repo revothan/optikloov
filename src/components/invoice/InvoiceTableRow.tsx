@@ -15,13 +15,15 @@ import {
   Mail, 
   MoreHorizontal,
   Trash,
-  Loader2
+  Loader2,
+  Check
 } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Extract PaymentStatus component
 const PaymentStatus = ({ remaining_balance }: { remaining_balance?: number }) => {
@@ -44,6 +46,7 @@ const ActionButtons = ({
   handlePrint, 
   handleShare,
   handleEmailShare,
+  handleMarkAsPaid,
   onDelete 
 }: {
   invoice: any;
@@ -52,6 +55,7 @@ const ActionButtons = ({
   handlePrint: () => void;
   handleShare: () => void;
   handleEmailShare: () => void;
+  handleMarkAsPaid: () => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }) => (
   <div className="flex items-center gap-2">
@@ -62,6 +66,12 @@ const ActionButtons = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {invoice.remaining_balance > 0 && (
+          <DropdownMenuItem onClick={handleMarkAsPaid}>
+            <Check className="mr-2 h-4 w-4" />
+            Mark as Paid
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={handlePrint} disabled={isPrinting}>
           {isPrinting ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -79,17 +89,15 @@ const ActionButtons = ({
           Email
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <PDFDownloadLink
-            document={<InvoicePDF invoice={invoice} items={items} />}
-            fileName={`invoice-${invoice.invoice_number}.pdf`}
-          >
-            {({ loading }) => (
-              <div className="flex items-center">
-                <Download className="mr-2 h-4 w-4" />
-                {loading ? "Loading..." : "Download PDF"}
-              </div>
-            )}
-          </PDFDownloadLink>
+          <div className="flex items-center">
+            <Download className="mr-2 h-4 w-4" />
+            <PDFDownloadLink
+              document={<InvoicePDF invoice={invoice} items={items} />}
+              fileName={`invoice-${invoice.invoice_number}.pdf`}
+            >
+              Download PDF
+            </PDFDownloadLink>
+          </div>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => onDelete(invoice.id)}
@@ -114,6 +122,7 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   onDelete: (id: string) => Promise<void>;
 }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [items, setItems] = useState<any[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -159,6 +168,27 @@ export function InvoiceTableRow({ invoice, onDelete }: {
 
     loadInvoiceItems();
   }, [invoice.id]);
+
+  const handleMarkAsPaid = async () => {
+    try {
+      const { error } = await supabase
+        .from('invoices')
+        .update({ 
+          remaining_balance: 0,
+          paid_amount: invoice.grand_total,
+          status: 'paid'
+        })
+        .eq('id', invoice.id);
+
+      if (error) throw error;
+
+      toast.success('Invoice marked as paid');
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      toast.error('Failed to update payment status');
+    }
+  };
 
   const handlePrint = async () => {
     try {
@@ -215,16 +245,14 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   return (
     <tr className="border-b">
       <td className="py-4 px-4">
-        <PDFDownloadLink
-          document={<InvoicePDF invoice={invoice} items={items} />}
-          fileName={`invoice-${invoice.invoice_number}.pdf`}
-        >
-          {({ loading }) => (
-            <Button variant="ghost" size="sm" disabled={loading || isLoading}>
-              {loading || isLoading ? "Loading..." : invoice.invoice_number}
-            </Button>
-          )}
-        </PDFDownloadLink>
+        <div className="flex items-center">
+          <PDFDownloadLink
+            document={<InvoicePDF invoice={invoice} items={items} />}
+            fileName={`invoice-${invoice.invoice_number}.pdf`}
+          >
+            {invoice.invoice_number}
+          </PDFDownloadLink>
+        </div>
       </td>
       <td className="py-4 px-4">
         {new Date(invoice.sale_date).toLocaleDateString('id-ID')}
@@ -241,6 +269,7 @@ export function InvoiceTableRow({ invoice, onDelete }: {
           handlePrint={handlePrint}
           handleShare={handleShare}
           handleEmailShare={handleEmailShare}
+          handleMarkAsPaid={handleMarkAsPaid}
           onDelete={onDelete}
         />
       </td>
