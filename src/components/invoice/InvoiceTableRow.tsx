@@ -24,8 +24,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { PaymentTypeDialog } from "./PaymentTypeDialog";
 
-// Extract PaymentStatus component
 const PaymentStatus = ({ remaining_balance }: { remaining_balance?: number }) => {
   if (!remaining_balance || remaining_balance <= 0) {
     return <span className="text-green-600 font-medium">LUNAS</span>;
@@ -38,7 +38,6 @@ const PaymentStatus = ({ remaining_balance }: { remaining_balance?: number }) =>
   );
 };
 
-// Extract ActionButtons component
 const ActionButtons = ({ 
   invoice, 
   items, 
@@ -127,6 +126,7 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPaymentTypeDialog, setShowPaymentTypeDialog] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -169,14 +169,15 @@ export function InvoiceTableRow({ invoice, onDelete }: {
     loadInvoiceItems();
   }, [invoice.id]);
 
-  const handleMarkAsPaid = async () => {
+  const handleMarkAsPaid = async (paymentType: string) => {
     try {
       const { error } = await supabase
         .from('invoices')
         .update({ 
           remaining_balance: 0,
           paid_amount: invoice.grand_total,
-          status: 'paid'
+          status: 'paid',
+          payment_type: paymentType
         })
         .eq('id', invoice.id);
 
@@ -262,17 +263,69 @@ export function InvoiceTableRow({ invoice, onDelete }: {
         <PaymentStatus remaining_balance={invoice.remaining_balance} />
       </td>
       <td className="py-4 px-4">
-        <ActionButtons
-          invoice={invoice}
-          items={items}
-          isPrinting={isPrinting}
-          handlePrint={handlePrint}
-          handleShare={handleShare}
-          handleEmailShare={handleEmailShare}
-          handleMarkAsPaid={handleMarkAsPaid}
-          onDelete={onDelete}
-        />
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {invoice.remaining_balance > 0 && (
+                <DropdownMenuItem onClick={() => setShowPaymentTypeDialog(true)}>
+                  <Check className="mr-2 h-4 w-4" />
+                  Mark as Paid
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={handlePrint} disabled={isPrinting}>
+                {isPrinting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Printer className="mr-2 h-4 w-4" />
+                )}
+                {isPrinting ? "Printing..." : "Print"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleShare}>
+                <Share2 className="mr-2 h-4 w-4" />
+                Share
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleEmailShare}>
+                <Mail className="mr-2 h-4 w-4" />
+                Email
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <div className="flex items-center">
+                  <Download className="mr-2 h-4 w-4" />
+                  <PDFDownloadLink
+                    document={<InvoicePDF invoice={invoice} items={items} />}
+                    fileName={`invoice-${invoice.invoice_number}.pdf`}
+                  >
+                    Download PDF
+                  </PDFDownloadLink>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDelete(invoice.id)}
+                className="text-red-600 focus:text-red-600"
+              >
+                <Trash className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          {invoice.customer_phone && (
+            <WhatsAppButton
+              phone={invoice.customer_phone}
+              name={invoice.customer_name}
+            />
+          )}
+        </div>
       </td>
+      <PaymentTypeDialog
+        open={showPaymentTypeDialog}
+        onOpenChange={setShowPaymentTypeDialog}
+        onConfirm={handleMarkAsPaid}
+      />
     </tr>
   );
 }
