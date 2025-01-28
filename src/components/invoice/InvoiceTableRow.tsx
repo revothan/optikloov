@@ -239,10 +239,11 @@ export function InvoiceTableRow({ invoice, onDelete }: {
 
       toast.success('Invoice marked as paid');
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      setShowPaymentTypeDialog(false); // Close the dialog after successful update
     } catch (error) {
       console.error('Error updating payment status:', error);
       toast.error('Failed to update payment status');
+    } finally {
+      setShowPaymentTypeDialog(false); // Always close the dialog
     }
   };
 
@@ -283,11 +284,13 @@ export function InvoiceTableRow({ invoice, onDelete }: {
           />
         </td>
       </tr>
-      <PaymentTypeDialog
-        open={showPaymentTypeDialog}
-        onOpenChange={setShowPaymentTypeDialog}
-        onConfirm={handleConfirmPayment}
-      />
+      {showPaymentTypeDialog && (
+        <PaymentTypeDialog
+          open={showPaymentTypeDialog}
+          onOpenChange={setShowPaymentTypeDialog}
+          onConfirm={handleConfirmPayment}
+        />
+      )}
     </>
   );
 }
