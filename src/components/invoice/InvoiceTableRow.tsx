@@ -53,9 +53,9 @@ const ActionButtons = ({
   invoice: any;
   items: any[];
   isPrinting: boolean;
-  handlePrint: () => void;
-  handleShare: () => void;
-  handleEmailShare: () => void;
+  handlePrint: () => Promise<void>;
+  handleShare: () => Promise<void>;
+  handleEmailShare: () => Promise<void>;
   handleMarkAsPaid: () => void;
   onDelete: (id: string) => Promise<void>;
 }) => (
@@ -170,6 +170,55 @@ export function InvoiceTableRow({ invoice, onDelete }: {
 
     loadInvoiceItems();
   }, [invoice.id]);
+
+  const handlePrint = async () => {
+    try {
+      setIsPrinting(true);
+      const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const printWindow = window.open(url);
+      printWindow?.print();
+    } catch (error) {
+      console.error('Error printing invoice:', error);
+      toast.error('Failed to print invoice');
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
+      const file = new File([blob], `invoice-${invoice.invoice_number}.pdf`, { type: 'application/pdf' });
+      
+      if (navigator.share) {
+        await navigator.share({
+          files: [file],
+          title: `Invoice ${invoice.invoice_number}`,
+        });
+      } else {
+        toast.error('Sharing is not supported on this device');
+      }
+    } catch (error) {
+      console.error('Error sharing invoice:', error);
+      toast.error('Failed to share invoice');
+    }
+  };
+
+  const handleEmailShare = async () => {
+    if (!invoice.customer_email) {
+      toast.error('No customer email provided');
+      return;
+    }
+
+    try {
+      // For now, just show a toast since email functionality needs to be implemented
+      toast.info('Email sharing will be implemented soon');
+    } catch (error) {
+      console.error('Error sending invoice email:', error);
+      toast.error('Failed to send invoice email');
+    }
+  };
 
   const handleMarkAsPaid = () => {
     setShowPaymentTypeDialog(true);
