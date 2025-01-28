@@ -26,7 +26,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { PaymentTypeDialog } from "./PaymentTypeDialog";
 
-// Extract PaymentStatus component
 const PaymentStatus = ({ remaining_balance }: { remaining_balance?: number }) => {
   if (!remaining_balance || remaining_balance <= 0) {
     return <span className="text-green-600 font-medium">LUNAS</span>;
@@ -39,7 +38,6 @@ const PaymentStatus = ({ remaining_balance }: { remaining_balance?: number }) =>
   );
 };
 
-// Extract ActionButtons component
 const ActionButtons = ({ 
   invoice, 
   items, 
@@ -48,7 +46,9 @@ const ActionButtons = ({
   handleShare,
   handleEmailShare,
   handleMarkAsPaid,
-  onDelete 
+  onDelete,
+  isDropdownOpen,
+  setIsDropdownOpen
 }: {
   invoice: any;
   items: any[];
@@ -58,9 +58,11 @@ const ActionButtons = ({
   handleEmailShare: () => Promise<void>;
   handleMarkAsPaid: () => void;
   onDelete: (id: string) => Promise<void>;
+  isDropdownOpen: boolean;
+  setIsDropdownOpen: (open: boolean) => void;
 }) => (
   <div className="flex items-center gap-2">
-    <DropdownMenu>
+    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon">
           <MoreHorizontal className="h-4 w-4" />
@@ -129,6 +131,7 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   const [isPrinting, setIsPrinting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showPaymentTypeDialog, setShowPaymentTypeDialog] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -170,6 +173,31 @@ export function InvoiceTableRow({ invoice, onDelete }: {
 
     loadInvoiceItems();
   }, [invoice.id]);
+
+  const handleConfirmPayment = async (paymentType: string) => {
+    try {
+      const { error } = await supabase
+        .from('invoices')
+        .update({ 
+          remaining_balance: 0,
+          paid_amount: invoice.grand_total,
+          status: 'paid',
+          payment_type: paymentType
+        })
+        .eq('id', invoice.id);
+
+      if (error) throw error;
+
+      toast.success('Invoice marked as paid');
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      setIsDropdownOpen(false); // Close dropdown menu
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      toast.error('Failed to update payment status');
+    } finally {
+      setShowPaymentTypeDialog(false); // Always close the dialog
+    }
+  };
 
   const handlePrint = async () => {
     try {
@@ -223,30 +251,6 @@ export function InvoiceTableRow({ invoice, onDelete }: {
     setShowPaymentTypeDialog(true);
   };
 
-  const handleConfirmPayment = async (paymentType: string) => {
-    try {
-      const { error } = await supabase
-        .from('invoices')
-        .update({ 
-          remaining_balance: 0,
-          paid_amount: invoice.grand_total,
-          status: 'paid',
-          payment_type: paymentType
-        })
-        .eq('id', invoice.id);
-
-      if (error) throw error;
-
-      toast.success('Invoice marked as paid');
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
-    } catch (error) {
-      console.error('Error updating payment status:', error);
-      toast.error('Failed to update payment status');
-    } finally {
-      setShowPaymentTypeDialog(false); // Always close the dialog
-    }
-  };
-
   if (!isAuthenticated) {
     return null;
   }
@@ -281,6 +285,8 @@ export function InvoiceTableRow({ invoice, onDelete }: {
             handleEmailShare={handleEmailShare}
             handleMarkAsPaid={handleMarkAsPaid}
             onDelete={onDelete}
+            isDropdownOpen={isDropdownOpen}
+            setIsDropdownOpen={setIsDropdownOpen}
           />
         </td>
       </tr>
