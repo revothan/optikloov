@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -132,6 +132,7 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   const [isLoading, setIsLoading] = useState(true);
   const [showPaymentTypeDialog, setShowPaymentTypeDialog] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -175,7 +176,11 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   }, [invoice.id]);
 
   const handleConfirmPayment = async (paymentType: string) => {
+    if (isProcessing) return;
+    
     try {
+      setIsProcessing(true);
+      
       const { error } = await supabase
         .from('invoices')
         .update({ 
@@ -188,14 +193,25 @@ export function InvoiceTableRow({ invoice, onDelete }: {
 
       if (error) throw error;
 
+      // Close all dialogs and reset states
+      setShowPaymentTypeDialog(false);
+      setIsDropdownOpen(false);
+      
+      // Store current tab selection
+      localStorage.setItem('selectedTab', 'invoices');
+      
+      // Invalidate queries and show success message
+      await queryClient.invalidateQueries({ queryKey: ['invoices'] });
       toast.success('Invoice marked as paid');
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      setIsDropdownOpen(false); // Close dropdown menu
+      
+      // Reload the page to refresh all states
+      window.location.reload();
+      
     } catch (error) {
       console.error('Error updating payment status:', error);
       toast.error('Failed to update payment status');
     } finally {
-      setShowPaymentTypeDialog(false); // Always close the dialog
+      setIsProcessing(false);
     }
   };
 
@@ -248,7 +264,9 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   };
 
   const handleMarkAsPaid = () => {
-    setShowPaymentTypeDialog(true);
+    if (!isProcessing) {
+      setShowPaymentTypeDialog(true);
+    }
   };
 
   if (!isAuthenticated) {
