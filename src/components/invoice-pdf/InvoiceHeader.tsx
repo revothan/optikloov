@@ -24,18 +24,15 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   rightInfoContainer: {
-    width: '100%',
     alignItems: 'flex-end',
   },
   rightInfoRow: {
-    width: '100%',
     flexDirection: 'row',
     marginBottom: 1,
     justifyContent: 'flex-end',
   },
   rightLabel: {
     fontSize: 8,
-    textAlign: 'right',
   },
   rightColon: {
     fontSize: 8,
@@ -45,7 +42,7 @@ const styles = StyleSheet.create({
   rightValue: {
     fontSize: 8,
     width: '100',
-    textAlign: 'right',
+    textAlign: 'left',
   },
   companyName: {
     fontSize: 12,

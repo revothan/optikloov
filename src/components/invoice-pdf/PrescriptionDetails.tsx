@@ -38,34 +38,6 @@ const styles = StyleSheet.create({
     fontSize: 7,
     padding: 1,
   },
-  eyeCell: {
-    flex: 1.5,
-    fontSize: 7,
-    padding: 1,
-  },
-  valueCell: {
-    flex: 1,
-    fontSize: 7,
-    padding: 1,
-    textAlign: 'center',
-  },
-  valueCellContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  signCell: {
-    width: 8,
-    fontSize: 7,
-    textAlign: 'right',
-  },
-  numberCell: {
-    flex: 1,
-    fontSize: 7,
-    textAlign: 'left',
-    paddingLeft: 1,
-  },
   commonDetails: {
     flexDirection: "row",
     marginTop: 3,
@@ -73,13 +45,6 @@ const styles = StyleSheet.create({
   },
   commonDetail: {
     flex: 1,
-  },
-  headerCell: {
-    flex: 1,
-    fontSize: 7,
-    padding: 1,
-    textAlign: 'center',
-    fontWeight: 'bold',
   },
 });
 
@@ -89,38 +54,24 @@ interface PrescriptionDetailsProps {
 
 export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
   const formatValue = (value: number | null, type: 'sph' | 'cyl' | 'add' | 'mpd') => {
-    if (value === null) return { sign: "", number: type === 'mpd' ? "0" : "0.00" };
+    if (value === null) return type === 'mpd' ? "0" : "0.00";
     
+    // For MPD, return whole number
     if (type === 'mpd') {
-      return {
-        sign: "",
-        number: Math.round(value).toString()
-      };
+      return Math.round(value).toString();
     }
     
     const absValue = Math.abs(value).toFixed(2);
     
     switch (type) {
       case 'sph':
-        return {
-          sign: value >= 0 ? "+" : "-",
-          number: absValue
-        };
+        return value >= 0 ? `+${absValue}` : `-${absValue}`;
       case 'cyl':
-        return {
-          sign: value === 0 ? "" : "-",
-          number: absValue
-        };
+        return value === 0 ? "0.00" : `-${absValue}`;
       case 'add':
-        return {
-          sign: value === 0 ? "" : "+",
-          number: absValue
-        };
+        return value === 0 ? "0.00" : `+${absValue}`;
       default:
-        return {
-          sign: "",
-          number: value.toFixed(2)
-        };
+        return value.toFixed(2);
     }
   };
 
@@ -133,16 +84,6 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
   
   if (lensItems.length === 0) return null;
 
-  const ValueCell = ({ value, type }: { value: number | null, type: 'sph' | 'cyl' | 'add' | 'mpd' }) => {
-    const formattedValue = formatValue(value, type);
-    return (
-      <View style={styles.valueCellContainer}>
-        <Text style={styles.signCell}>{formattedValue.sign}</Text>
-        <Text style={styles.numberCell}>{formattedValue.number}</Text>
-      </View>
-    );
-  };
-
   return (
     <View style={styles.prescription}>
       <Text style={styles.prescriptionTitle}>Prescription Details</Text>
@@ -153,30 +94,30 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
 
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
-              <Text style={styles.eyeCell}>Eye</Text>
-              <Text style={styles.headerCell}>SPH</Text>
-              <Text style={styles.headerCell}>CYL</Text>
-              <Text style={styles.headerCell}>AXIS</Text>
-              <Text style={styles.headerCell}>ADD</Text>
-              <Text style={styles.headerCell}>MPD</Text>
+              <Text style={styles.tableCell}>Eye</Text>
+              <Text style={styles.tableCell}>SPH</Text>
+              <Text style={styles.tableCell}>CYL</Text>
+              <Text style={styles.tableCell}>AXIS</Text>
+              <Text style={styles.tableCell}>ADD</Text>
+              <Text style={styles.tableCell}>MPD</Text>
             </View>
             
             <View style={styles.tableRow}>
-              <Text style={styles.eyeCell}>Right Eye (OD)</Text>
-              <ValueCell value={item.right_eye_sph} type="sph" />
-              <ValueCell value={item.right_eye_cyl} type="cyl" />
-              <Text style={styles.valueCell}>{item.right_eye_axis || "0"}</Text>
-              <ValueCell value={item.right_eye_add_power} type="add" />
-              <ValueCell value={item.right_eye_mpd} type="mpd" />
+              <Text style={styles.tableCell}>Right Eye (OD)</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_sph, 'sph')}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_cyl, 'cyl')}</Text>
+              <Text style={styles.tableCell}>{item.right_eye_axis || "0"}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_add_power, 'add')}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.right_eye_mpd, 'mpd')}</Text>
             </View>
             
             <View style={styles.tableRow}>
-              <Text style={styles.eyeCell}>Left Eye (OS)</Text>
-              <ValueCell value={item.left_eye_sph} type="sph" />
-              <ValueCell value={item.left_eye_cyl} type="cyl" />
-              <Text style={styles.valueCell}>{item.left_eye_axis || "0"}</Text>
-              <ValueCell value={item.left_eye_add_power} type="add" />
-              <ValueCell value={item.left_eye_mpd} type="mpd" />
+              <Text style={styles.tableCell}>Left Eye (OS)</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_sph, 'sph')}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_cyl, 'cyl')}</Text>
+              <Text style={styles.tableCell}>{item.left_eye_axis || "0"}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_add_power, 'add')}</Text>
+              <Text style={styles.tableCell}>{formatValue(item.left_eye_mpd, 'mpd')}</Text>
             </View>
           </View>
 
