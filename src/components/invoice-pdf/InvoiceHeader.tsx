@@ -23,14 +23,26 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     textAlign: 'right',
   },
-  dateText: {
-    fontSize: 8,
-    marginBottom: 2,
-    textAlign: 'right',
+  rightInfoContainer: {
+    alignItems: 'flex-end',
   },
-  inspectorText: {
-    fontSize: 7,
-    textAlign: 'right',
+  rightInfoRow: {
+    flexDirection: 'row',
+    marginBottom: 1,
+    justifyContent: 'flex-end',
+  },
+  rightLabel: {
+    fontSize: 8,
+  },
+  rightColon: {
+    fontSize: 8,
+    width: '8',
+    textAlign: 'center',
+  },
+  rightValue: {
+    fontSize: 8,
+    width: '100',
+    textAlign: 'left',
   },
   companyName: {
     fontSize: 12,
@@ -99,12 +111,18 @@ export function InvoiceHeader({ invoiceNumber, saleDate, acknowledgedBy }: Invoi
         <Text style={styles.invoiceText}>
           Invoice No. {invoiceNumber}
         </Text>
-        <Text style={styles.dateText}>
-          Date: {format(new Date(saleDate), "dd MMM yyyy")}
-        </Text>
-        <Text style={styles.inspectorText}>
-          Pemeriksa: {acknowledgedBy || '_________________'}
-        </Text>
+        <View style={styles.rightInfoContainer}>
+          <View style={styles.rightInfoRow}>
+            <Text style={styles.rightLabel}>Date</Text>
+            <Text style={styles.rightColon}>:</Text>
+            <Text style={styles.rightValue}>{format(new Date(saleDate), "dd MMM yyyy")}</Text>
+          </View>
+          <View style={styles.rightInfoRow}>
+            <Text style={styles.rightLabel}>Pemeriksa</Text>
+            <Text style={styles.rightColon}>:</Text>
+            <Text style={styles.rightValue}>{acknowledgedBy || '_________________'}</Text>
+          </View>
+        </View>
       </View>
     </View>
   );
