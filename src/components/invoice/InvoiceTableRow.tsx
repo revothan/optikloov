@@ -192,10 +192,18 @@ export function InvoiceTableRow({ invoice, onDelete }: {
       setShowPaymentTypeDialog(false);
       setIsDropdownOpen(false);
 
-      // Invalidate and refetch the invoices query
+      // Invalidate queries and reload window
       await queryClient.invalidateQueries({ queryKey: ['invoices'] });
       
       toast.success('Invoice marked as paid');
+
+      // Reload the window while preserving the current tab
+      const currentHash = window.location.hash;
+      window.location.reload();
+      if (currentHash) {
+        window.location.hash = currentHash;
+      }
+
     } catch (error) {
       console.error('Error updating payment status:', error);
       toast.error('Failed to update payment status');
