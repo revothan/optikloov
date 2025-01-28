@@ -7,7 +7,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Package, DollarSign, Box, Info } from "lucide-react";
 import * as z from "zod";
 
-// UI Components
 import {
   Form,
   FormField,
@@ -23,16 +22,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert } from "@/components/ui/alert";
 
-// Custom Components
 import { BasicInfoTab } from "./product-form/BasicInfoTab";
 import { PricingTab } from "./product-form/PricingTab";
 import { InventoryTab } from "./product-form/InventoryTab";
-
-// Types and Utils
 import { Tables } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 
-// Types
 type ProductType = Tables<"products">;
 
 interface ProductFormProps {
@@ -42,12 +37,6 @@ interface ProductFormProps {
   onError?: (error: Error) => void;
 }
 
-// Constants
-const STORAGE_BUCKET = "products";
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-
-// Base Schema
 const baseSchema = z.object({
   name: z.string().min(1, "Name is required"),
   alternative_name: z.string().optional(),
@@ -87,7 +76,7 @@ const baseSchema = z.object({
   photo_1: z.string().nullable().optional(),
   photo_2: z.string().nullable().optional(),
   photo_3: z.string().nullable().optional(),
-  branch: z.string().default("Gading Serpong"), // Add branch field to schema
+  branch: z.string().default("Gading Serpong"),
 });
 
 type FormData = z.infer<typeof baseSchema>;
@@ -144,7 +133,7 @@ export function ProductForm({
       photo_1: product?.photo_1 || "",
       photo_2: product?.photo_2 || "",
       photo_3: product?.photo_3 || "",
-      branch: product?.branch || "Gading Serpong", // Add default branch
+      branch: product?.branch || "Gading Serpong",
     },
   });
 
@@ -177,10 +166,8 @@ export function ProductForm({
         photo_1: values.photo_1 || null,
         photo_2: values.photo_2 || null,
         photo_3: values.photo_3 || null,
-        branch: values.branch, // Include branch in the data being sent
+        branch: values.branch,
       };
-
-      console.log("Updating product with data:", productData);
 
       if (mode === "edit" && product?.id) {
         const { error: updateError } = await supabase
@@ -191,10 +178,7 @@ export function ProductForm({
           })
           .eq("id", product.id);
 
-        if (updateError) {
-          console.error("Update error:", updateError);
-          throw updateError;
-        }
+        if (updateError) throw updateError;
         toast.success("Product updated successfully");
       } else {
         const { error: insertError } = await supabase.from("products").insert({
