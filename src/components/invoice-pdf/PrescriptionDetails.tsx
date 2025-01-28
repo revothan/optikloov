@@ -41,7 +41,8 @@ const styles = StyleSheet.create({
   valueCellContainer: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'center', // Changed to center
+    paddingHorizontal: 4, // Added padding
   },
   signCell: {
     width: 8,
@@ -52,6 +53,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 7,
     textAlign: 'left',
+    maxWidth: '80%', // Added maxWidth to prevent overflow
   },
   commonDetails: {
     flexDirection: "row",
@@ -60,6 +62,12 @@ const styles = StyleSheet.create({
   },
   commonDetail: {
     flex: 1,
+  },
+  headerCell: { // Added new style for header cells
+    flex: 1,
+    fontSize: 7,
+    padding: 1,
+    textAlign: 'center',
   },
 });
 
@@ -135,18 +143,18 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <Text style={styles.tableCell}>Eye</Text>
-              <Text style={styles.tableCell}>SPH</Text>
-              <Text style={styles.tableCell}>CYL</Text>
-              <Text style={styles.tableCell}>AXIS</Text>
-              <Text style={styles.tableCell}>ADD</Text>
-              <Text style={styles.tableCell}>MPD</Text>
+              <Text style={styles.headerCell}>SPH</Text>
+              <Text style={styles.headerCell}>CYL</Text>
+              <Text style={styles.headerCell}>AXIS</Text>
+              <Text style={styles.headerCell}>ADD</Text>
+              <Text style={styles.headerCell}>MPD</Text>
             </View>
             
             <View style={styles.tableRow}>
               <Text style={styles.tableCell}>Right Eye (OD)</Text>
               <ValueCell value={item.right_eye_sph} type="sph" />
               <ValueCell value={item.right_eye_cyl} type="cyl" />
-              <Text style={styles.tableCell}>{item.right_eye_axis || "0"}</Text>
+              <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.right_eye_axis || "0"}</Text>
               <ValueCell value={item.right_eye_add_power} type="add" />
               <ValueCell value={item.right_eye_mpd} type="mpd" />
             </View>
@@ -155,7 +163,7 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
               <Text style={styles.tableCell}>Left Eye (OS)</Text>
               <ValueCell value={item.left_eye_sph} type="sph" />
               <ValueCell value={item.left_eye_cyl} type="cyl" />
-              <Text style={styles.tableCell}>{item.left_eye_axis || "0"}</Text>
+              <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.left_eye_axis || "0"}</Text>
               <ValueCell value={item.left_eye_add_power} type="add" />
               <ValueCell value={item.left_eye_mpd} type="mpd" />
             </View>
