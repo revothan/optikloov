@@ -19,6 +19,35 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
   const session = useSession();
   const queryClient = useQueryClient();
 
+  const updateProductStock = async (productId: string, quantity: number) => {
+    // First, get the product details
+    const { data: product, error: productError } = await supabase
+      .from("products")
+      .select("track_inventory, stock_qty")
+      .eq("id", productId)
+      .single();
+
+    if (productError) {
+      console.error("Error fetching product:", productError);
+      return;
+    }
+
+    // Only update stock if inventory tracking is enabled and stock_qty exists
+    if (product?.track_inventory && product.stock_qty !== null) {
+      const newStock = Math.max(0, (product.stock_qty || 0) - quantity);
+      
+      const { error: updateError } = await supabase
+        .from("products")
+        .update({ stock_qty: newStock })
+        .eq("id", productId);
+
+      if (updateError) {
+        console.error("Error updating product stock:", updateError);
+        toast.error(`Failed to update stock for product ID ${productId}`);
+      }
+    }
+  };
+
   const submitInvoice = async (values: FormData, totals: Totals) => {
     console.log("Form submission started with values:", values);
     console.log("Current session:", session);
@@ -104,10 +133,16 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         return false;
       }
 
+      // Update product stock quantities
+      for (const item of values.items) {
+        await updateProductStock(item.product_id, item.quantity);
+      }
+
       console.log("Invoice items created successfully");
       toast.success("Invoice created successfully");
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       queryClient.invalidateQueries({ queryKey: ["latest-invoice-number"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] }); // Invalidate products query to refresh stock quantities
       
       if (onSuccess) {
         onSuccess();
