@@ -188,14 +188,17 @@ export function InvoiceTableRow({ invoice, onDelete }: {
 
       if (error) throw error;
 
+      // Close dialogs first
+      setShowPaymentTypeDialog(false);
+      setIsDropdownOpen(false);
+
+      // Invalidate and refetch the invoices query
+      await queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      
       toast.success('Invoice marked as paid');
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      setIsDropdownOpen(false); // Close dropdown menu
     } catch (error) {
       console.error('Error updating payment status:', error);
       toast.error('Failed to update payment status');
-    } finally {
-      setShowPaymentTypeDialog(false); // Always close the dialog
     }
   };
 
