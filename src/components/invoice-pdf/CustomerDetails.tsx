@@ -7,10 +7,18 @@ const styles = StyleSheet.create({
     border: '1 solid #999',
     fontSize: 7,
   },
-  text: {
-    textAlign: 'justify',
-    width: '100%',
+  row: {
+    flexDirection: 'row',
     marginBottom: 1,
+  },
+  label: {
+    width: '60',
+  },
+  colon: {
+    width: '10',
+  },
+  value: {
+    flex: 1,
   }
 });
 
@@ -25,11 +33,31 @@ interface CustomerDetailsProps {
 export function CustomerDetails({ name, address, phone, paymentType, email }: CustomerDetailsProps) {
   return (
     <View style={styles.details}>
-      <Text style={styles.text}>Customer: {name}</Text>
-      <Text style={styles.text}>Email: {email || '-'}</Text>
-      <Text style={styles.text}>Address: {address || '-'}</Text>
-      <Text style={styles.text}>Phone: {phone || '-'}</Text>
-      <Text style={styles.text}>Payment Type: {paymentType || '-'}</Text>
+      <View style={styles.row}>
+        <Text style={styles.label}>Customer</Text>
+        <Text style={styles.colon}>:</Text>
+        <Text style={styles.value}>{name}</Text>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.label}>Email</Text>
+        <Text style={styles.colon}>:</Text>
+        <Text style={styles.value}>{email || '-'}</Text>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.label}>Address</Text>
+        <Text style={styles.colon}>:</Text>
+        <Text style={styles.value}>{address || '-'}</Text>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.label}>Phone</Text>
+        <Text style={styles.colon}>:</Text>
+        <Text style={styles.value}>{phone || '-'}</Text>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.label}>Payment Type</Text>
+        <Text style={styles.colon}>:</Text>
+        <Text style={styles.value}>{paymentType || '-'}</Text>
+      </View>
     </View>
   );
 }
