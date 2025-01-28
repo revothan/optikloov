@@ -212,7 +212,6 @@ export function InvoiceTableRow({ invoice, onDelete }: {
     }
 
     try {
-      // For now, just show a toast since email functionality needs to be implemented
       toast.info('Email sharing will be implemented soon');
     } catch (error) {
       console.error('Error sending invoice email:', error);
@@ -240,6 +239,7 @@ export function InvoiceTableRow({ invoice, onDelete }: {
 
       toast.success('Invoice marked as paid');
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      setShowPaymentTypeDialog(false); // Close the dialog after successful update
     } catch (error) {
       console.error('Error updating payment status:', error);
       toast.error('Failed to update payment status');
