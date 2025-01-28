@@ -197,18 +197,29 @@ export function InvoiceTableRow({ invoice, onDelete }: {
       
       toast.success('Invoice marked as paid');
 
-      // Reload the window while preserving the current tab
-      const currentHash = window.location.hash;
+      // Store the current tab selection
+      localStorage.setItem('selectedTab', 'invoices');
+      
+      // Reload the window
       window.location.reload();
-      if (currentHash) {
-        window.location.hash = currentHash;
-      }
 
     } catch (error) {
       console.error('Error updating payment status:', error);
       toast.error('Failed to update payment status');
     }
   };
+
+  // Add effect to restore tab selection after reload
+  useEffect(() => {
+    const selectedTab = localStorage.getItem('selectedTab');
+    if (selectedTab === 'invoices') {
+      const tabsElement = document.querySelector('[value="invoices"]') as HTMLElement;
+      if (tabsElement) {
+        tabsElement.click();
+      }
+      localStorage.removeItem('selectedTab');
+    }
+  }, []);
 
   const handlePrint = async () => {
     try {
