@@ -23,13 +23,28 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     textAlign: 'right',
   },
-  dateText: {
+  rightInfoContainer: {
+    width: '100%',
+    alignItems: 'flex-end',
+  },
+  rightInfoRow: {
+    width: '100%',
+    flexDirection: 'row',
+    marginBottom: 1,
+    justifyContent: 'flex-end',
+  },
+  rightLabel: {
     fontSize: 8,
-    marginBottom: 2,
     textAlign: 'right',
   },
-  inspectorText: {
-    fontSize: 7,
+  rightColon: {
+    fontSize: 8,
+    width: '8',
+    textAlign: 'center',
+  },
+  rightValue: {
+    fontSize: 8,
+    width: '100',
     textAlign: 'right',
   },
   companyName: {
@@ -37,10 +52,22 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     fontWeight: 'bold',
   },
-  storeInfo: {
+  storeInfoContainer: {
     fontSize: 6,
+  },
+  infoRow: {
+    flexDirection: 'row',
     marginBottom: 1,
   },
+  label: {
+    width: '35',
+  },
+  colon: {
+    width: '8',
+  },
+  value: {
+    flex: 1,
+  }
 });
 
 interface InvoiceHeaderProps {
@@ -54,27 +81,51 @@ export function InvoiceHeader({ invoiceNumber, saleDate, acknowledgedBy }: Invoi
     <View style={styles.header}>
       <View style={styles.leftSection}>
         <Text style={styles.companyName}>OPTIK LOOV</Text>
-        <Text style={styles.storeInfo}>
-          Alamat: Ruko Downtown Drive, kecamatan No.016 Blok DDBLV, Medang,
-        </Text>
-        <Text style={styles.storeInfo}>
-          Kec. Pagedangan, Kabupaten Tangerang, Banten 15334
-        </Text>
-        <Text style={styles.storeInfo}>Telp/WA: 0812 8333 5568</Text>
-        <Text style={styles.storeInfo}>Website: optikloov.com</Text>
-        <Text style={styles.storeInfo}>Email: optik.loov@gmail.com</Text>
+        <View style={styles.storeInfoContainer}>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Alamat</Text>
+            <Text style={styles.colon}>:</Text>
+            <Text style={styles.value}>Ruko Downtown Drive, kecamatan No.016 Blok DDBLV, Medang,</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}></Text>
+            <Text style={styles.colon}></Text>
+            <Text style={styles.value}>Kec. Pagedangan, Kabupaten Tangerang, Banten 15334</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Telp/WA</Text>
+            <Text style={styles.colon}>:</Text>
+            <Text style={styles.value}>0812 8333 5568</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Website</Text>
+            <Text style={styles.colon}>:</Text>
+            <Text style={styles.value}>optikloov.com</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Email</Text>
+            <Text style={styles.colon}>:</Text>
+            <Text style={styles.value}>optik.loov@gmail.com</Text>
+          </View>
+        </View>
       </View>
       
       <View style={styles.rightSection}>
         <Text style={styles.invoiceText}>
           Invoice No. {invoiceNumber}
         </Text>
-        <Text style={styles.dateText}>
-          Date: {format(new Date(saleDate), "dd MMM yyyy")}
-        </Text>
-        <Text style={styles.inspectorText}>
-          Pemeriksa: {acknowledgedBy || '_________________'}
-        </Text>
+        <View style={styles.rightInfoContainer}>
+          <View style={styles.rightInfoRow}>
+            <Text style={styles.rightLabel}>Date</Text>
+            <Text style={styles.rightColon}>:</Text>
+            <Text style={styles.rightValue}>{format(new Date(saleDate), "dd MMM yyyy")}</Text>
+          </View>
+          <View style={styles.rightInfoRow}>
+            <Text style={styles.rightLabel}>Pemeriksa</Text>
+            <Text style={styles.rightColon}>:</Text>
+            <Text style={styles.rightValue}>{acknowledgedBy || '_________________'}</Text>
+          </View>
+        </View>
       </View>
     </View>
   );

@@ -340,6 +340,7 @@ export type Database = {
           alternative_name: string | null
           alternative_variant_names: string | null
           barcode: string | null
+          branch: string | null
           brand: string | null
           buy_price: number | null
           category: string
@@ -391,6 +392,7 @@ export type Database = {
           alternative_name?: string | null
           alternative_variant_names?: string | null
           barcode?: string | null
+          branch?: string | null
           brand?: string | null
           buy_price?: number | null
           category?: string
@@ -442,6 +444,7 @@ export type Database = {
           alternative_name?: string | null
           alternative_variant_names?: string | null
           barcode?: string | null
+          branch?: string | null
           brand?: string | null
           buy_price?: number | null
           category?: string

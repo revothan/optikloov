@@ -7,19 +7,27 @@ const styles = StyleSheet.create({
     padding: 4,
     fontSize: 7,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  leftSection: {
-    flexDirection: 'column',
-    gap: 1,
+    justifyContent: 'flex-end',
   },
   rightSection: {
     flexDirection: 'column',
     gap: 1,
     alignItems: 'flex-end',
+    width: '30%',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    width: '100%',
   },
   label: {
     color: '#666',
+    width: 80,
+    textAlign: 'right',
+  },
+  value: {
+    width: 90,
+    textAlign: 'right',
   },
   boldText: {
     fontFamily: 'Helvetica-Bold',
@@ -43,19 +51,29 @@ export function PaymentDetails({
 }: PaymentDetailsProps) {
   return (
     <View style={styles.container}>
-      {/* Left section for Total and Discount */}
-      <View style={styles.leftSection}>
-        <Text style={styles.label}>Total: {formatPrice(totalAmount)}</Text>
-        <Text style={styles.label}>Disc: {formatPrice(discountAmount)}</Text>
-      </View>
-
-      {/* Right section for Grand Total, DP, and Remaining Balance */}
       <View style={styles.rightSection}>
-        <Text style={styles.boldText}>Grand Total: {formatPrice(grandTotal)}</Text>
-        <Text style={styles.label}>DP: {formatPrice(downPayment)}</Text>
-        <Text style={styles.boldText}>
-          Sisa Pembayaran: {remainingBalance === 0 ? "LUNAS" : formatPrice(remainingBalance)}
-        </Text>
+        <View style={styles.row}>
+          <Text style={styles.label}>Total :</Text>
+          <Text style={styles.value}>{formatPrice(totalAmount)}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.label}>Disc :</Text>
+          <Text style={styles.value}>{formatPrice(discountAmount)}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={[styles.label, styles.boldText]}>Grand Total :</Text>
+          <Text style={[styles.value, styles.boldText]}>{formatPrice(grandTotal)}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.label}>DP :</Text>
+          <Text style={styles.value}>{formatPrice(downPayment)}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={[styles.label, styles.boldText]}>Sisa Pembayaran :</Text>
+          <Text style={[styles.value, styles.boldText]}>
+            {remainingBalance === 0 ? "LUNAS" : formatPrice(remainingBalance)}
+          </Text>
+        </View>
       </View>
     </View>
   );

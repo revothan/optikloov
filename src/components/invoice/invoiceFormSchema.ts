@@ -37,3 +37,5 @@ export const schema = z.object({
     )
     .min(1, "At least one item is required"),
 });
+
+export type FormData = z.infer<typeof schema>;

@@ -10,11 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { LogoutButton } from "@/components/LogoutButton";
 import InvoiceList from "@/components/InvoiceList";
 import { InvoiceDialog } from "@/components/InvoiceDialog";
+import { SalesReport } from "@/components/SalesReport";
 import {
   Loader2,
   Package,
   DollarSign,
-  Users,
   Search,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -117,6 +117,7 @@ export default function Admin() {
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="customers">Customers</TabsTrigger>
             <TabsTrigger value="invoices">Invoices</TabsTrigger>
+            <TabsTrigger value="sales">Sales</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
@@ -159,6 +160,13 @@ export default function Admin() {
                 <InvoiceDialog />
               </div>
               <InvoiceList />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="sales">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-semibold mb-4">Sales Report</h2>
+              <SalesReport />
             </div>
           </TabsContent>
         </Tabs>
