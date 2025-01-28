@@ -15,8 +15,19 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     width: '30%',
   },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    width: '100%',
+  },
   label: {
     color: '#666',
+    width: 80,
+    textAlign: 'right',
+  },
+  value: {
+    width: 90,
+    textAlign: 'right',
   },
   boldText: {
     fontFamily: 'Helvetica-Bold',
@@ -40,15 +51,29 @@ export function PaymentDetails({
 }: PaymentDetailsProps) {
   return (
     <View style={styles.container}>
-      {/* Right section for all payment details */}
       <View style={styles.rightSection}>
-        <Text style={styles.label}>Total: {formatPrice(totalAmount)}</Text>
-        <Text style={styles.label}>Disc: {formatPrice(discountAmount)}</Text>
-        <Text style={styles.boldText}>Grand Total: {formatPrice(grandTotal)}</Text>
-        <Text style={styles.label}>DP: {formatPrice(downPayment)}</Text>
-        <Text style={styles.boldText}>
-          Sisa Pembayaran: {remainingBalance === 0 ? "LUNAS" : formatPrice(remainingBalance)}
-        </Text>
+        <View style={styles.row}>
+          <Text style={styles.label}>Total :</Text>
+          <Text style={styles.value}>{formatPrice(totalAmount)}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.label}>Disc :</Text>
+          <Text style={styles.value}>{formatPrice(discountAmount)}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={[styles.label, styles.boldText]}>Grand Total :</Text>
+          <Text style={[styles.value, styles.boldText]}>{formatPrice(grandTotal)}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.label}>DP :</Text>
+          <Text style={styles.value}>{formatPrice(downPayment)}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={[styles.label, styles.boldText]}>Sisa Pembayaran :</Text>
+          <Text style={[styles.value, styles.boldText]}>
+            {remainingBalance === 0 ? "LUNAS" : formatPrice(remainingBalance)}
+          </Text>
+        </View>
       </View>
     </View>
   );
