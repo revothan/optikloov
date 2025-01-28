@@ -24,6 +24,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { PaymentTypeDialog } from "./PaymentTypeDialog";
 
 // Extract PaymentStatus component
 const PaymentStatus = ({ remaining_balance }: { remaining_balance?: number }) => {
@@ -55,7 +56,7 @@ const ActionButtons = ({
   handlePrint: () => void;
   handleShare: () => void;
   handleEmailShare: () => void;
-  handleMarkAsPaid: () => Promise<void>;
+  handleMarkAsPaid: () => void;
   onDelete: (id: string) => Promise<void>;
 }) => (
   <div className="flex items-center gap-2">
@@ -127,6 +128,7 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPaymentTypeDialog, setShowPaymentTypeDialog] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -169,14 +171,19 @@ export function InvoiceTableRow({ invoice, onDelete }: {
     loadInvoiceItems();
   }, [invoice.id]);
 
-  const handleMarkAsPaid = async () => {
+  const handleMarkAsPaid = () => {
+    setShowPaymentTypeDialog(true);
+  };
+
+  const handleConfirmPayment = async (paymentType: string) => {
     try {
       const { error } = await supabase
         .from('invoices')
         .update({ 
           remaining_balance: 0,
           paid_amount: invoice.grand_total,
-          status: 'paid'
+          status: 'paid',
+          payment_type: paymentType
         })
         .eq('id', invoice.id);
 
@@ -190,89 +197,48 @@ export function InvoiceTableRow({ invoice, onDelete }: {
     }
   };
 
-  const handlePrint = async () => {
-    try {
-      setIsPrinting(true);
-      const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
-      const url = URL.createObjectURL(blob);
-      
-      const printWindow = window.open(url, '_blank');
-      if (printWindow) {
-        printWindow.onload = () => {
-          printWindow.print();
-          URL.revokeObjectURL(url);
-        };
-      } else {
-        toast.error('Please allow pop-ups to print invoices');
-      }
-    } catch (error) {
-      console.error('Print error:', error);
-      toast.error('Failed to print invoice');
-    } finally {
-      setIsPrinting(false);
-    }
-  };
-
-  const handleShare = async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `Invoice #${invoice.invoice_number}`,
-          text: `Invoice for ${invoice.customer_name}`,
-          url: window.location.href,
-        });
-      } else {
-        toast.error("Sharing is not supported on this device");
-      }
-    } catch (error) {
-      console.error("Error sharing:", error);
-      toast.error("Failed to share invoice");
-    }
-  };
-
-  const handleEmailShare = () => {
-    const subject = encodeURIComponent(`Invoice #${invoice.invoice_number}`);
-    const body = encodeURIComponent(
-      `Invoice details for ${invoice.customer_name}\nAmount: ${formatPrice(invoice.grand_total)}`
-    );
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-  };
-
   if (!isAuthenticated) {
     return null;
   }
 
   return (
-    <tr className="border-b">
-      <td className="py-4 px-4">
-        <div className="flex items-center">
-          <PDFDownloadLink
-            document={<InvoicePDF invoice={invoice} items={items} />}
-            fileName={`invoice-${invoice.invoice_number}.pdf`}
-          >
-            {invoice.invoice_number}
-          </PDFDownloadLink>
-        </div>
-      </td>
-      <td className="py-4 px-4">
-        {new Date(invoice.sale_date).toLocaleDateString('id-ID')}
-      </td>
-      <td className="py-4 px-4">{invoice.customer_name}</td>
-      <td className="py-4 px-4">
-        <PaymentStatus remaining_balance={invoice.remaining_balance} />
-      </td>
-      <td className="py-4 px-4">
-        <ActionButtons
-          invoice={invoice}
-          items={items}
-          isPrinting={isPrinting}
-          handlePrint={handlePrint}
-          handleShare={handleShare}
-          handleEmailShare={handleEmailShare}
-          handleMarkAsPaid={handleMarkAsPaid}
-          onDelete={onDelete}
-        />
-      </td>
-    </tr>
+    <>
+      <tr className="border-b">
+        <td className="py-4 px-4">
+          <div className="flex items-center">
+            <PDFDownloadLink
+              document={<InvoicePDF invoice={invoice} items={items} />}
+              fileName={`invoice-${invoice.invoice_number}.pdf`}
+            >
+              {invoice.invoice_number}
+            </PDFDownloadLink>
+          </div>
+        </td>
+        <td className="py-4 px-4">
+          {new Date(invoice.sale_date).toLocaleDateString('id-ID')}
+        </td>
+        <td className="py-4 px-4">{invoice.customer_name}</td>
+        <td className="py-4 px-4">
+          <PaymentStatus remaining_balance={invoice.remaining_balance} />
+        </td>
+        <td className="py-4 px-4">
+          <ActionButtons
+            invoice={invoice}
+            items={items}
+            isPrinting={isPrinting}
+            handlePrint={handlePrint}
+            handleShare={handleShare}
+            handleEmailShare={handleEmailShare}
+            handleMarkAsPaid={handleMarkAsPaid}
+            onDelete={onDelete}
+          />
+        </td>
+      </tr>
+      <PaymentTypeDialog
+        open={showPaymentTypeDialog}
+        onOpenChange={setShowPaymentTypeDialog}
+        onConfirm={handleConfirmPayment}
+      />
+    </>
   );
 }

@@ -49,6 +49,8 @@ export function SalesReport() {
             <TableHead>Sale Date</TableHead>
             <TableHead>Items</TableHead>
             <TableHead className="text-right">Amount</TableHead>
+            <TableHead className="text-right">Paid Amount</TableHead>
+            <TableHead>Payment Type</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -67,6 +69,10 @@ export function SalesReport() {
               <TableCell className="text-right">
                 {formatPrice(sale.grand_total)}
               </TableCell>
+              <TableCell className="text-right">
+                {formatPrice(sale.paid_amount || sale.down_payment || 0)}
+              </TableCell>
+              <TableCell>{sale.payment_type || "-"}</TableCell>
             </TableRow>
           ))}
         </TableBody>
