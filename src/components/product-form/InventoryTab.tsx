@@ -9,14 +9,52 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MapPin } from "lucide-react";
 
 interface InventoryTabProps {
   form: UseFormReturn<any>;
 }
 
+const BRANCHES = ["Gading Serpong", "Kelapa Dua"] as const;
+
 export function InventoryTab({ form }: InventoryTabProps) {
   return (
     <div className="space-y-6">
+      <FormField
+        control={form.control}
+        name="branch"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Branch Location</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value || "Gading Serpong"}>
+              <FormControl>
+                <SelectTrigger>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    <SelectValue placeholder="Select branch" />
+                  </div>
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {BRANCHES.map((branch) => (
+                  <SelectItem key={branch} value={branch}>
+                    {branch}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       <FormField
         control={form.control}
         name="track_inventory"
