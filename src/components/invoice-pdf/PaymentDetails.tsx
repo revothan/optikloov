@@ -7,16 +7,13 @@ const styles = StyleSheet.create({
     padding: 4,
     fontSize: 7,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  leftSection: {
-    flexDirection: 'column',
-    gap: 1,
+    justifyContent: 'flex-end',
   },
   rightSection: {
     flexDirection: 'column',
     gap: 1,
     alignItems: 'flex-end',
+    width: '30%',
   },
   label: {
     color: '#666',
@@ -43,14 +40,10 @@ export function PaymentDetails({
 }: PaymentDetailsProps) {
   return (
     <View style={styles.container}>
-      {/* Left section for Total and Discount */}
-      <View style={styles.leftSection}>
+      {/* Right section for all payment details */}
+      <View style={styles.rightSection}>
         <Text style={styles.label}>Total: {formatPrice(totalAmount)}</Text>
         <Text style={styles.label}>Disc: {formatPrice(discountAmount)}</Text>
-      </View>
-
-      {/* Right section for Grand Total, DP, and Remaining Balance */}
-      <View style={styles.rightSection}>
         <Text style={styles.boldText}>Grand Total: {formatPrice(grandTotal)}</Text>
         <Text style={styles.label}>DP: {formatPrice(downPayment)}</Text>
         <Text style={styles.boldText}>
