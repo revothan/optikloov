@@ -188,38 +188,16 @@ export function InvoiceTableRow({ invoice, onDelete }: {
 
       if (error) throw error;
 
-      // Close dialogs first
-      setShowPaymentTypeDialog(false);
-      setIsDropdownOpen(false);
-
-      // Invalidate queries and reload window
-      await queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      
       toast.success('Invoice marked as paid');
-
-      // Store the current tab selection
-      localStorage.setItem('selectedTab', 'invoices');
-      
-      // Reload the window
-      window.location.reload();
-
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      setIsDropdownOpen(false); // Close dropdown menu
     } catch (error) {
       console.error('Error updating payment status:', error);
       toast.error('Failed to update payment status');
+    } finally {
+      setShowPaymentTypeDialog(false); // Always close the dialog
     }
   };
-
-  // Add effect to restore tab selection after reload
-  useEffect(() => {
-    const selectedTab = localStorage.getItem('selectedTab');
-    if (selectedTab === 'invoices') {
-      const tabsElement = document.querySelector('[value="invoices"]') as HTMLElement;
-      if (tabsElement) {
-        tabsElement.click();
-      }
-      localStorage.removeItem('selectedTab');
-    }
-  }, []);
 
   const handlePrint = async () => {
     try {
