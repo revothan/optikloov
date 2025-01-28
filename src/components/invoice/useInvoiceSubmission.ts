@@ -1,11 +1,8 @@
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { z } from "zod";
-import { schema } from "./invoiceFormSchema";
-
-type FormData = z.infer<typeof schema>;
+import { toast } from "sonner";
+import { FormData } from "./invoiceFormSchema";
 
 interface Totals {
   totalAmount: number;
@@ -20,7 +17,6 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
 
   const updateProductStock = async (productId: string, quantity: number) => {
-    // First, get the product details
     const { data: product, error: productError } = await supabase
       .from("products")
       .select("track_inventory, stock_qty")
@@ -32,7 +28,6 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
       return;
     }
 
-    // Only update stock if inventory tracking is enabled and stock_qty exists
     if (product?.track_inventory && product.stock_qty !== null) {
       const newStock = Math.max(0, (product.stock_qty || 0) - quantity);
       
@@ -49,22 +44,12 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
   };
 
   const submitInvoice = async (values: FormData, totals: Totals) => {
-    console.log("Form submission started with values:", values);
-    console.log("Current session:", session);
-    
     if (!session?.user?.id) {
-      console.error("No user session found");
       toast.error("You must be logged in to create an invoice");
       return false;
     }
 
     try {
-      console.log("Creating invoice with data:", {
-        ...values,
-        user_id: session.user.id,
-        totals,
-      });
-
       const { data: invoice, error: invoiceError } = await supabase
         .from("invoices")
         .insert({
@@ -79,12 +64,12 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           down_payment: parseFloat(values.down_payment || "0"),
           acknowledged_by: values.acknowledged_by,
           received_by: values.received_by,
-          user_id: session.user.id,
           total_amount: totals.totalAmount,
           discount_amount: totals.discountAmount,
           grand_total: totals.grandTotal,
           paid_amount: totals.downPayment,
           remaining_balance: totals.remainingBalance,
+          user_id: session.user.id,
         })
         .select()
         .single();
@@ -95,15 +80,6 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         return false;
       }
 
-      if (!invoice) {
-        console.error("No invoice data returned");
-        toast.error("Failed to create invoice: No data returned");
-        return false;
-      }
-
-      console.log("Invoice created successfully:", invoice);
-
-      console.log("Creating invoice items...");
       const { error: itemsError } = await supabase.from("invoice_items").insert(
         values.items.map((item) => ({
           invoice_id: invoice.id,
@@ -111,7 +87,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           quantity: item.quantity,
           price: item.price,
           discount: item.discount || 0,
-          total: item.quantity * item.price - (item.discount || 0),
+          total: (item.quantity * item.price) - (item.discount || 0),
           sh: item.sh,
           v_frame: item.v_frame,
           f_size: item.f_size,
@@ -120,10 +96,12 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           left_eye_cyl: item.left_eye?.cyl || null,
           left_eye_axis: item.left_eye?.axis || null,
           left_eye_add_power: item.left_eye?.add_power || null,
+          left_eye_mpd: item.left_eye?.mpd || null,
           right_eye_sph: item.right_eye?.sph || null,
           right_eye_cyl: item.right_eye?.cyl || null,
           right_eye_axis: item.right_eye?.axis || null,
           right_eye_add_power: item.right_eye?.add_power || null,
+          right_eye_mpd: item.right_eye?.mpd || null,
         }))
       );
 
@@ -142,11 +120,12 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
       toast.success("Invoice created successfully");
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       queryClient.invalidateQueries({ queryKey: ["latest-invoice-number"] });
-      queryClient.invalidateQueries({ queryKey: ["products"] }); // Invalidate products query to refresh stock quantities
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       
       if (onSuccess) {
         onSuccess();
       }
+
       return true;
     } catch (error) {
       console.error("Error creating invoice:", error);

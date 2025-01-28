@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
-import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,23 +23,96 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-interface InvoiceTableRowProps {
-  invoice: {
-    id: string;
-    invoice_number: string;
-    customer_name: string;
-    total_amount: number;
-    discount_amount: number;
-    grand_total: number;
-    down_payment?: number;
-    remaining_balance?: number;
-    customer_phone?: string;
-    sale_date: string;
-  };
-  onDelete: (id: string) => Promise<void>;
-}
+// Extract PaymentStatus component
+const PaymentStatus = ({ remaining_balance }: { remaining_balance?: number }) => {
+  if (!remaining_balance || remaining_balance <= 0) {
+    return <span className="text-green-600 font-medium">LUNAS</span>;
+  }
+  return (
+    <div className="flex flex-col">
+      <span className="text-yellow-600 font-medium">Remaining:</span>
+      <span className="text-yellow-600">{formatPrice(remaining_balance)}</span>
+    </div>
+  );
+};
 
-export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
+// Extract ActionButtons component
+const ActionButtons = ({ 
+  invoice, 
+  items, 
+  isPrinting, 
+  handlePrint, 
+  handleShare,
+  handleEmailShare,
+  onDelete 
+}: {
+  invoice: any;
+  items: any[];
+  isPrinting: boolean;
+  handlePrint: () => void;
+  handleShare: () => void;
+  handleEmailShare: () => void;
+  onDelete: (id: string) => Promise<void>;
+}) => (
+  <div className="flex items-center gap-2">
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={handlePrint} disabled={isPrinting}>
+          {isPrinting ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Printer className="mr-2 h-4 w-4" />
+          )}
+          {isPrinting ? "Printing..." : "Print"}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleShare}>
+          <Share2 className="mr-2 h-4 w-4" />
+          Share
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleEmailShare}>
+          <Mail className="mr-2 h-4 w-4" />
+          Email
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <PDFDownloadLink
+            document={<InvoicePDF invoice={invoice} items={items} />}
+            fileName={`invoice-${invoice.invoice_number}.pdf`}
+          >
+            {({ loading }) => (
+              <div className="flex items-center">
+                <Download className="mr-2 h-4 w-4" />
+                {loading ? "Loading..." : "Download PDF"}
+              </div>
+            )}
+          </PDFDownloadLink>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => onDelete(invoice.id)}
+          className="text-red-600 focus:text-red-600"
+        >
+          <Trash className="mr-2 h-4 w-4" />
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+    {invoice.customer_phone && (
+      <WhatsAppButton
+        phone={invoice.customer_phone}
+        name={invoice.customer_name}
+      />
+    )}
+  </div>
+);
+
+export function InvoiceTableRow({ invoice, onDelete }: { 
+  invoice: any; 
+  onDelete: (id: string) => Promise<void>;
+}) {
   const navigate = useNavigate();
   const [items, setItems] = useState<any[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
@@ -139,18 +212,6 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
     return null;
   }
 
-  const getPaymentStatus = () => {
-    if (!invoice.remaining_balance || invoice.remaining_balance <= 0) {
-      return <span className="text-green-600 font-medium">LUNAS</span>;
-    }
-    return (
-      <div className="flex flex-col">
-        <span className="text-yellow-600 font-medium">Remaining:</span>
-        <span className="text-yellow-600">{formatPrice(invoice.remaining_balance)}</span>
-      </div>
-    );
-  };
-
   return (
     <tr className="border-b">
       <td className="py-4 px-4">
@@ -169,61 +230,19 @@ export function InvoiceTableRow({ invoice, onDelete }: InvoiceTableRowProps) {
         {new Date(invoice.sale_date).toLocaleDateString('id-ID')}
       </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>
-      <td className="py-4 px-4">{getPaymentStatus()}</td>
       <td className="py-4 px-4">
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handlePrint} disabled={isPrinting || isLoading}>
-                {isPrinting ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Printer className="mr-2 h-4 w-4" />
-                )}
-                {isPrinting ? "Printing..." : "Print"}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleShare}>
-                <Share2 className="mr-2 h-4 w-4" />
-                Share
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleEmailShare}>
-                <Mail className="mr-2 h-4 w-4" />
-                Email
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <PDFDownloadLink
-                  document={<InvoicePDF invoice={invoice} items={items} />}
-                  fileName={`invoice-${invoice.invoice_number}.pdf`}
-                >
-                  {({ loading }) => (
-                    <div className="flex items-center">
-                      <Download className="mr-2 h-4 w-4" />
-                      {loading ? "Loading..." : "Download PDF"}
-                    </div>
-                  )}
-                </PDFDownloadLink>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onDelete(invoice.id)}
-                className="text-red-600 focus:text-red-600"
-              >
-                <Trash className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {invoice.customer_phone && (
-            <WhatsAppButton
-              phone={invoice.customer_phone}
-              name={invoice.customer_name}
-            />
-          )}
-        </div>
+        <PaymentStatus remaining_balance={invoice.remaining_balance} />
+      </td>
+      <td className="py-4 px-4">
+        <ActionButtons
+          invoice={invoice}
+          items={items}
+          isPrinting={isPrinting}
+          handlePrint={handlePrint}
+          handleShare={handleShare}
+          handleEmailShare={handleEmailShare}
+          onDelete={onDelete}
+        />
       </td>
     </tr>
   );
