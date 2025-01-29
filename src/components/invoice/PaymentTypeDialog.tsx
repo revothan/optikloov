@@ -20,10 +20,16 @@ import { Loader2 } from "lucide-react";
 interface PaymentTypeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (paymentType: string) => void;
+  onConfirm: (paymentType: string) => Promise<void>;
+  isProcessing: boolean;
 }
 
-export function PaymentTypeDialog({ open, onOpenChange, onConfirm }: PaymentTypeDialogProps) {
+export function PaymentTypeDialog({ 
+  open, 
+  onOpenChange, 
+  onConfirm,
+  isProcessing 
+}: PaymentTypeDialogProps) {
   const [selectedPaymentType, setSelectedPaymentType] = useState<string>("");
 
   const { data: paymentTypes, isLoading } = useQuery({
@@ -39,15 +45,25 @@ export function PaymentTypeDialog({ open, onOpenChange, onConfirm }: PaymentType
     },
   });
 
-  const handleConfirm = () => {
-    if (selectedPaymentType) {
-      onConfirm(selectedPaymentType);
-      onOpenChange(false);
+  const handleConfirm = async () => {
+    if (selectedPaymentType && !isProcessing) {
+      await onConfirm(selectedPaymentType);
+      setSelectedPaymentType(""); // Reset selection after confirmation
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog 
+      open={open} 
+      onOpenChange={(newOpen) => {
+        if (!isProcessing) {
+          onOpenChange(newOpen);
+          if (!newOpen) {
+            setSelectedPaymentType(""); // Reset on close
+          }
+        }
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Select Payment Type</DialogTitle>
@@ -56,6 +72,7 @@ export function PaymentTypeDialog({ open, onOpenChange, onConfirm }: PaymentType
           <Select
             value={selectedPaymentType}
             onValueChange={setSelectedPaymentType}
+            disabled={isProcessing}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select payment type" />
@@ -77,9 +94,16 @@ export function PaymentTypeDialog({ open, onOpenChange, onConfirm }: PaymentType
           <div className="flex justify-end">
             <Button
               onClick={handleConfirm}
-              disabled={!selectedPaymentType}
+              disabled={!selectedPaymentType || isProcessing}
             >
-              Confirm
+              {isProcessing ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Processing...</span>
+                </div>
+              ) : (
+                "Confirm"
+              )}
             </Button>
           </div>
         </div>

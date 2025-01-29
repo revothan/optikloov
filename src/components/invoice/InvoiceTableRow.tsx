@@ -38,91 +38,6 @@ const PaymentStatus = ({ remaining_balance }: { remaining_balance?: number }) =>
   );
 };
 
-const ActionButtons = ({ 
-  invoice, 
-  items, 
-  isPrinting, 
-  handlePrint, 
-  handleShare,
-  handleEmailShare,
-  handleMarkAsPaid,
-  onDelete,
-  isDropdownOpen,
-  setIsDropdownOpen,
-  isProcessing
-}: {
-  invoice: any;
-  items: any[];
-  isPrinting: boolean;
-  handlePrint: () => Promise<void>;
-  handleShare: () => Promise<void>;
-  handleEmailShare: () => Promise<void>;
-  handleMarkAsPaid: () => void;
-  onDelete: (id: string) => Promise<void>;
-  isDropdownOpen: boolean;
-  setIsDropdownOpen: (open: boolean) => void;
-  isProcessing: boolean;
-}) => (
-  <div className="flex items-center gap-2">
-    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" disabled={isProcessing}>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-white">
-        {invoice.remaining_balance > 0 && (
-          <DropdownMenuItem onClick={handleMarkAsPaid} disabled={isProcessing}>
-            <Check className="mr-2 h-4 w-4" />
-            Mark as Paid
-          </DropdownMenuItem>
-        )}
-        <DropdownMenuItem onClick={handlePrint} disabled={isPrinting || isProcessing}>
-          {isPrinting ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Printer className="mr-2 h-4 w-4" />
-          )}
-          {isPrinting ? "Printing..." : "Print"}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleShare} disabled={isProcessing}>
-          <Share2 className="mr-2 h-4 w-4" />
-          Share
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleEmailShare} disabled={isProcessing}>
-          <Mail className="mr-2 h-4 w-4" />
-          Email
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild disabled={isProcessing}>
-          <div className="flex items-center">
-            <Download className="mr-2 h-4 w-4" />
-            <PDFDownloadLink
-              document={<InvoicePDF invoice={invoice} items={items} />}
-              fileName={`invoice-${invoice.invoice_number}.pdf`}
-            >
-              Download PDF
-            </PDFDownloadLink>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => onDelete(invoice.id)}
-          className="text-red-600 focus:text-red-600"
-          disabled={isProcessing}
-        >
-          <Trash className="mr-2 h-4 w-4" />
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-    {invoice.customer_phone && (
-      <WhatsAppButton
-        phone={invoice.customer_phone}
-        name={invoice.customer_name}
-      />
-    )}
-  </div>
-);
-
 export function InvoiceTableRow({ invoice, onDelete }: { 
   invoice: any; 
   onDelete: (id: string) => Promise<void>;
@@ -179,12 +94,6 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   }, [invoice.id]);
 
   const handleConfirmPayment = useCallback(async (paymentType: string) => {
-    if (isProcessing) return;
-    
-    setIsProcessing(true);
-    setShowPaymentTypeDialog(false);
-    setIsDropdownOpen(false);
-
     try {
       const { error } = await supabase
         .from('invoices')
@@ -204,13 +113,11 @@ export function InvoiceTableRow({ invoice, onDelete }: {
     } catch (error) {
       console.error('Error updating payment status:', error);
       toast.error('Failed to update payment status');
-    } finally {
-      setIsProcessing(false);
     }
-  }, [invoice.id, invoice.grand_total, queryClient, isProcessing]);
+  }, [invoice.id, invoice.grand_total, queryClient]);
 
   const handlePrint = async () => {
-    if (isProcessing) return;
+    if (isProcessing || isPrinting) return;
     
     try {
       setIsPrinting(true);
@@ -292,19 +199,71 @@ export function InvoiceTableRow({ invoice, onDelete }: {
           <PaymentStatus remaining_balance={invoice.remaining_balance} />
         </td>
         <td className="py-4 px-4">
-          <ActionButtons
-            invoice={invoice}
-            items={items}
-            isPrinting={isPrinting}
-            handlePrint={handlePrint}
-            handleShare={handleShare}
-            handleEmailShare={handleEmailShare}
-            handleMarkAsPaid={handleMarkAsPaid}
-            onDelete={onDelete}
-            isDropdownOpen={isDropdownOpen}
-            setIsDropdownOpen={setIsDropdownOpen}
-            isProcessing={isProcessing}
-          />
+          <div className="flex items-center gap-2">
+            <DropdownMenu 
+              open={isDropdownOpen} 
+              onOpenChange={(open) => {
+                if (!isProcessing) {
+                  setIsDropdownOpen(open);
+                }
+              }}
+            >
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" disabled={isProcessing}>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-white">
+                {invoice.remaining_balance > 0 && (
+                  <DropdownMenuItem onClick={handleMarkAsPaid} disabled={isProcessing}>
+                    <Check className="mr-2 h-4 w-4" />
+                    Mark as Paid
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={handlePrint} disabled={isPrinting || isProcessing}>
+                  {isPrinting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Printer className="mr-2 h-4 w-4" />
+                  )}
+                  {isPrinting ? "Printing..." : "Print"}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleShare} disabled={isProcessing}>
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleEmailShare} disabled={isProcessing}>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Email
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild disabled={isProcessing}>
+                  <div className="flex items-center">
+                    <Download className="mr-2 h-4 w-4" />
+                    <PDFDownloadLink
+                      document={<InvoicePDF invoice={invoice} items={items} />}
+                      fileName={`invoice-${invoice.invoice_number}.pdf`}
+                    >
+                      Download PDF
+                    </PDFDownloadLink>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onDelete(invoice.id)}
+                  className="text-red-600 focus:text-red-600"
+                  disabled={isProcessing}
+                >
+                  <Trash className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {invoice.customer_phone && (
+              <WhatsAppButton
+                phone={invoice.customer_phone}
+                name={invoice.customer_name}
+              />
+            )}
+          </div>
         </td>
       </tr>
       {showPaymentTypeDialog && (
@@ -312,6 +271,7 @@ export function InvoiceTableRow({ invoice, onDelete }: {
           open={showPaymentTypeDialog}
           onOpenChange={setShowPaymentTypeDialog}
           onConfirm={handleConfirmPayment}
+          isProcessing={isProcessing}
         />
       )}
     </>
