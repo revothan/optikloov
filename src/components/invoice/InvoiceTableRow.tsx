@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -48,7 +48,8 @@ const ActionButtons = ({
   handleMarkAsPaid,
   onDelete,
   isDropdownOpen,
-  setIsDropdownOpen
+  setIsDropdownOpen,
+  isProcessing
 }: {
   invoice: any;
   items: any[];
@@ -60,22 +61,23 @@ const ActionButtons = ({
   onDelete: (id: string) => Promise<void>;
   isDropdownOpen: boolean;
   setIsDropdownOpen: (open: boolean) => void;
+  isProcessing: boolean;
 }) => (
   <div className="flex items-center gap-2">
     <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" disabled={isProcessing}>
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="bg-white">
         {invoice.remaining_balance > 0 && (
-          <DropdownMenuItem onClick={handleMarkAsPaid}>
+          <DropdownMenuItem onClick={handleMarkAsPaid} disabled={isProcessing}>
             <Check className="mr-2 h-4 w-4" />
             Mark as Paid
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={handlePrint} disabled={isPrinting}>
+        <DropdownMenuItem onClick={handlePrint} disabled={isPrinting || isProcessing}>
           {isPrinting ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
@@ -83,15 +85,15 @@ const ActionButtons = ({
           )}
           {isPrinting ? "Printing..." : "Print"}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleShare}>
+        <DropdownMenuItem onClick={handleShare} disabled={isProcessing}>
           <Share2 className="mr-2 h-4 w-4" />
           Share
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleEmailShare}>
+        <DropdownMenuItem onClick={handleEmailShare} disabled={isProcessing}>
           <Mail className="mr-2 h-4 w-4" />
           Email
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem asChild disabled={isProcessing}>
           <div className="flex items-center">
             <Download className="mr-2 h-4 w-4" />
             <PDFDownloadLink
@@ -105,6 +107,7 @@ const ActionButtons = ({
         <DropdownMenuItem
           onClick={() => onDelete(invoice.id)}
           className="text-red-600 focus:text-red-600"
+          disabled={isProcessing}
         >
           <Trash className="mr-2 h-4 w-4" />
           Delete
@@ -175,12 +178,14 @@ export function InvoiceTableRow({ invoice, onDelete }: {
     loadInvoiceItems();
   }, [invoice.id]);
 
-  const handleConfirmPayment = async (paymentType: string) => {
+  const handleConfirmPayment = useCallback(async (paymentType: string) => {
     if (isProcessing) return;
     
+    setIsProcessing(true);
+    setShowPaymentTypeDialog(false);
+    setIsDropdownOpen(false);
+
     try {
-      setIsProcessing(true);
-      
       const { error } = await supabase
         .from('invoices')
         .update({ 
@@ -193,19 +198,8 @@ export function InvoiceTableRow({ invoice, onDelete }: {
 
       if (error) throw error;
 
-      // Close all dialogs and reset states
-      setShowPaymentTypeDialog(false);
-      setIsDropdownOpen(false);
-      
-      // Store current tab selection
-      localStorage.setItem('selectedTab', 'invoices');
-      
-      // Invalidate queries and show success message
       await queryClient.invalidateQueries({ queryKey: ['invoices'] });
       toast.success('Invoice marked as paid');
-      
-      // Reload the page to refresh all states
-      window.location.reload();
       
     } catch (error) {
       console.error('Error updating payment status:', error);
@@ -213,9 +207,11 @@ export function InvoiceTableRow({ invoice, onDelete }: {
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [invoice.id, invoice.grand_total, queryClient, isProcessing]);
 
   const handlePrint = async () => {
+    if (isProcessing) return;
+    
     try {
       setIsPrinting(true);
       const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
@@ -231,6 +227,8 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   };
 
   const handleShare = async () => {
+    if (isProcessing) return;
+    
     try {
       const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
       const file = new File([blob], `invoice-${invoice.invoice_number}.pdf`, { type: 'application/pdf' });
@@ -305,6 +303,7 @@ export function InvoiceTableRow({ invoice, onDelete }: {
             onDelete={onDelete}
             isDropdownOpen={isDropdownOpen}
             setIsDropdownOpen={setIsDropdownOpen}
+            isProcessing={isProcessing}
           />
         </td>
       </tr>
