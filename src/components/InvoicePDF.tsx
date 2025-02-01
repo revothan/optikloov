@@ -1,4 +1,4 @@
-import { Document, Page, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, StyleSheet } from "@react-pdf/renderer";
 import { useEffect, useState } from "react";
 import { InvoiceHeader } from "./invoice-pdf/InvoiceHeader";
 import { CustomerDetails } from "./invoice-pdf/CustomerDetails";
