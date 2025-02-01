@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
 interface Product {
@@ -36,6 +37,19 @@ interface Product {
   category: string;
 }
 
+interface LensStock {
+  id: string;
+  sph: number;
+  cyl: number;
+  quantity: number;
+  lens_type_id: string;
+  lens_type: {
+    name: string;
+    material: string;
+    price?: number;
+  };
+}
+
 interface ProductSelectProps {
   value: string;
   onChange: (value: string) => void;
@@ -43,6 +57,11 @@ interface ProductSelectProps {
 }
 
 const CATEGORIES = ["Frame", "Lensa", "Soft Lens", "Sunglasses", "Others"];
+
+const formatNumber = (num: number) => {
+  const fixed = num.toFixed(2);
+  return num > 0 ? `+${fixed}` : fixed;
+};
 
 export function ProductSelect({
   value,
@@ -55,11 +74,12 @@ export function ProductSelect({
   const [customProductName, setCustomProductName] = useState("");
   const [customProductCategory, setCustomProductCategory] = useState("Others");
   const [selectedCustomName, setSelectedCustomName] = useState("");
+  const [activeTab, setActiveTab] = useState("products");
 
   const {
     data: products = [],
-    isLoading,
-    isError,
+    isLoading: isLoadingProducts,
+    isError: isProductsError,
     refetch,
   } = useQuery({
     queryKey: ["products"],
@@ -67,6 +87,32 @@ export function ProductSelect({
       const { data, error } = await supabase
         .from("products")
         .select("id, name, store_price, category");
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const {
+    data: lensStock = [],
+    isLoading: isLoadingLensStock,
+  } = useQuery({
+    queryKey: ["lens-stock"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("lens_stock")
+        .select(`
+          id,
+          sph,
+          cyl,
+          quantity,
+          lens_type_id,
+          lens_type:lens_type_id (
+            name,
+            material
+          )
+        `)
+        .gt('quantity', 0);
 
       if (error) throw error;
       return data || [];
@@ -89,6 +135,15 @@ export function ProductSelect({
     );
   }, [products, searchQuery]);
 
+  const filteredLensStock = useMemo(() => {
+    if (!Array.isArray(lensStock)) return [];
+    
+    return lensStock.filter((stock) => {
+      const searchString = `${stock.lens_type?.name} ${stock.lens_type?.material} SPH:${formatNumber(stock.sph)} CYL:${formatNumber(stock.cyl)}`.toLowerCase();
+      return searchString.includes(searchQuery.toLowerCase());
+    });
+  }, [lensStock, searchQuery]);
+
   const selectedProduct = useMemo(() => {
     if (!Array.isArray(products)) return undefined;
     return products.find((product) => product.id === value);
@@ -101,6 +156,61 @@ export function ProductSelect({
     setSearchQuery("");
     if (product.id.includes('-')) {
       setSelectedCustomName(product.name);
+    }
+  };
+
+  const handleLensStockSelect = async (stock: LensStock) => {
+    try {
+      if (!stock.lens_type_id) {
+        toast.error("Invalid lens type selection");
+        return;
+      }
+
+      // Get the lens type details including price
+      const { data: lensType, error: lensTypeError } = await supabase
+        .from('lens_types')
+        .select('*')
+        .eq('id', stock.lens_type_id)
+        .maybeSingle();
+
+      if (lensTypeError) throw lensTypeError;
+      if (!lensType) {
+        toast.error("Lens type not found");
+        return;
+      }
+
+      // Create a product from the lens stock
+      const productName = `${stock.lens_type?.name} ${stock.lens_type?.material} SPH:${formatNumber(stock.sph)} CYL:${formatNumber(stock.cyl)}`;
+      const customProductId = generateUUID();
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (!userData.user?.id) {
+        toast.error("User not authenticated");
+        return;
+      }
+
+      const { error: insertError } = await supabase.from("products").insert({
+        id: customProductId,
+        name: productName,
+        store_price: lensType.price || 0,
+        category: "Stock Lens",
+        user_id: userData.user.id,
+      });
+
+      if (insertError) throw insertError;
+
+      const product = {
+        id: customProductId,
+        name: productName,
+        store_price: lensType.price || 0,
+        category: "Stock Lens",
+      };
+
+      handleProductSelect(product);
+      toast.success("Lens stock selected successfully");
+    } catch (error) {
+      console.error("Error selecting lens stock:", error);
+      toast.error("Failed to select lens stock");
     }
   };
 
@@ -132,7 +242,7 @@ export function ProductSelect({
           category: customProductCategory,
         };
 
-        await refetch(); // Refresh the products list
+        await refetch();
         handleProductSelect(customProduct);
         setCustomProductName("");
         setCustomProductCategory("Others");
@@ -147,12 +257,12 @@ export function ProductSelect({
   };
 
   const getDisplayName = () => {
-    if (isLoading) return "Loading...";
+    if (isLoadingProducts) return "Loading...";
     if (value?.includes('-')) return selectedCustomName;
     return selectedProduct?.name || "Select product...";
   };
 
-  if (isError) {
+  if (isProductsError) {
     return (
       <FormItem className="flex flex-col">
         <FormLabel>Product</FormLabel>
@@ -181,10 +291,10 @@ export function ProductSelect({
                 "w-full justify-between bg-background",
                 !value && "text-muted-foreground"
               )}
-              disabled={isLoading}
+              disabled={isLoadingProducts}
               type="button"
             >
-              {isLoading ? (
+              {isLoadingProducts ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Loading...
@@ -252,52 +362,96 @@ export function ProductSelect({
                 </Button>
               </div>
             ) : (
-              <>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="products">Products</TabsTrigger>
+                  <TabsTrigger value="lens-stock">Lens Stock</TabsTrigger>
+                </TabsList>
+
                 <div className="flex items-center space-x-2 sticky top-0 bg-background p-2">
                   <Search className="h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search products..."
+                    placeholder={activeTab === "products" ? "Search products..." : "Search lens stock..."}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="flex-1"
                   />
                 </div>
-                <ScrollArea className="h-[50vh]">
-                  {filteredProducts.length === 0 ? (
-                    <div className="py-6 text-center text-sm text-muted-foreground">
-                      No products found.
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-2">
-                      {filteredProducts.map((product) => (
-                        <Button
-                          key={product.id}
-                          type="button"
-                          variant="ghost"
-                          className={cn(
-                            "justify-start font-normal py-6 px-4 hover:bg-accent hover:text-accent-foreground",
-                            value === product.id && "bg-accent"
-                          )}
-                          onClick={() => handleProductSelect(product)}
-                        >
-                          <Check
+
+                <TabsContent value="products">
+                  <ScrollArea className="h-[50vh]">
+                    {filteredProducts.length === 0 ? (
+                      <div className="py-6 text-center text-sm text-muted-foreground">
+                        No products found.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-2">
+                        {filteredProducts.map((product) => (
+                          <Button
+                            key={product.id}
+                            type="button"
+                            variant="ghost"
                             className={cn(
-                              "mr-2 h-4 w-4",
-                              value === product.id ? "opacity-100" : "opacity-0"
+                              "justify-start font-normal py-6 px-4 hover:bg-accent hover:text-accent-foreground",
+                              value === product.id && "bg-accent"
                             )}
-                          />
-                          <div className="flex flex-col items-start">
-                            <span className="font-medium">{product.name}</span>
-                            <span className="text-sm text-muted-foreground">
-                              Category: {product.category}
-                            </span>
-                          </div>
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
-              </>
+                            onClick={() => handleProductSelect(product)}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                value === product.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium">{product.name}</span>
+                              <span className="text-sm text-muted-foreground">
+                                Category: {product.category}
+                              </span>
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                </TabsContent>
+
+                <TabsContent value="lens-stock">
+                  <ScrollArea className="h-[50vh]">
+                    {isLoadingLensStock ? (
+                      <div className="py-6 text-center">
+                        <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                        <p className="text-sm text-muted-foreground mt-2">Loading lens stock...</p>
+                      </div>
+                    ) : filteredLensStock.length === 0 ? (
+                      <div className="py-6 text-center text-sm text-muted-foreground">
+                        No lens stock found.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-2">
+                        {filteredLensStock.map((stock) => (
+                          <Button
+                            key={stock.id}
+                            type="button"
+                            variant="ghost"
+                            className="justify-start font-normal py-6 px-4 hover:bg-accent hover:text-accent-foreground"
+                            onClick={() => handleLensStockSelect(stock)}
+                          >
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium">
+                                {stock.lens_type?.name} {stock.lens_type?.material}
+                              </span>
+                              <span className="text-sm text-muted-foreground">
+                                SPH: {formatNumber(stock.sph)} | CYL: {formatNumber(stock.cyl)} | Stock: {stock.quantity}
+                              </span>
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
             )}
           </div>
         </DialogContent>

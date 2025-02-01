@@ -255,6 +255,128 @@ export type Database = {
         }
         Relationships: []
       }
+      lens_stock: {
+        Row: {
+          created_at: string
+          cyl: number
+          id: string
+          lens_type_id: string | null
+          minimum_stock: number
+          quantity: number
+          reorder_point: number
+          sph: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cyl: number
+          id?: string
+          lens_type_id?: string | null
+          minimum_stock?: number
+          quantity?: number
+          reorder_point?: number
+          sph: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cyl?: number
+          id?: string
+          lens_type_id?: string | null
+          minimum_stock?: number
+          quantity?: number
+          reorder_point?: number
+          sph?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lens_stock_lens_type_id_fkey"
+            columns: ["lens_type_id"]
+            isOneToOne: false
+            referencedRelation: "lens_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lens_stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          invoice_id: string | null
+          lens_stock_id: string | null
+          movement_type: string
+          notes: string | null
+          quantity: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id?: string | null
+          lens_stock_id?: string | null
+          movement_type: string
+          notes?: string | null
+          quantity: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id?: string | null
+          lens_stock_id?: string | null
+          movement_type?: string
+          notes?: string | null
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lens_stock_movements_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lens_stock_movements_lens_stock_id_fkey"
+            columns: ["lens_stock_id"]
+            isOneToOne: false
+            referencedRelation: "lens_stock"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lens_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          index: number
+          material: string
+          name: string
+          price: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          index: number
+          material: string
+          name: string
+          price?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          index?: number
+          material?: string
+          name?: string
+          price?: number | null
+        }
+        Relationships: []
+      }
       message_templates: {
         Row: {
           content: string
