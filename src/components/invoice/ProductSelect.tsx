@@ -20,6 +20,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 interface Product {
@@ -35,6 +42,8 @@ interface ProductSelectProps {
   onProductSelect: (product: Product) => void;
 }
 
+const CATEGORIES = ["Frame", "Lensa", "Soft Lens", "Sunglasses", "Others"];
+
 export function ProductSelect({
   value,
   onChange,
@@ -44,6 +53,7 @@ export function ProductSelect({
   const [searchQuery, setSearchQuery] = useState("");
   const [isCustomProduct, setIsCustomProduct] = useState(false);
   const [customProductName, setCustomProductName] = useState("");
+  const [customProductCategory, setCustomProductCategory] = useState("Others");
   const [selectedCustomName, setSelectedCustomName] = useState("");
 
   const {
@@ -109,7 +119,7 @@ export function ProductSelect({
           id: customProductId,
           name: customProductName,
           store_price: 0,
-          category: "Custom",
+          category: customProductCategory,
           user_id: userData.user.id,
         });
 
@@ -119,12 +129,13 @@ export function ProductSelect({
           id: customProductId,
           name: customProductName,
           store_price: 0,
-          category: "Custom",
+          category: customProductCategory,
         };
 
         await refetch(); // Refresh the products list
         handleProductSelect(customProduct);
         setCustomProductName("");
+        setCustomProductCategory("Others");
         setIsCustomProduct(false);
         setOpen(false);
         toast.success("Custom product created successfully");
@@ -200,26 +211,44 @@ export function ProductSelect({
             </div>
 
             {isCustomProduct ? (
-              <div className="flex items-center space-x-2">
-                <Input
-                  placeholder="Enter custom product name..."
-                  value={customProductName}
-                  onChange={(e) => setCustomProductName(e.target.value)}
-                  className="flex-1"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleCustomProductSubmit();
-                    }
-                  }}
-                />
+              <div className="space-y-4">
+                <div className="flex flex-col space-y-2">
+                  <Input
+                    placeholder="Enter custom product name..."
+                    value={customProductName}
+                    onChange={(e) => setCustomProductName(e.target.value)}
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleCustomProductSubmit();
+                      }
+                    }}
+                  />
+                  <Select
+                    value={customProductCategory}
+                    onValueChange={setCustomProductCategory}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button
                   type="button"
                   onClick={handleCustomProductSubmit}
                   disabled={!customProductName.trim()}
+                  className="w-full"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Add
+                  Add Custom Product
                 </Button>
               </div>
             ) : (
