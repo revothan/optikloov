@@ -43,14 +43,18 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
     }
   };
 
-  const updateLensStock = async (productId: string, quantity: number) => {
+  const updateLensStock = async (
+    productId: string,
+    quantity: number,
+    invoiceId: string,
+  ) => {
     try {
-      console.log(`Checking if ${productId} is a lens stock item...`);
-      
+      console.log(`Checking lens stock for product ${productId}...`);
+
       // First get the product details to check if it's a lens product
       const { data: product, error: productError } = await supabase
         .from("products")
-        .select("*")
+        .select("*, lens_stock:lens_stock_id(*)")
         .eq("id", productId)
         .maybeSingle();
 
@@ -59,55 +63,43 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         return false;
       }
 
-      if (!product || product.category !== 'Lensa') {
-        console.log(`Product ${productId} is not a lens product`);
+      if (
+        !product ||
+        product.category !== "Stock Lens" ||
+        !product.lens_stock_id
+      ) {
+        console.log(`Product ${productId} is not a stock lens item`);
         return false;
       }
 
-      // Find matching lens stock by product name which contains SPH and CYL values
-      const productNameParts = product.name.match(/SPH:([-+]?\d+\.\d+)\s*\|\s*CYL:([-+]?\d+\.\d+)/);
-      if (!productNameParts) {
-        console.log(`Could not extract SPH/CYL from product name: ${product.name}`);
-        return false;
-      }
-
-      const sph = parseFloat(productNameParts[1]);
-      const cyl = parseFloat(productNameParts[2]);
-
-      // Get lens stock with matching SPH and CYL
+      // Get current lens stock
       const { data: lensStock, error: lensStockError } = await supabase
         .from("lens_stock")
-        .select("*, lens_type:lens_type_id (*)")
-        .eq("sph", sph)
-        .eq("cyl", cyl)
-        .maybeSingle();
+        .select("quantity")
+        .eq("id", product.lens_stock_id)
+        .single();
 
       if (lensStockError) {
         console.error("Error checking lens stock:", lensStockError);
         return false;
       }
 
-      if (!lensStock) {
-        console.log(`No lens stock found for SPH:${sph} CYL:${cyl}`);
-        return false;
-      }
-
-      console.log(`Found lens stock:`, lensStock);
-      
-      // Calculate new quantity
+      // Calculate and update new quantity
       const currentQuantity = lensStock.quantity || 0;
       const newQuantity = Math.max(0, currentQuantity - quantity);
-      
-      console.log(`Current quantity: ${currentQuantity}, New quantity will be: ${newQuantity}`);
-      
+
+      console.log(
+        `Updating lens stock ${product.lens_stock_id} from ${currentQuantity} to ${newQuantity}`,
+      );
+
       // Update the lens stock quantity
       const { error: updateError } = await supabase
         .from("lens_stock")
-        .update({ 
+        .update({
           quantity: newQuantity,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq("id", lensStock.id);
+        .eq("id", product.lens_stock_id);
 
       if (updateError) {
         console.error("Error updating lens stock:", updateError);
@@ -115,52 +107,32 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         return false;
       }
 
-      console.log(`Successfully updated lens stock quantity`);
-      
       // Create a stock movement record
       const { error: movementError } = await supabase
         .from("lens_stock_movements")
         .insert({
-          lens_stock_id: lensStock.id,
-          movement_type: 'sale',
+          lens_stock_id: product.lens_stock_id,
+          movement_type: "sale",
           quantity: -quantity,
           created_by: session?.user?.id,
           created_at: new Date().toISOString(),
-          notes: `Stock reduced by ${quantity} due to sale`
+          invoice_id: invoiceId,
+          notes: `Stock reduced by ${quantity} due to sale in invoice ${invoiceId}`,
         });
 
       if (movementError) {
         console.error("Error creating stock movement record:", movementError);
       }
 
+      console.log(
+        `Successfully updated lens stock and created movement record`,
+      );
       return true;
     } catch (error) {
       console.error("Error in updateLensStock:", error);
       return false;
     }
   };
-
-  const createPaymentRecord = async (
-    invoiceId: string,
-    amount: number,
-    paymentType: string,
-    isDownPayment: boolean,
-  ) => {
-    const { error: paymentError } = await supabase.from("payments").insert({
-      invoice_id: invoiceId,
-      amount: amount,
-      payment_type: paymentType,
-      payment_date: new Date().toISOString(),
-      is_down_payment: isDownPayment,
-    });
-
-    if (paymentError) {
-      throw new Error(
-        `Failed to create payment record: ${paymentError.message}`,
-      );
-    }
-  };
-
   const submitInvoice = async (values: FormData, totals: Totals) => {
     if (!session?.user?.id) {
       toast.error("You must be logged in to create an invoice");
@@ -246,11 +218,16 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
       // Update product stock quantities
       for (const item of values.items) {
-        console.log(`Processing item ${item.product_id} with quantity ${item.quantity}`);
-        
+        console.log(
+          `Processing item ${item.product_id} with quantity ${item.quantity}`,
+        );
+
         // First try to update lens stock
-        const isLensStock = await updateLensStock(item.product_id, item.quantity);
-        
+        const isLensStock = await updateLensStock(
+          item.product_id,
+          item.quantity,
+        );
+
         // If it's not a lens stock item, try to update regular product stock
         if (!isLensStock) {
           await updateProductStock(item.product_id, item.quantity);
@@ -281,3 +258,4 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
   return { submitInvoice };
 };
+

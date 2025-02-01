@@ -93,15 +93,13 @@ export function ProductSelect({
     },
   });
 
-  const {
-    data: lensStock = [],
-    isLoading: isLoadingLensStock,
-  } = useQuery({
+  const { data: lensStock = [], isLoading: isLoadingLensStock } = useQuery({
     queryKey: ["lens-stock"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("lens_stock")
-        .select(`
+        .select(
+          `
           id,
           sph,
           cyl,
@@ -111,8 +109,9 @@ export function ProductSelect({
             name,
             material
           )
-        `)
-        .gt('quantity', 0);
+        `,
+        )
+        .gt("quantity", 0);
 
       if (error) throw error;
       return data || [];
@@ -120,26 +119,30 @@ export function ProductSelect({
   });
 
   const generateUUID = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      },
+    );
   };
 
   const filteredProducts = useMemo(() => {
     if (!Array.isArray(products)) return [];
-    
+
     return products.filter((product) =>
-      product.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      product.name?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [products, searchQuery]);
 
   const filteredLensStock = useMemo(() => {
     if (!Array.isArray(lensStock)) return [];
-    
+
     return lensStock.filter((stock) => {
-      const searchString = `${stock.lens_type?.name} ${stock.lens_type?.material} SPH:${formatNumber(stock.sph)} CYL:${formatNumber(stock.cyl)}`.toLowerCase();
+      const searchString =
+        `${stock.lens_type?.name} ${stock.lens_type?.material} SPH:${formatNumber(stock.sph)} CYL:${formatNumber(stock.cyl)}`.toLowerCase();
       return searchString.includes(searchQuery.toLowerCase());
     });
   }, [lensStock, searchQuery]);
@@ -154,7 +157,7 @@ export function ProductSelect({
     onProductSelect(product);
     setOpen(false);
     setSearchQuery("");
-    if (product.id.includes('-')) {
+    if (product.id.includes("-")) {
       setSelectedCustomName(product.name);
     }
   };
@@ -168,9 +171,9 @@ export function ProductSelect({
 
       // Get the lens type details including price
       const { data: lensType, error: lensTypeError } = await supabase
-        .from('lens_types')
-        .select('*')
-        .eq('id', stock.lens_type_id)
+        .from("lens_types")
+        .select("*")
+        .eq("id", stock.lens_type_id)
         .maybeSingle();
 
       if (lensTypeError) throw lensTypeError;
@@ -183,7 +186,7 @@ export function ProductSelect({
       const productName = `${stock.lens_type?.name} ${stock.lens_type?.material} SPH:${formatNumber(stock.sph)} CYL:${formatNumber(stock.cyl)}`;
       const customProductId = generateUUID();
       const { data: userData } = await supabase.auth.getUser();
-      
+
       if (!userData.user?.id) {
         toast.error("User not authenticated");
         return;
@@ -195,6 +198,10 @@ export function ProductSelect({
         store_price: lensType.price || 0,
         category: "Stock Lens",
         user_id: userData.user.id,
+        lens_stock_id: stock.id,
+        lens_type_id: stock.lens_type_id,
+        lens_sph: stock.sph,
+        lens_cyl: stock.cyl,
       });
 
       if (insertError) throw insertError;
@@ -219,7 +226,7 @@ export function ProductSelect({
       try {
         const customProductId = generateUUID();
         const { data: userData } = await supabase.auth.getUser();
-        
+
         if (!userData.user?.id) {
           toast.error("User not authenticated");
           return;
@@ -258,7 +265,7 @@ export function ProductSelect({
 
   const getDisplayName = () => {
     if (isLoadingProducts) return "Loading...";
-    if (value?.includes('-')) return selectedCustomName;
+    if (value?.includes("-")) return selectedCustomName;
     return selectedProduct?.name || "Select product...";
   };
 
@@ -289,7 +296,7 @@ export function ProductSelect({
               role="combobox"
               className={cn(
                 "w-full justify-between bg-background",
-                !value && "text-muted-foreground"
+                !value && "text-muted-foreground",
               )}
               disabled={isLoadingProducts}
               type="button"
@@ -329,7 +336,7 @@ export function ProductSelect({
                     onChange={(e) => setCustomProductName(e.target.value)}
                     className="flex-1"
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
+                      if (e.key === "Enter") {
                         e.preventDefault();
                         handleCustomProductSubmit();
                       }
@@ -371,7 +378,11 @@ export function ProductSelect({
                 <div className="flex items-center space-x-2 sticky top-0 bg-background p-2">
                   <Search className="h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder={activeTab === "products" ? "Search products..." : "Search lens stock..."}
+                    placeholder={
+                      activeTab === "products"
+                        ? "Search products..."
+                        : "Search lens stock..."
+                    }
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="flex-1"
@@ -393,18 +404,22 @@ export function ProductSelect({
                             variant="ghost"
                             className={cn(
                               "justify-start font-normal py-6 px-4 hover:bg-accent hover:text-accent-foreground",
-                              value === product.id && "bg-accent"
+                              value === product.id && "bg-accent",
                             )}
                             onClick={() => handleProductSelect(product)}
                           >
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
-                                value === product.id ? "opacity-100" : "opacity-0"
+                                value === product.id
+                                  ? "opacity-100"
+                                  : "opacity-0",
                               )}
                             />
                             <div className="flex flex-col items-start">
-                              <span className="font-medium">{product.name}</span>
+                              <span className="font-medium">
+                                {product.name}
+                              </span>
                               <span className="text-sm text-muted-foreground">
                                 Category: {product.category}
                               </span>
@@ -421,7 +436,9 @@ export function ProductSelect({
                     {isLoadingLensStock ? (
                       <div className="py-6 text-center">
                         <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                        <p className="text-sm text-muted-foreground mt-2">Loading lens stock...</p>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Loading lens stock...
+                        </p>
                       </div>
                     ) : filteredLensStock.length === 0 ? (
                       <div className="py-6 text-center text-sm text-muted-foreground">
@@ -439,10 +456,13 @@ export function ProductSelect({
                           >
                             <div className="flex flex-col items-start">
                               <span className="font-medium">
-                                {stock.lens_type?.name} {stock.lens_type?.material}
+                                {stock.lens_type?.name}{" "}
+                                {stock.lens_type?.material}
                               </span>
                               <span className="text-sm text-muted-foreground">
-                                SPH: {formatNumber(stock.sph)} | CYL: {formatNumber(stock.cyl)} | Stock: {stock.quantity}
+                                SPH: {formatNumber(stock.sph)} | CYL:{" "}
+                                {formatNumber(stock.cyl)} | Stock:{" "}
+                                {stock.quantity}
                               </span>
                             </div>
                           </Button>

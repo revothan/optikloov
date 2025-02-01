@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   notesSection: {
-    width: "40%", // Reduced width for notes
+    width: "40%", // Keep consistent width
   },
   notesContainer: {
     padding: 4,
@@ -42,11 +42,8 @@ interface InvoicePDFProps {
 }
 
 export function InvoicePDF({ invoice, items }: InvoicePDFProps) {
-  // Truncate notes if they're too long (optional)
-  const truncatedNotes =
-    invoice.notes && invoice.notes.length > 100
-      ? invoice.notes.substring(0, 97) + "..."
-      : invoice.notes;
+  // Always show notes section, but with blank content if no notes
+  const notesText = invoice.notes || "-";
 
   return (
     <Document>
@@ -70,14 +67,12 @@ export function InvoicePDF({ invoice, items }: InvoicePDFProps) {
         <PrescriptionDetails items={items} />
 
         <View style={styles.bottomSection}>
-          {truncatedNotes && (
-            <View style={styles.notesSection}>
-              <View style={styles.notesContainer}>
-                <Text style={styles.notesTitle}>Notes:</Text>
-                <Text style={styles.notesText}>{truncatedNotes}</Text>
-              </View>
+          <View style={styles.notesSection}>
+            <View style={styles.notesContainer}>
+              <Text style={styles.notesTitle}>Notes:</Text>
+              <Text style={styles.notesText}>{notesText}</Text>
             </View>
-          )}
+          </View>
 
           <View style={styles.paymentSection}>
             <PaymentDetails
