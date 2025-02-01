@@ -47,11 +47,39 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
     try {
       console.log(`Checking if ${productId} is a lens stock item...`);
       
-      // First check if this is a lens stock item by checking the lens_stock table
+      // First get the product details to check if it's a lens product
+      const { data: product, error: productError } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", productId)
+        .maybeSingle();
+
+      if (productError) {
+        console.error("Error checking product:", productError);
+        return false;
+      }
+
+      if (!product || product.category !== 'Lensa') {
+        console.log(`Product ${productId} is not a lens product`);
+        return false;
+      }
+
+      // Find matching lens stock by product name which contains SPH and CYL values
+      const productNameParts = product.name.match(/SPH:([-+]?\d+\.\d+)\s*\|\s*CYL:([-+]?\d+\.\d+)/);
+      if (!productNameParts) {
+        console.log(`Could not extract SPH/CYL from product name: ${product.name}`);
+        return false;
+      }
+
+      const sph = parseFloat(productNameParts[1]);
+      const cyl = parseFloat(productNameParts[2]);
+
+      // Get lens stock with matching SPH and CYL
       const { data: lensStock, error: lensStockError } = await supabase
         .from("lens_stock")
-        .select("*, lens_type:lens_type_id (name, material)")
-        .eq("id", productId)
+        .select("*, lens_type:lens_type_id (*)")
+        .eq("sph", sph)
+        .eq("cyl", cyl)
         .maybeSingle();
 
       if (lensStockError) {
@@ -59,9 +87,8 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         return false;
       }
 
-      // If no lens stock found, it's not a lens stock item
       if (!lensStock) {
-        console.log(`No lens stock found for ID ${productId}, treating as regular product`);
+        console.log(`No lens stock found for SPH:${sph} CYL:${cyl}`);
         return false;
       }
 
@@ -80,7 +107,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           quantity: newQuantity,
           updated_at: new Date().toISOString()
         })
-        .eq("id", productId);
+        .eq("id", lensStock.id);
 
       if (updateError) {
         console.error("Error updating lens stock:", updateError);
@@ -94,9 +121,9 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
       const { error: movementError } = await supabase
         .from("lens_stock_movements")
         .insert({
-          lens_stock_id: productId,
+          lens_stock_id: lensStock.id,
           movement_type: 'sale',
-          quantity: -quantity, // Negative because it's a reduction
+          quantity: -quantity,
           created_by: session?.user?.id,
           created_at: new Date().toISOString(),
           notes: `Stock reduced by ${quantity} due to sale`
@@ -104,7 +131,6 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
       if (movementError) {
         console.error("Error creating stock movement record:", movementError);
-        // Don't return false here as the stock update was successful
       }
 
       return true;

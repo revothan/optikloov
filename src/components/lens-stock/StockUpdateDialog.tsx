@@ -29,18 +29,50 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({ lensTypeId
     const formData = new FormData(e.currentTarget);
     
     try {
-      const { error } = await supabase.from('lens_stock').upsert({
-        lens_type_id: selectedLensType,
-        sph: parseFloat(formData.get('sph') as string),
-        cyl: parseFloat(formData.get('cyl') as string),
-        quantity: parseInt(formData.get('quantity') as string),
-        minimum_stock: parseInt(formData.get('minimum_stock') as string),
-        reorder_point: parseInt(formData.get('reorder_point') as string),
-      });
+      // Check if stock already exists for these parameters
+      const { data: existingStock, error: checkError } = await supabase
+        .from('lens_stock')
+        .select('*')
+        .eq('lens_type_id', selectedLensType)
+        .eq('sph', parseFloat(formData.get('sph') as string))
+        .eq('cyl', parseFloat(formData.get('cyl') as string))
+        .maybeSingle();
 
-      if (error) throw error;
+      if (checkError) {
+        throw checkError;
+      }
 
-      toast.success('Stock updated successfully');
+      if (existingStock) {
+        // Update existing stock
+        const { error: updateError } = await supabase
+          .from('lens_stock')
+          .update({
+            quantity: parseInt(formData.get('quantity') as string),
+            minimum_stock: parseInt(formData.get('minimum_stock') as string),
+            reorder_point: parseInt(formData.get('reorder_point') as string),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingStock.id);
+
+        if (updateError) throw updateError;
+        toast.success('Stock updated successfully');
+      } else {
+        // Insert new stock
+        const { error: insertError } = await supabase
+          .from('lens_stock')
+          .insert({
+            lens_type_id: selectedLensType,
+            sph: parseFloat(formData.get('sph') as string),
+            cyl: parseFloat(formData.get('cyl') as string),
+            quantity: parseInt(formData.get('quantity') as string),
+            minimum_stock: parseInt(formData.get('minimum_stock') as string),
+            reorder_point: parseInt(formData.get('reorder_point') as string),
+          });
+
+        if (insertError) throw insertError;
+        toast.success('New stock added successfully');
+      }
+
       queryClient.invalidateQueries({ queryKey: ['lens-stock'] });
       setOpen(false);
     } catch (error) {
