@@ -32,6 +32,11 @@ export const LensStockMatrix = () => {
     enabled: !!selectedLensType
   });
 
+  const formatNumber = (num: number) => {
+    const fixed = num.toFixed(2);
+    return num > 0 ? `+${fixed}` : fixed;
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -60,7 +65,7 @@ export const LensStockMatrix = () => {
               <tbody>
                 {verticalSphRange.map((sph) => (
                   <tr key={sph}>
-                    <td className="p-2 border font-medium">{sph.toFixed(2)}</td>
+                    <td className="p-2 border font-medium">{formatNumber(sph)}</td>
                     {cylRange.map((cyl) => {
                       const stockItem = stockData?.find(
                         (item) => item.sph === sph && item.cyl === cyl
