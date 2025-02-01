@@ -50,7 +50,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
       // First try to get the lens stock record
       const { data: lensStock, error: lensStockError } = await supabase
         .from("lens_stock")
-        .select("id, quantity")
+        .select("*")  // Select all fields to ensure we have the correct record
         .eq("id", productId)
         .maybeSingle();
 
@@ -71,7 +71,10 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
       
       const { error: updateError } = await supabase
         .from("lens_stock")
-        .update({ quantity: newQuantity })
+        .update({ 
+          quantity: newQuantity,
+          updated_at: new Date().toISOString()
+        })
         .eq("id", productId);
 
       if (updateError) {
@@ -89,7 +92,8 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           lens_stock_id: productId,
           movement_type: 'sale',
           quantity: -quantity, // Negative because it's a reduction
-          created_by: session?.user?.id
+          created_by: session?.user?.id,
+          created_at: new Date().toISOString()
         });
 
       if (movementError) {
@@ -210,6 +214,8 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
       // Update product stock quantities
       for (const item of values.items) {
+        console.log(`Processing item ${item.product_id} with quantity ${item.quantity}`);
+        
         // First try to update lens stock
         const isLensStock = await updateLensStock(item.product_id, item.quantity);
         
