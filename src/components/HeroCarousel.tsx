@@ -11,9 +11,9 @@ import { supabase } from "@/integrations/supabase/client";
 // Slides data with just filenames
 const slides = [
   {
-    image: "bogo.png",
+    image: "bogonew.png",
     title: "Buy One Get One Free",
-    subtitle: "Exclusively this February – a celebration of love.",
+    subtitle: "Exclusively this February",
     cta: "Visit Store",
     ctaLink: "/contact",
     tag: "01-28 FEBRUARY 2025",
