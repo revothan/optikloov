@@ -23,6 +23,7 @@ import { ProductSkeleton } from "@/components/ProductSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProductCard } from "@/components/ProductCard";
 import { formatPrice } from "@/lib/utils";
+import { LensStockMatrix } from "@/components/lens-stock/LensStockMatrix";
 
 // Lazy load components
 const CustomerTable = lazy(() => import("@/components/CustomerList"));
@@ -118,6 +119,7 @@ export default function Admin() {
             <TabsTrigger value="customers">Customers</TabsTrigger>
             <TabsTrigger value="invoices">Invoices</TabsTrigger>
             <TabsTrigger value="sales">Sales</TabsTrigger>
+            <TabsTrigger value="lens-stock">Lens Stock</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
@@ -167,6 +169,13 @@ export default function Admin() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold mb-4">Sales Report</h2>
               <SalesReport />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="lens-stock">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-semibold mb-4">Lens Stock Management</h2>
+              <LensStockMatrix />
             </div>
           </TabsContent>
         </Tabs>
