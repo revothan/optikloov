@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
   },
   notes: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 70,
     left: 16,
     fontSize: 7,
     maxWidth: '50%',
