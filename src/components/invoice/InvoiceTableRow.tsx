@@ -8,15 +8,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-  Download, 
-  Printer, 
-  Share2, 
-  Mail, 
+import {
+  Download,
+  Printer,
+  Share2,
+  Mail,
   MoreHorizontal,
   Trash,
   Loader2,
-  Check
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
@@ -26,7 +26,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { PaymentTypeDialog } from "./PaymentTypeDialog";
 
-const PaymentStatus = ({ remaining_balance }: { remaining_balance?: number }) => {
+const PaymentStatus = ({
+  remaining_balance,
+}: {
+  remaining_balance?: number;
+}) => {
   if (!remaining_balance || remaining_balance <= 0) {
     return <span className="text-green-600 font-medium">LUNAS</span>;
   }
@@ -38,8 +42,11 @@ const PaymentStatus = ({ remaining_balance }: { remaining_balance?: number }) =>
   );
 };
 
-export function InvoiceTableRow({ invoice, onDelete }: { 
-  invoice: any; 
+export function InvoiceTableRow({
+  invoice,
+  onDelete,
+}: {
+  invoice: any;
   onDelete: (id: string) => Promise<void>;
 }) {
   const navigate = useNavigate();
@@ -54,10 +61,12 @@ export function InvoiceTableRow({ invoice, onDelete }: {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         setIsAuthenticated(false);
-        navigate('/login');
+        navigate("/login");
       }
     };
 
@@ -68,8 +77,9 @@ export function InvoiceTableRow({ invoice, onDelete }: {
     const loadInvoiceItems = async () => {
       try {
         const { data: invoiceItems, error } = await supabase
-          .from('invoice_items')
-          .select(`
+          .from("invoice_items")
+          .select(
+            `
             *,
             products:product_id (
               id,
@@ -77,14 +87,15 @@ export function InvoiceTableRow({ invoice, onDelete }: {
               brand,
               category
             )
-          `)
-          .eq('invoice_id', invoice.id);
+          `,
+          )
+          .eq("invoice_id", invoice.id);
 
         if (error) throw error;
         setItems(invoiceItems || []);
       } catch (error) {
-        console.error('Error loading invoice items:', error);
-        toast.error('Failed to load invoice items');
+        console.error("Error loading invoice items:", error);
+        toast.error("Failed to load invoice items");
       } finally {
         setIsLoading(false);
       }
@@ -93,85 +104,126 @@ export function InvoiceTableRow({ invoice, onDelete }: {
     loadInvoiceItems();
   }, [invoice.id]);
 
-  const handleConfirmPayment = useCallback(async (paymentType: string) => {
-    try {
-      const { error } = await supabase
-        .from('invoices')
-        .update({ 
-          remaining_balance: 0,
-          paid_amount: invoice.grand_total,
-          status: 'paid',
-          payment_type: paymentType
-        })
-        .eq('id', invoice.id);
+  const handleConfirmPayment = useCallback(
+    async (paymentType: string) => {
+      try {
+        setIsProcessing(true);
 
-      if (error) throw error;
+        // Calculate the actual payment amount (remaining balance)
+        const paymentAmount = invoice.remaining_balance;
 
-      await queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success('Invoice marked as paid');
-      
-    } catch (error) {
-      console.error('Error updating payment status:', error);
-      toast.error('Failed to update payment status');
-    }
-  }, [invoice.id, invoice.grand_total, queryClient]);
+        // Create a new payment record
+        const { error: paymentError } = await supabase.from("payments").insert({
+          invoice_id: invoice.id,
+          amount: paymentAmount,
+          payment_type: paymentType,
+          payment_date: new Date().toISOString(),
+          is_down_payment: false, // This is the final payment
+        });
 
+        if (paymentError) throw paymentError;
+
+        // Update invoice status
+        const { error: invoiceError } = await supabase
+          .from("invoices")
+          .update({
+            remaining_balance: 0,
+            paid_amount: invoice.grand_total,
+            status: "paid",
+            payment_type: paymentType,
+            last_payment_date: new Date().toISOString(),
+          })
+          .eq("id", invoice.id);
+
+        if (invoiceError) throw invoiceError;
+
+        await queryClient.invalidateQueries({ queryKey: ["invoices"] });
+        await queryClient.invalidateQueries({ queryKey: ["sales-report"] });
+        toast.success("Payment recorded successfully");
+      } catch (error) {
+        console.error("Error updating payment status:", error);
+        toast.error("Failed to update payment status");
+      } finally {
+        setIsProcessing(false);
+        setShowPaymentTypeDialog(false);
+        setIsDropdownOpen(false);
+      }
+    },
+    [invoice.id, invoice.grand_total, invoice.remaining_balance, queryClient],
+  );
   const handlePrint = async () => {
     if (isProcessing || isPrinting) return;
-    
+
     try {
       setIsPrinting(true);
-      const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
+      const blob = await pdf(
+        <InvoicePDF invoice={invoice} items={items} />,
+      ).toBlob();
       const url = URL.createObjectURL(blob);
       const printWindow = window.open(url);
       printWindow?.print();
     } catch (error) {
-      console.error('Error printing invoice:', error);
-      toast.error('Failed to print invoice');
+      console.error("Error printing invoice:", error);
+      toast.error("Failed to print invoice");
     } finally {
       setIsPrinting(false);
+      setIsDropdownOpen(false);
     }
   };
 
   const handleShare = async () => {
     if (isProcessing) return;
-    
+
     try {
-      const blob = await pdf(<InvoicePDF invoice={invoice} items={items} />).toBlob();
-      const file = new File([blob], `invoice-${invoice.invoice_number}.pdf`, { type: 'application/pdf' });
-      
+      const blob = await pdf(
+        <InvoicePDF invoice={invoice} items={items} />,
+      ).toBlob();
+      const file = new File([blob], `invoice-${invoice.invoice_number}.pdf`, {
+        type: "application/pdf",
+      });
+
       if (navigator.share) {
         await navigator.share({
           files: [file],
           title: `Invoice ${invoice.invoice_number}`,
         });
       } else {
-        toast.error('Sharing is not supported on this device');
+        toast.error("Sharing is not supported on this device");
       }
     } catch (error) {
-      console.error('Error sharing invoice:', error);
-      toast.error('Failed to share invoice');
+      console.error("Error sharing invoice:", error);
+      toast.error("Failed to share invoice");
+    } finally {
+      setIsDropdownOpen(false);
     }
   };
 
   const handleEmailShare = async () => {
     if (!invoice.customer_email) {
-      toast.error('No customer email provided');
+      toast.error("No customer email provided");
       return;
     }
 
     try {
-      toast.info('Email sharing will be implemented soon');
+      toast.info("Email sharing will be implemented soon");
     } catch (error) {
-      console.error('Error sending invoice email:', error);
-      toast.error('Failed to send invoice email');
+      console.error("Error sending invoice email:", error);
+      toast.error("Failed to send invoice email");
+    } finally {
+      setIsDropdownOpen(false);
     }
   };
 
   const handleMarkAsPaid = () => {
     if (!isProcessing) {
       setShowPaymentTypeDialog(true);
+      setIsDropdownOpen(false);
     }
+  };
+
+  const handleDelete = async () => {
+    await onDelete(invoice.id);
+    setIsDropdownOpen(false);
   };
 
   if (!isAuthenticated) {
@@ -192,7 +244,7 @@ export function InvoiceTableRow({ invoice, onDelete }: {
           </div>
         </td>
         <td className="py-4 px-4">
-          {new Date(invoice.sale_date).toLocaleDateString('id-ID')}
+          {new Date(invoice.sale_date).toLocaleDateString("id-ID")}
         </td>
         <td className="py-4 px-4">{invoice.customer_name}</td>
         <td className="py-4 px-4">
@@ -200,13 +252,9 @@ export function InvoiceTableRow({ invoice, onDelete }: {
         </td>
         <td className="py-4 px-4">
           <div className="flex items-center gap-2">
-            <DropdownMenu 
-              open={isDropdownOpen} 
-              onOpenChange={(open) => {
-                if (!isProcessing) {
-                  setIsDropdownOpen(open);
-                }
-              }}
+            <DropdownMenu
+              open={isDropdownOpen}
+              onOpenChange={setIsDropdownOpen}
             >
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" disabled={isProcessing}>
@@ -215,12 +263,18 @@ export function InvoiceTableRow({ invoice, onDelete }: {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-white">
                 {invoice.remaining_balance > 0 && (
-                  <DropdownMenuItem onClick={handleMarkAsPaid} disabled={isProcessing}>
+                  <DropdownMenuItem
+                    onClick={handleMarkAsPaid}
+                    disabled={isProcessing}
+                  >
                     <Check className="mr-2 h-4 w-4" />
                     Mark as Paid
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={handlePrint} disabled={isPrinting || isProcessing}>
+                <DropdownMenuItem
+                  onClick={handlePrint}
+                  disabled={isPrinting || isProcessing}
+                >
                   {isPrinting ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
@@ -232,7 +286,10 @@ export function InvoiceTableRow({ invoice, onDelete }: {
                   <Share2 className="mr-2 h-4 w-4" />
                   Share
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleEmailShare} disabled={isProcessing}>
+                <DropdownMenuItem
+                  onClick={handleEmailShare}
+                  disabled={isProcessing}
+                >
                   <Mail className="mr-2 h-4 w-4" />
                   Email
                 </DropdownMenuItem>
@@ -248,7 +305,7 @@ export function InvoiceTableRow({ invoice, onDelete }: {
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => onDelete(invoice.id)}
+                  onClick={handleDelete}
                   className="text-red-600 focus:text-red-600"
                   disabled={isProcessing}
                 >
@@ -266,14 +323,18 @@ export function InvoiceTableRow({ invoice, onDelete }: {
           </div>
         </td>
       </tr>
-      {showPaymentTypeDialog && (
-        <PaymentTypeDialog
-          open={showPaymentTypeDialog}
-          onOpenChange={setShowPaymentTypeDialog}
-          onConfirm={handleConfirmPayment}
-          isProcessing={isProcessing}
-        />
-      )}
+
+      <PaymentTypeDialog
+        open={showPaymentTypeDialog}
+        onOpenChange={(open) => {
+          if (!isProcessing) {
+            setShowPaymentTypeDialog(open);
+          }
+        }}
+        onConfirm={handleConfirmPayment}
+        isProcessing={isProcessing}
+      />
     </>
   );
 }
+
