@@ -10,6 +10,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
+import { toast } from "sonner";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -25,30 +26,54 @@ const queryClient = new QueryClient({
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setIsLoading(false);
-        if (!session) {
-          window.location.href = '/login';
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Auth check error:', error);
+          toast.error("Authentication error. Please login again.");
+          setIsAuthenticated(false);
+        } else {
+          setIsAuthenticated(!!currentSession);
         }
       } catch (error) {
         console.error('Auth check error:', error);
+        setIsAuthenticated(false);
+      } finally {
         setIsLoading(false);
-        window.location.href = '/login';
       }
     };
     
+    // Initial auth check
     checkAuth();
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session);
+      setIsAuthenticated(!!session);
+      setIsLoading(false);
+
+      if (event === 'SIGNED_OUT') {
+        toast.info("You have been signed out");
+      } else if (event === 'SIGNED_IN') {
+        toast.success("Successfully signed in!");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!session) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
@@ -58,7 +83,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionContextProvider supabaseClient={supabase}>
+      <SessionContextProvider supabaseClient={supabase} initialSession={null}>
         <TooltipProvider>
           <Toaster />
           <BrowserRouter>

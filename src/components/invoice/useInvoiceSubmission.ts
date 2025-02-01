@@ -21,7 +21,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
       .from("products")
       .select("track_inventory, stock_qty")
       .eq("id", productId)
-      .single();
+      .maybeSingle();
 
     if (productError) {
       console.error("Error fetching product:", productError);
@@ -43,27 +43,96 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
     }
   };
 
-  const createPaymentRecord = async (
+  const updateLensStock = async (
+    productId: string,
+    quantity: number,
     invoiceId: string,
-    amount: number,
-    paymentType: string,
-    isDownPayment: boolean,
   ) => {
-    const { error: paymentError } = await supabase.from("payments").insert({
-      invoice_id: invoiceId,
-      amount: amount,
-      payment_type: paymentType,
-      payment_date: new Date().toISOString(),
-      is_down_payment: isDownPayment,
-    });
+    try {
+      console.log(`Checking lens stock for product ${productId}...`);
 
-    if (paymentError) {
-      throw new Error(
-        `Failed to create payment record: ${paymentError.message}`,
+      // First get the product details to check if it's a lens product
+      const { data: product, error: productError } = await supabase
+        .from("products")
+        .select("*, lens_stock:lens_stock_id(*)")
+        .eq("id", productId)
+        .maybeSingle();
+
+      if (productError) {
+        console.error("Error checking product:", productError);
+        return false;
+      }
+
+      if (
+        !product ||
+        product.category !== "Stock Lens" ||
+        !product.lens_stock_id
+      ) {
+        console.log(`Product ${productId} is not a stock lens item`);
+        return false;
+      }
+
+      // Get current lens stock
+      const { data: lensStock, error: lensStockError } = await supabase
+        .from("lens_stock")
+        .select("quantity")
+        .eq("id", product.lens_stock_id)
+        .single();
+
+      if (lensStockError) {
+        console.error("Error checking lens stock:", lensStockError);
+        return false;
+      }
+
+      // Calculate and update new quantity
+      const currentQuantity = lensStock.quantity || 0;
+      const newQuantity = Math.max(0, currentQuantity - quantity);
+
+      console.log(
+        `Updating lens stock ${product.lens_stock_id} from ${currentQuantity} to ${newQuantity}`,
       );
+
+      // Update the lens stock quantity
+      const { error: updateError } = await supabase
+        .from("lens_stock")
+        .update({
+          quantity: newQuantity,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", product.lens_stock_id);
+
+      if (updateError) {
+        console.error("Error updating lens stock:", updateError);
+        toast.error(`Failed to update lens stock quantity`);
+        return false;
+      }
+
+      // Create a stock movement record
+      const { error: movementError } = await supabase
+        .from("lens_stock_movements")
+        .insert({
+          lens_stock_id: product.lens_stock_id,
+          movement_type: "sale",
+          quantity: -quantity,
+          created_by: session?.user?.id,
+          created_at: new Date().toISOString(),
+          invoice_id: invoiceId,
+          notes: `Stock reduced by ${quantity} due to sale in invoice ${invoiceId}`,
+        });
+
+      if (movementError) {
+        console.error("Error creating stock movement record:", movementError);
+      }
+
+      console.log(
+        `Successfully updated lens stock and created movement record`,
+      );
+      return true;
+    } catch (error) {
+      console.error("Error in updateLensStock:", error);
+      return false;
     }
   };
-
   const submitInvoice = async (values: FormData, totals: Totals) => {
     if (!session?.user?.id) {
       toast.error("You must be logged in to create an invoice");
@@ -94,7 +163,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           user_id: session.user.id,
           status: totals.remainingBalance === 0 ? "paid" : "partial",
           last_payment_date: new Date().toISOString(),
-          notes: values.notes || null, // Explicitly handle notes field
+          notes: values.notes || null,
         })
         .select()
         .single();
@@ -143,13 +212,26 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           invoice.id,
           totals.downPayment,
           values.payment_type,
-          true, // is down payment
+          true,
         );
       }
 
       // Update product stock quantities
       for (const item of values.items) {
-        await updateProductStock(item.product_id, item.quantity);
+        console.log(
+          `Processing item ${item.product_id} with quantity ${item.quantity}`,
+        );
+
+        // First try to update lens stock
+        const isLensStock = await updateLensStock(
+          item.product_id,
+          item.quantity,
+        );
+
+        // If it's not a lens stock item, try to update regular product stock
+        if (!isLensStock) {
+          await updateProductStock(item.product_id, item.quantity);
+        }
       }
 
       // Invalidate queries to refresh data
@@ -157,6 +239,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
       queryClient.invalidateQueries({ queryKey: ["latest-invoice-number"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["sales-report"] });
+      queryClient.invalidateQueries({ queryKey: ["lens-stock"] });
 
       console.log("Invoice created successfully");
       toast.success("Invoice created successfully");
@@ -175,3 +258,4 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
   return { submitInvoice };
 };
+
