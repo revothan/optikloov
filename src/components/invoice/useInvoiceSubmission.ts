@@ -94,6 +94,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           user_id: session.user.id,
           status: totals.remainingBalance === 0 ? "paid" : "partial",
           last_payment_date: new Date().toISOString(),
+          notes: values.notes || null, // Explicitly handle notes field
         })
         .select()
         .single();
@@ -174,4 +175,3 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
   return { submitInvoice };
 };
-
