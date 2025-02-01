@@ -12,6 +12,7 @@ import { PaymentSignature } from "./invoice-form/PaymentSignature";
 import { schema } from "./invoice/invoiceFormSchema";
 import { useInvoiceSubmission } from "./invoice/useInvoiceSubmission";
 import type { z } from "zod";
+import { useEffect } from "react";
 
 type FormData = z.infer<typeof schema>;
 
@@ -28,14 +29,15 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
         .from("invoices")
         .select("invoice_number")
         .order("created_at", { ascending: false })
-        .limit(1);
+        .limit(1)
+        .single();
 
       if (error) {
         console.error("Error fetching latest invoice:", error);
         throw error;
       }
       console.log("Latest invoice data:", data);
-      return data?.[0]?.invoice_number || "0124";
+      return data?.invoice_number || "0124";
     },
   });
 
@@ -48,7 +50,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      invoice_number: isLoadingInvoice ? "0125" : latestInvoice ? generateNextInvoiceNumber(latestInvoice) : "0125",
+      invoice_number: "",  // Initialize as empty string
       sale_date: new Date().toISOString().split("T")[0],
       customer_name: "",
       customer_email: "",
@@ -63,6 +65,14 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       items: [],
     },
   });
+
+  // Update form when latest invoice number is fetched
+  useEffect(() => {
+    if (latestInvoice && !isLoadingInvoice) {
+      const nextNumber = generateNextInvoiceNumber(latestInvoice);
+      form.setValue("invoice_number", nextNumber);
+    }
+  }, [latestInvoice, isLoadingInvoice, form]);
 
   const { fields, append, remove, swap, move, insert, prepend } = useFieldArray({
     name: "items",
