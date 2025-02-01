@@ -1,5 +1,4 @@
-import { Document, Page, StyleSheet } from "@react-pdf/renderer";
-import { useEffect, useState } from "react";
+import { Document, Page, Text, StyleSheet, View } from "@react-pdf/renderer";
 import { InvoiceHeader } from "./invoice-pdf/InvoiceHeader";
 import { CustomerDetails } from "./invoice-pdf/CustomerDetails";
 import { ItemsTable } from "./invoice-pdf/ItemsTable";
@@ -12,31 +11,47 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 7,
   },
+  bottomSection: {
+    flexDirection: "row",
+    marginTop: 4,
+  },
+  notesSection: {
+    width: "40%", // Reduced width for notes
+  },
+  notesContainer: {
+    padding: 4,
+    border: "1 solid #999",
+    minHeight: 40, // Ensure consistent height
+  },
+  notesTitle: {
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 2,
+  },
+  notesText: {
+    color: "#666",
+  },
+  paymentSection: {
+    flex: 1,
+    paddingLeft: 20, // Add consistent spacing from notes
+  },
 });
 
 interface InvoicePDFProps {
   invoice: any;
   items: any[];
-  onLoadComplete?: () => Promise<any[]>;
 }
 
-export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: InvoicePDFProps) {
-  const [items, setItems] = useState(initialItems);
-
-  useEffect(() => {
-    const loadItems = async () => {
-      if (onLoadComplete) {
-        const loadedItems = await onLoadComplete();
-        setItems(loadedItems);
-      }
-    };
-    loadItems();
-  }, [onLoadComplete]);
+export function InvoicePDF({ invoice, items }: InvoicePDFProps) {
+  // Truncate notes if they're too long (optional)
+  const truncatedNotes =
+    invoice.notes && invoice.notes.length > 100
+      ? invoice.notes.substring(0, 97) + "..."
+      : invoice.notes;
 
   return (
     <Document>
       <Page size="A5" orientation="landscape" style={styles.page}>
-        <InvoiceHeader 
+        <InvoiceHeader
           invoiceNumber={invoice.invoice_number}
           saleDate={invoice.sale_date}
           acknowledgedBy={invoice.acknowledged_by}
@@ -54,16 +69,30 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
 
         <PrescriptionDetails items={items} />
 
-        <PaymentDetails
-          totalAmount={invoice.total_amount}
-          discountAmount={invoice.discount_amount}
-          grandTotal={invoice.grand_total}
-          downPayment={invoice.down_payment}
-          remainingBalance={invoice.remaining_balance}
-        />
+        <View style={styles.bottomSection}>
+          {truncatedNotes && (
+            <View style={styles.notesSection}>
+              <View style={styles.notesContainer}>
+                <Text style={styles.notesTitle}>Notes:</Text>
+                <Text style={styles.notesText}>{truncatedNotes}</Text>
+              </View>
+            </View>
+          )}
+
+          <View style={styles.paymentSection}>
+            <PaymentDetails
+              totalAmount={invoice.total_amount}
+              discountAmount={invoice.discount_amount}
+              grandTotal={invoice.grand_total}
+              downPayment={invoice.down_payment}
+              remainingBalance={invoice.remaining_balance}
+            />
+          </View>
+        </View>
 
         <InvoiceFooter />
       </Page>
     </Document>
   );
 }
+

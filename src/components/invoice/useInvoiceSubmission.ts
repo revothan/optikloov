@@ -30,7 +30,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
     if (product?.track_inventory && product.stock_qty !== null) {
       const newStock = Math.max(0, (product.stock_qty || 0) - quantity);
-      
+
       const { error: updateError } = await supabase
         .from("products")
         .update({ stock_qty: newStock })
@@ -43,6 +43,27 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
     }
   };
 
+  const createPaymentRecord = async (
+    invoiceId: string,
+    amount: number,
+    paymentType: string,
+    isDownPayment: boolean,
+  ) => {
+    const { error: paymentError } = await supabase.from("payments").insert({
+      invoice_id: invoiceId,
+      amount: amount,
+      payment_type: paymentType,
+      payment_date: new Date().toISOString(),
+      is_down_payment: isDownPayment,
+    });
+
+    if (paymentError) {
+      throw new Error(
+        `Failed to create payment record: ${paymentError.message}`,
+      );
+    }
+  };
+
   const submitInvoice = async (values: FormData, totals: Totals) => {
     if (!session?.user?.id) {
       toast.error("You must be logged in to create an invoice");
@@ -50,6 +71,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
     }
 
     try {
+      // Create the invoice
       const { data: invoice, error: invoiceError } = await supabase
         .from("invoices")
         .insert({
@@ -70,6 +92,9 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           paid_amount: totals.downPayment,
           remaining_balance: totals.remainingBalance,
           user_id: session.user.id,
+          status: totals.remainingBalance === 0 ? "paid" : "partial",
+          last_payment_date: new Date().toISOString(),
+          notes: values.notes || null, // Explicitly handle notes field
         })
         .select()
         .single();
@@ -80,6 +105,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         return false;
       }
 
+      // Create invoice items
       const { error: itemsError } = await supabase.from("invoice_items").insert(
         values.items.map((item) => ({
           invoice_id: invoice.id,
@@ -87,7 +113,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           quantity: item.quantity,
           price: item.price,
           discount: item.discount || 0,
-          total: (item.quantity * item.price) - (item.discount || 0),
+          total: item.quantity * item.price - (item.discount || 0),
           sh: item.sh,
           v_frame: item.v_frame,
           f_size: item.f_size,
@@ -102,7 +128,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           right_eye_axis: item.right_eye?.axis || null,
           right_eye_add_power: item.right_eye?.add_power || null,
           right_eye_mpd: item.right_eye?.mpd || null,
-        }))
+        })),
       );
 
       if (itemsError) {
@@ -111,17 +137,30 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         return false;
       }
 
+      // Create payment record for down payment if exists
+      if (totals.downPayment > 0) {
+        await createPaymentRecord(
+          invoice.id,
+          totals.downPayment,
+          values.payment_type,
+          true, // is down payment
+        );
+      }
+
       // Update product stock quantities
       for (const item of values.items) {
         await updateProductStock(item.product_id, item.quantity);
       }
 
-      console.log("Invoice items created successfully");
-      toast.success("Invoice created successfully");
+      // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       queryClient.invalidateQueries({ queryKey: ["latest-invoice-number"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      
+      queryClient.invalidateQueries({ queryKey: ["sales-report"] });
+
+      console.log("Invoice created successfully");
+      toast.success("Invoice created successfully");
+
       if (onSuccess) {
         onSuccess();
       }
