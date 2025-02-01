@@ -94,7 +94,12 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   }, [invoice.id]);
 
   const handleConfirmPayment = useCallback(async (paymentType: string) => {
+    if (isProcessing) return;
+
     try {
+      setIsProcessing(true);
+      console.log('Processing payment...');
+
       const { error } = await supabase
         .from('invoices')
         .update({ 
@@ -110,11 +115,17 @@ export function InvoiceTableRow({ invoice, onDelete }: {
       await queryClient.invalidateQueries({ queryKey: ['invoices'] });
       toast.success('Invoice marked as paid');
       
+      // Close dialogs in the correct order
+      setShowPaymentTypeDialog(false);
+      setIsDropdownOpen(false);
+      
     } catch (error) {
       console.error('Error updating payment status:', error);
       toast.error('Failed to update payment status');
+    } finally {
+      setIsProcessing(false);
     }
-  }, [invoice.id, invoice.grand_total, queryClient]);
+  }, [invoice.id, invoice.grand_total, queryClient, isProcessing]);
 
   const handlePrint = async () => {
     if (isProcessing || isPrinting) return;
@@ -266,14 +277,12 @@ export function InvoiceTableRow({ invoice, onDelete }: {
           </div>
         </td>
       </tr>
-      {showPaymentTypeDialog && (
-        <PaymentTypeDialog
-          open={showPaymentTypeDialog}
-          onOpenChange={setShowPaymentTypeDialog}
-          onConfirm={handleConfirmPayment}
-          isProcessing={isProcessing}
-        />
-      )}
+      <PaymentTypeDialog
+        open={showPaymentTypeDialog}
+        onOpenChange={setShowPaymentTypeDialog}
+        onConfirm={handleConfirmPayment}
+        isProcessing={isProcessing}
+      />
     </>
   );
 }

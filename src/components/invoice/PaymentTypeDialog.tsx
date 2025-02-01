@@ -64,7 +64,11 @@ export function PaymentTypeDialog({
         }
       }}
     >
-      <DialogContent>
+      <DialogContent onInteractOutside={(e) => {
+        if (isProcessing) {
+          e.preventDefault();
+        }
+      }}>
         <DialogHeader>
           <DialogTitle>Select Payment Type</DialogTitle>
         </DialogHeader>
