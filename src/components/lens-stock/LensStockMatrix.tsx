@@ -11,12 +11,12 @@ export const LensStockMatrix = () => {
   const [selectedLensType, setSelectedLensType] = React.useState<string | null>(null);
   
   // SPH ranges
-  const minusSphRange = Array.from({ length: 21 }, (_, i) => -(i * 0.25)).reverse(); // 0 to -2.00
+  const minusSphRange = Array.from({ length: 9 }, (_, i) => -(i * 0.25)).reverse(); // 0 to -2.00
   const plusSphRange = Array.from({ length: 9 }, (_, i) => (i + 1) * 0.25); // +1.00 to +3.00
   
-  // CYL range (0 to -6.00)
-  const cylRange = Array.from({ length: 25 }, (_, i) => -(i * 0.25));
-
+  // Horizontal SPH range (0 to -6.00)
+  const horizontalSphRange = Array.from({ length: 25 }, (_, i) => -(i * 0.25));
+  
   const { data: stockData, isLoading } = useQuery({
     queryKey: ['lens-stock', selectedLensType],
     queryFn: async () => {
@@ -49,18 +49,18 @@ export const LensStockMatrix = () => {
               <thead>
                 <tr>
                   <th className="p-2 border">SPH/CYL</th>
-                  {cylRange.map((cyl) => (
-                    <th key={cyl} className="p-2 border text-sm">
-                      {cyl.toFixed(2)}
+                  {horizontalSphRange.map((sph) => (
+                    <th key={sph} className="p-2 border text-sm">
+                      {sph.toFixed(2)}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {[...minusSphRange, ...plusSphRange].map((sph) => (
+                {[...minusSphRange].map((sph) => (
                   <tr key={sph}>
                     <td className="p-2 border font-medium">{sph.toFixed(2)}</td>
-                    {cylRange.map((cyl) => {
+                    {horizontalSphRange.map((cyl) => {
                       const stockItem = stockData?.find(
                         (item) => item.sph === sph && item.cyl === cyl
                       );
