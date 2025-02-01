@@ -24,19 +24,48 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({ lensTypeId
   const [selectedLensType, setSelectedLensType] = React.useState<string | null>(lensTypeId);
   const queryClient = useQueryClient();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleStockUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      const { error } = await supabase.from('lens_stock').upsert({
+        lens_type_id: selectedLensType,
+        sph: parseFloat(formData.get('sph') as string),
+        cyl: parseFloat(formData.get('cyl') as string),
+        quantity: parseInt(formData.get('quantity') as string),
+        minimum_stock: parseInt(formData.get('minimum_stock') as string),
+        reorder_point: parseInt(formData.get('reorder_point') as string),
+      });
+
+      if (error) throw error;
+
+      toast.success('Stock updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['lens-stock'] });
+      setOpen(false);
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      toast.error('Failed to update stock');
+    }
+  };
+
+  const handleCreateLensType = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
     try {
       // Insert as array with single object
-      const { data, error } = await supabase.from('lens_types').insert([{
-        name: formData.get('name') as string,
-        material: formData.get('material') as string,
-        index: parseFloat(formData.get('index') as string),
-        description: formData.get('description') as string,
-        price: parseFloat(formData.get('price') as string) || 0,
-      }]).select().single();
+      const { data, error } = await supabase
+        .from('lens_types')
+        .insert([{
+          name: formData.get('name') as string,
+          material: formData.get('material') as string,
+          index: parseFloat(formData.get('index') as string),
+          description: formData.get('description') as string,
+          price: parseFloat(formData.get('price') as string) || 0,
+        }])
+        .select()
+        .single();
 
       if (error) throw error;
 
@@ -65,7 +94,7 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({ lensTypeId
           </TabsList>
           
           <TabsContent value="update">
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleStockUpdate} className="space-y-4">
               <div className="space-y-2">
                 <Label>Lens Type</Label>
                 <LensTypeSelect 

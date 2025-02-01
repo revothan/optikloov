@@ -42,10 +42,11 @@ interface LensStock {
   sph: number;
   cyl: number;
   quantity: number;
-  lens_type_id: string; // Added this
+  lens_type_id: string;
   lens_type: {
     name: string;
     material: string;
+    price?: number;
   };
 }
 
@@ -159,14 +160,23 @@ export function ProductSelect({
 
   const handleLensStockSelect = async (stock: LensStock) => {
     try {
+      if (!stock.lens_type_id) {
+        toast.error("Invalid lens type selection");
+        return;
+      }
+
       // Get the lens type details including price
       const { data: lensType, error: lensTypeError } = await supabase
         .from('lens_types')
         .select('*')
         .eq('id', stock.lens_type_id)
-        .single();
+        .maybeSingle();
 
       if (lensTypeError) throw lensTypeError;
+      if (!lensType) {
+        toast.error("Lens type not found");
+        return;
+      }
 
       // Create a product from the lens stock
       const productName = `${stock.lens_type?.name} ${stock.lens_type?.material} SPH:${formatNumber(stock.sph)} CYL:${formatNumber(stock.cyl)}`;
@@ -181,7 +191,7 @@ export function ProductSelect({
       const { error: insertError } = await supabase.from("products").insert({
         id: customProductId,
         name: productName,
-        store_price: lensType.price, // Use the lens type price
+        store_price: lensType.price || 0,
         category: "Stock Lens",
         user_id: userData.user.id,
       });
@@ -191,7 +201,7 @@ export function ProductSelect({
       const product = {
         id: customProductId,
         name: productName,
-        store_price: lensType.price,
+        store_price: lensType.price || 0,
         category: "Stock Lens",
       };
 
