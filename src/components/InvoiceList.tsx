@@ -99,6 +99,7 @@ export default function InvoiceList() {
       toast.error("Failed to delete invoice");
     }
   };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -147,4 +148,3 @@ export default function InvoiceList() {
     </div>
   );
 }
-
