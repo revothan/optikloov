@@ -158,6 +158,15 @@ export function ProductSelect({
 
   const handleLensStockSelect = async (stock: LensStock) => {
     try {
+      // Get the lens type details including price
+      const { data: lensType, error: lensTypeError } = await supabase
+        .from('lens_types')
+        .select('*')
+        .eq('id', stock.lens_type_id)
+        .single();
+
+      if (lensTypeError) throw lensTypeError;
+
       // Create a product from the lens stock
       const productName = `${stock.lens_type?.name} ${stock.lens_type?.material} SPH:${formatNumber(stock.sph)} CYL:${formatNumber(stock.cyl)}`;
       const customProductId = generateUUID();
@@ -171,8 +180,8 @@ export function ProductSelect({
       const { error: insertError } = await supabase.from("products").insert({
         id: customProductId,
         name: productName,
-        store_price: 0,
-        category: "Stock Lens",  // Changed from "Lensa" to "Stock Lens" to differentiate
+        store_price: lensType.price, // Use the lens type price
+        category: "Stock Lens",
         user_id: userData.user.id,
       });
 
@@ -181,7 +190,7 @@ export function ProductSelect({
       const product = {
         id: customProductId,
         name: productName,
-        store_price: 0,
+        store_price: lensType.price,
         category: "Stock Lens",
       };
 

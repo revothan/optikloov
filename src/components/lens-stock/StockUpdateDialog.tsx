@@ -59,6 +59,7 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({ lensTypeId
         material: formData.get('material'),
         index: parseFloat(formData.get('index') as string),
         description: formData.get('description'),
+        price: parseFloat(formData.get('price') as string) || 0,
       }).select().single();
 
       if (error) throw error;
@@ -186,6 +187,17 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({ lensTypeId
                   step="0.01"
                   required
                   placeholder="e.g., 1.56"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="price">Price</Label>
+                <Input
+                  id="price"
+                  name="price"
+                  type="number"
+                  required
+                  placeholder="Enter price"
+                  defaultValue="0"
                 />
               </div>
               <div className="space-y-2">
