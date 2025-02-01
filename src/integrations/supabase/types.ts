@@ -191,6 +191,7 @@ export type Database = {
           grand_total: number
           id: string
           invoice_number: string
+          last_payment_date: string | null
           paid_amount: number | null
           payment_type: string | null
           received_by: string | null
@@ -214,6 +215,7 @@ export type Database = {
           grand_total?: number
           id?: string
           invoice_number: string
+          last_payment_date?: string | null
           paid_amount?: number | null
           payment_type?: string | null
           received_by?: string | null
@@ -237,6 +239,7 @@ export type Database = {
           grand_total?: number
           id?: string
           invoice_number?: string
+          last_payment_date?: string | null
           paid_amount?: number | null
           payment_type?: string | null
           received_by?: string | null
@@ -296,6 +299,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          id: string
+          invoice_id: string | null
+          is_down_payment: boolean | null
+          payment_date: string | null
+          payment_type: string
+        }
+        Insert: {
+          amount: number
+          id?: string
+          invoice_id?: string | null
+          is_down_payment?: boolean | null
+          payment_date?: string | null
+          payment_type: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          invoice_id?: string | null
+          is_down_payment?: boolean | null
+          payment_date?: string | null
+          payment_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_variants: {
         Row: {
