@@ -106,6 +106,7 @@ export function ProductSelect({
           sph,
           cyl,
           quantity,
+          lens_type_id,
           lens_type:lens_type_id (
             name,
             material
