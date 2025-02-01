@@ -13,9 +13,11 @@ const styles = StyleSheet.create({
     fontSize: 7,
   },
   notes: {
-    marginTop: 10,
-    padding: 10,
+    position: 'absolute',
+    bottom: 30,
+    left: 16,
     fontSize: 8,
+    maxWidth: '50%',
   }
 });
 
