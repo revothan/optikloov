@@ -51,6 +51,7 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   const [showPaymentTypeDialog, setShowPaymentTypeDialog] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -65,32 +66,59 @@ export function InvoiceTableRow({ invoice, onDelete }: {
   }, [navigate]);
 
   useEffect(() => {
-    const loadInvoiceItems = async () => {
-      try {
-        const { data: invoiceItems, error } = await supabase
-          .from('invoice_items')
-          .select(`
-            *,
-            products:product_id (
-              id,
-              name,
-              brand,
-              category
-            )
-          `)
-          .eq('invoice_id', invoice.id);
+    let isMounted = true;
+    const retryCount = 3;
+    let currentTry = 0;
 
-        if (error) throw error;
-        setItems(invoiceItems || []);
-      } catch (error) {
-        console.error('Error loading invoice items:', error);
-        toast.error('Failed to load invoice items');
-      } finally {
-        setIsLoading(false);
-      }
+    const loadInvoiceItems = async () => {
+      if (!isMounted) return;
+      
+      setError(null);
+      setIsLoading(true);
+
+      const fetchItems = async () => {
+        try {
+          const { data: invoiceItems, error } = await supabase
+            .from('invoice_items')
+            .select(`
+              *,
+              products:product_id (
+                id,
+                name,
+                brand,
+                category
+              )
+            `)
+            .eq('invoice_id', invoice.id);
+
+          if (error) throw error;
+          if (isMounted) {
+            setItems(invoiceItems || []);
+            setIsLoading(false);
+          }
+        } catch (error) {
+          console.error('Error loading invoice items:', error);
+          if (currentTry < retryCount) {
+            currentTry++;
+            console.log(`Retrying... Attempt ${currentTry} of ${retryCount}`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * currentTry));
+            return fetchItems();
+          }
+          if (isMounted) {
+            setError('Failed to load invoice items');
+            setIsLoading(false);
+          }
+        }
+      };
+
+      await fetchItems();
     };
 
     loadInvoiceItems();
+
+    return () => {
+      isMounted = false;
+    };
   }, [invoice.id]);
 
   const handleConfirmPayment = useCallback(async (paymentType: string) => {
@@ -187,6 +215,24 @@ export function InvoiceTableRow({ invoice, onDelete }: {
 
   if (!isAuthenticated) {
     return null;
+  }
+
+  if (error) {
+    return (
+      <tr>
+        <td colSpan={5} className="py-4 px-4 text-center text-red-500">
+          {error}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => window.location.reload()}
+            className="ml-2"
+          >
+            Retry
+          </Button>
+        </td>
+      </tr>
+    );
   }
 
   return (
