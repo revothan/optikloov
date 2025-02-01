@@ -13,7 +13,7 @@ export const schema = z.object({
   sale_date: z.string().min(1, "Sale date is required"),
   customer_name: z.string().min(1, "Customer name is required"),
   customer_email: z.string().email().optional().nullable(),
-  customer_birth_date: z.string().optional().nullable(),
+  customer_birth_date: z.string().nullable(),
   customer_phone: z.string().optional(),
   customer_address: z.string().optional(),
   payment_type: z.string().min(1, "Payment type is required"),

@@ -11,7 +11,6 @@ import { PaymentSignature } from "./invoice-form/PaymentSignature";
 import { schema } from "./invoice/invoiceFormSchema";
 import { useInvoiceSubmission } from "./invoice/useInvoiceSubmission";
 import type { z } from "zod";
-import { useEffect } from 'react';
 
 type FormData = z.infer<typeof schema>;
 
@@ -52,7 +51,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       sale_date: new Date().toISOString().split("T")[0],
       customer_name: "",
       customer_email: "",
-      customer_birth_date: "",
+      customer_birth_date: null,
       customer_phone: "",
       customer_address: "",
       payment_type: "",
@@ -100,9 +99,20 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const totals = calculateTotals();
   const { submitInvoice } = useInvoiceSubmission(onSuccess);
 
+  const onSubmit = async (values: FormData) => {
+    // Ensure dates are properly formatted or null
+    const formattedValues = {
+      ...values,
+      customer_birth_date: values.customer_birth_date || null,
+      sale_date: values.sale_date || new Date().toISOString().split("T")[0],
+    };
+
+    await submitInvoice(formattedValues, totals);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((values) => submitInvoice(values, totals))} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <BasicInvoiceInfo form={form} />
 
         <InvoiceItemForm
