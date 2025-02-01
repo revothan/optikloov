@@ -42,6 +42,7 @@ interface LensStock {
   sph: number;
   cyl: number;
   quantity: number;
+  lens_type_id: string; // Added this
   lens_type: {
     name: string;
     material: string;
