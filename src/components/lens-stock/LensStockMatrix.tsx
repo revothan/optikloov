@@ -10,13 +10,13 @@ import { LensTypeSelect } from "./LensTypeSelect";
 export const LensStockMatrix = () => {
   const [selectedLensType, setSelectedLensType] = React.useState<string | null>(null);
   
-  // CYL range (vertical, 0 to -2.00)
-  const cylRange = Array.from({ length: 9 }, (_, i) => -(i * 0.25)).sort((a, b) => b - a); // Start from 0.00 to -2.00
-  
-  // SPH range (horizontal, -6.00 to +3.00)
+  // SPH range (vertical, -6.00 to +3.00)
   const minusSphRange = Array.from({ length: 25 }, (_, i) => -(i * 0.25)); // 0 to -6.00
   const plusSphRange = Array.from({ length: 13 }, (_, i) => (i * 0.25)); // 0 to +3.00
-  const horizontalSphRange = [...minusSphRange.reverse(), ...plusSphRange.slice(1)];
+  const verticalSphRange = [...minusSphRange.reverse(), ...plusSphRange.slice(1)];
+  
+  // CYL range (horizontal, 0 to -2.00)
+  const cylRange = Array.from({ length: 9 }, (_, i) => -(i * 0.25)).sort((a, b) => b - a);
   
   const { data: stockData, isLoading } = useQuery({
     queryKey: ['lens-stock', selectedLensType],
@@ -49,19 +49,19 @@ export const LensStockMatrix = () => {
             <table className="min-w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="p-2 border">CYL/SPH</th>
-                  {horizontalSphRange.map((sph) => (
-                    <th key={sph} className="p-2 border text-sm">
-                      {sph.toFixed(2)}
+                  <th className="p-2 border">SPH/CYL</th>
+                  {cylRange.map((cyl) => (
+                    <th key={cyl} className="p-2 border text-sm">
+                      {cyl.toFixed(2)}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {cylRange.map((cyl) => (
-                  <tr key={cyl}>
-                    <td className="p-2 border font-medium">{cyl.toFixed(2)}</td>
-                    {horizontalSphRange.map((sph) => {
+                {verticalSphRange.map((sph) => (
+                  <tr key={sph}>
+                    <td className="p-2 border font-medium">{sph.toFixed(2)}</td>
+                    {cylRange.map((cyl) => {
                       const stockItem = stockData?.find(
                         (item) => item.sph === sph && item.cyl === cyl
                       );
