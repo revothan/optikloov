@@ -28,6 +28,11 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({ lensTypeId
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
+    if (!selectedLensType) {
+      toast.error('Please select a lens type');
+      return;
+    }
+    
     try {
       // Check if stock already exists for these parameters
       const { data: existingStock, error: checkError } = await supabase
@@ -86,7 +91,6 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({ lensTypeId
     const formData = new FormData(e.currentTarget);
     
     try {
-      // Insert as array with single object
       const { data, error } = await supabase
         .from('lens_types')
         .insert([{
