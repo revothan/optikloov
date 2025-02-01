@@ -21,7 +21,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
       .from("products")
       .select("track_inventory, stock_qty")
       .eq("id", productId)
-      .single();
+      .maybeSingle();
 
     if (productError) {
       console.error("Error fetching product:", productError);
@@ -45,7 +45,9 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
   const updateLensStock = async (productId: string, quantity: number) => {
     try {
-      // Check if this is a lens stock product
+      console.log(`Checking lens stock for product ID: ${productId}`);
+      
+      // First try to get the lens stock record
       const { data: lensStock, error: lensStockError } = await supabase
         .from("lens_stock")
         .select("id, quantity")
@@ -59,10 +61,13 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
       // If no lens stock found, it's not a lens stock product
       if (!lensStock) {
+        console.log(`No lens stock found for ID ${productId}, treating as regular product`);
         return false;
       }
 
+      console.log(`Current lens stock quantity: ${lensStock.quantity}`);
       const newQuantity = Math.max(0, lensStock.quantity - quantity);
+      console.log(`New lens stock quantity will be: ${newQuantity}`);
       
       const { error: updateError } = await supabase
         .from("lens_stock")
@@ -76,6 +81,22 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
       }
 
       console.log(`Successfully updated lens stock quantity for ID ${productId}`);
+      
+      // Create a stock movement record
+      const { error: movementError } = await supabase
+        .from("lens_stock_movements")
+        .insert({
+          lens_stock_id: productId,
+          movement_type: 'sale',
+          quantity: -quantity, // Negative because it's a reduction
+          created_by: session?.user?.id
+        });
+
+      if (movementError) {
+        console.error("Error creating stock movement record:", movementError);
+        // Don't return false here as the stock update was successful
+      }
+
       return true;
     } catch (error) {
       console.error("Error in updateLensStock:", error);
