@@ -44,19 +44,24 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
   };
 
   const updateLensStock = async (productId: string, quantity: number) => {
-    // Check if this is a lens stock product
-    const { data: lensStock, error: lensStockError } = await supabase
-      .from("lens_stock")
-      .select("id, quantity")
-      .eq("id", productId)
-      .single();
+    try {
+      // Check if this is a lens stock product
+      const { data: lensStock, error: lensStockError } = await supabase
+        .from("lens_stock")
+        .select("id, quantity")
+        .eq("id", productId)
+        .maybeSingle();
 
-    if (lensStockError) {
-      // Not a lens stock product
-      return false;
-    }
+      if (lensStockError) {
+        console.error("Error checking lens stock:", lensStockError);
+        return false;
+      }
 
-    if (lensStock) {
+      // If no lens stock found, it's not a lens stock product
+      if (!lensStock) {
+        return false;
+      }
+
       const newQuantity = Math.max(0, lensStock.quantity - quantity);
       
       const { error: updateError } = await supabase
@@ -70,10 +75,12 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         return false;
       }
 
+      console.log(`Successfully updated lens stock quantity for ID ${productId}`);
       return true;
+    } catch (error) {
+      console.error("Error in updateLensStock:", error);
+      return false;
     }
-
-    return false;
   };
 
   const createPaymentRecord = async (
