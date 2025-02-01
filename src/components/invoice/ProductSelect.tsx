@@ -172,7 +172,7 @@ export function ProductSelect({
         id: customProductId,
         name: productName,
         store_price: 0,
-        category: "Lensa",
+        category: "Stock Lens",  // Changed from "Lensa" to "Stock Lens" to differentiate
         user_id: userData.user.id,
       });
 
@@ -182,7 +182,7 @@ export function ProductSelect({
         id: customProductId,
         name: productName,
         store_price: 0,
-        category: "Lensa",
+        category: "Stock Lens",
       };
 
       handleProductSelect(product);
