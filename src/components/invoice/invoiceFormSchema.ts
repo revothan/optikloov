@@ -20,6 +20,7 @@ export const schema = z.object({
   down_payment: z.string().optional(),
   acknowledged_by: z.string().optional(),
   received_by: z.string().optional(),
+  notes: z.string().optional(),
   items: z
     .array(
       z.object({

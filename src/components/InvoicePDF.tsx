@@ -12,6 +12,11 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 7,
   },
+  notes: {
+    marginTop: 10,
+    padding: 10,
+    fontSize: 8,
+  }
 });
 
 interface InvoicePDFProps {
@@ -61,6 +66,12 @@ export function InvoicePDF({ invoice, items: initialItems, onLoadComplete }: Inv
           downPayment={invoice.down_payment}
           remainingBalance={invoice.remaining_balance}
         />
+
+        {invoice.notes && (
+          <Text style={styles.notes}>
+            Notes: {invoice.notes}
+          </Text>
+        )}
 
         <InvoiceFooter />
       </Page>

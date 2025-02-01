@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { InvoiceItemForm } from "./InvoiceItemForm";
 import { BasicInvoiceInfo } from "./invoice-form/BasicInvoiceInfo";
@@ -11,7 +12,6 @@ import { PaymentSignature } from "./invoice-form/PaymentSignature";
 import { schema } from "./invoice/invoiceFormSchema";
 import { useInvoiceSubmission } from "./invoice/useInvoiceSubmission";
 import type { z } from "zod";
-import { useEffect } from 'react';
 
 type FormData = z.infer<typeof schema>;
 
@@ -59,15 +59,10 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       down_payment: "0",
       acknowledged_by: "",
       received_by: "",
+      notes: "",
       items: [],
     },
   });
-
-  useEffect(() => {
-    if (!isLoadingInvoice && latestInvoice) {
-      form.setValue("invoice_number", generateNextInvoiceNumber(latestInvoice));
-    }
-  }, [latestInvoice, isLoadingInvoice, form]);
 
   const { fields, append, remove, swap, move, insert, prepend } = useFieldArray({
     name: "items",
@@ -117,6 +112,15 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
             prepend,
           }}
         />
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Notes</label>
+          <Textarea
+            {...form.register("notes")}
+            placeholder="Add any additional notes here..."
+            className="min-h-[100px]"
+          />
+        </div>
 
         <PaymentSignature form={form} totals={totals} />
 
