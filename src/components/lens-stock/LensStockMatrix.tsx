@@ -11,7 +11,7 @@ export const LensStockMatrix = () => {
   const [selectedLensType, setSelectedLensType] = React.useState<string | null>(null);
   
   // CYL range (vertical, 0 to -2.00)
-  const cylRange = Array.from({ length: 9 }, (_, i) => -(i * 0.25));
+  const cylRange = Array.from({ length: 9 }, (_, i) => -(i * 0.25)).sort((a, b) => b - a); // Start from 0.00 to -2.00
   
   // SPH range (horizontal, -6.00 to +3.00)
   const minusSphRange = Array.from({ length: 25 }, (_, i) => -(i * 0.25)); // 0 to -6.00
