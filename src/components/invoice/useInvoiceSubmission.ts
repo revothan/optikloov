@@ -45,12 +45,12 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
   const updateLensStock = async (productId: string, quantity: number) => {
     try {
-      console.log(`Checking lens stock for product ID: ${productId}`);
+      console.log(`Checking if ${productId} is a lens stock item...`);
       
-      // First try to get the lens stock record
+      // First check if this is a lens stock item by checking the lens_stock table
       const { data: lensStock, error: lensStockError } = await supabase
         .from("lens_stock")
-        .select("*")  // Select all fields to ensure we have the correct record
+        .select("*, lens_type:lens_type_id (name, material)")
         .eq("id", productId)
         .maybeSingle();
 
@@ -59,16 +59,21 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         return false;
       }
 
-      // If no lens stock found, it's not a lens stock product
+      // If no lens stock found, it's not a lens stock item
       if (!lensStock) {
         console.log(`No lens stock found for ID ${productId}, treating as regular product`);
         return false;
       }
 
-      console.log(`Current lens stock quantity: ${lensStock.quantity}`);
-      const newQuantity = Math.max(0, lensStock.quantity - quantity);
-      console.log(`New lens stock quantity will be: ${newQuantity}`);
+      console.log(`Found lens stock:`, lensStock);
       
+      // Calculate new quantity
+      const currentQuantity = lensStock.quantity || 0;
+      const newQuantity = Math.max(0, currentQuantity - quantity);
+      
+      console.log(`Current quantity: ${currentQuantity}, New quantity will be: ${newQuantity}`);
+      
+      // Update the lens stock quantity
       const { error: updateError } = await supabase
         .from("lens_stock")
         .update({ 
@@ -83,7 +88,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         return false;
       }
 
-      console.log(`Successfully updated lens stock quantity for ID ${productId}`);
+      console.log(`Successfully updated lens stock quantity`);
       
       // Create a stock movement record
       const { error: movementError } = await supabase
@@ -93,7 +98,8 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           movement_type: 'sale',
           quantity: -quantity, // Negative because it's a reduction
           created_by: session?.user?.id,
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          notes: `Stock reduced by ${quantity} due to sale`
         });
 
       if (movementError) {
