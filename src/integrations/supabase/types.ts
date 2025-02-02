@@ -517,6 +517,10 @@ export type Database = {
           hold_qty: number | null
           id: string
           image_url: string | null
+          lens_cyl: number | null
+          lens_sph: number | null
+          lens_stock_id: string | null
+          lens_type_id: string | null
           low_stock_alert: number | null
           loyalty_points: number | null
           market_price: number | null
@@ -569,6 +573,10 @@ export type Database = {
           hold_qty?: number | null
           id?: string
           image_url?: string | null
+          lens_cyl?: number | null
+          lens_sph?: number | null
+          lens_stock_id?: string | null
+          lens_type_id?: string | null
           low_stock_alert?: number | null
           loyalty_points?: number | null
           market_price?: number | null
@@ -621,6 +629,10 @@ export type Database = {
           hold_qty?: number | null
           id?: string
           image_url?: string | null
+          lens_cyl?: number | null
+          lens_sph?: number | null
+          lens_stock_id?: string | null
+          lens_type_id?: string | null
           low_stock_alert?: number | null
           loyalty_points?: number | null
           market_price?: number | null
@@ -655,7 +667,22 @@ export type Database = {
           variant_names?: string | null
           weight_kg?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_lens_stock_id_fkey"
+            columns: ["lens_stock_id"]
+            isOneToOne: false
+            referencedRelation: "lens_stock"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_lens_type_id_fkey"
+            columns: ["lens_type_id"]
+            isOneToOne: false
+            referencedRelation: "lens_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products_duplicate: {
         Row: {

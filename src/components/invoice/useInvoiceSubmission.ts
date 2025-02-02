@@ -12,6 +12,26 @@ interface Totals {
   remainingBalance: number;
 }
 
+const createPaymentRecord = async (
+  invoiceId: string,
+  amount: number,
+  paymentType: string,
+  isDownPayment: boolean = false
+) => {
+  const { error } = await supabase.from("payments").insert({
+    invoice_id: invoiceId,
+    amount,
+    payment_type: paymentType,
+    payment_date: new Date().toISOString(),
+    is_down_payment: isDownPayment,
+  });
+
+  if (error) {
+    console.error("Error creating payment record:", error);
+    throw new Error("Failed to create payment record");
+  }
+};
+
 export const useInvoiceSubmission = (onSuccess?: () => void) => {
   const session = useSession();
   const queryClient = useQueryClient();
@@ -133,6 +153,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
       return false;
     }
   };
+
   const submitInvoice = async (values: FormData, totals: Totals) => {
     if (!session?.user?.id) {
       toast.error("You must be logged in to create an invoice");
@@ -197,7 +218,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           right_eye_axis: item.right_eye?.axis || null,
           right_eye_add_power: item.right_eye?.add_power || null,
           right_eye_mpd: item.right_eye?.mpd || null,
-        })),
+        }))
       );
 
       if (itemsError) {
@@ -212,20 +233,21 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           invoice.id,
           totals.downPayment,
           values.payment_type,
-          true,
+          true
         );
       }
 
       // Update product stock quantities
       for (const item of values.items) {
         console.log(
-          `Processing item ${item.product_id} with quantity ${item.quantity}`,
+          `Processing item ${item.product_id} with quantity ${item.quantity}`
         );
 
         // First try to update lens stock
         const isLensStock = await updateLensStock(
           item.product_id,
           item.quantity,
+          invoice.id
         );
 
         // If it's not a lens stock item, try to update regular product stock
@@ -258,4 +280,3 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
   return { submitInvoice };
 };
-
