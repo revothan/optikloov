@@ -153,6 +153,7 @@ const updateLensStock = async (
   productId: string,
   quantity: number,
   invoiceId: string,
+  userId: string
 ) => {
   try {
     console.log(`Checking lens stock for product ${productId}...`);
@@ -220,7 +221,7 @@ const updateLensStock = async (
         lens_stock_id: product.lens_stock_id,
         movement_type: "sale",
         quantity: -quantity,
-        created_by: session?.user?.id,
+        created_by: userId,
         created_at: new Date().toISOString(),
         invoice_id: invoiceId,
         notes: `Stock reduced by ${quantity} due to sale in invoice ${invoiceId}`,
@@ -357,7 +358,8 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         const isLensStock = await updateLensStock(
           item.product_id,
           item.quantity,
-          invoice.id
+          invoice.id,
+          session.user.id
         );
 
         // If it's not a lens stock item, try to update regular product stock
