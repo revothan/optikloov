@@ -32,6 +32,59 @@ const createPaymentRecord = async (
   }
 };
 
+const createOrUpdateCustomer = async (customerData: {
+  name: string;
+  phone?: string | null;
+  email?: string | null;
+  birth_date?: string | null;
+  address?: string | null;
+}) => {
+  if (!customerData.phone) return;
+
+  // Check if customer exists
+  const { data: existingCustomer } = await supabase
+    .from("customers")
+    .select("*")
+    .eq("phone", customerData.phone)
+    .maybeSingle();
+
+  if (existingCustomer) {
+    // Update existing customer
+    const { error: updateError } = await supabase
+      .from("customers")
+      .update({
+        name: customerData.name,
+        email: customerData.email,
+        birth_date: customerData.birth_date,
+        address: customerData.address,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("phone", customerData.phone);
+
+    if (updateError) {
+      console.error("Error updating customer:", updateError);
+      toast.error("Failed to update customer information");
+    }
+  } else {
+    // Create new customer
+    const { error: insertError } = await supabase.from("customers").insert({
+      name: customerData.name,
+      phone: customerData.phone,
+      email: customerData.email,
+      birth_date: customerData.birth_date,
+      address: customerData.address,
+      membership_type: "Classic",
+      is_active: true,
+      join_date: new Date().toISOString(),
+    });
+
+    if (insertError) {
+      console.error("Error creating customer:", insertError);
+      toast.error("Failed to create customer record");
+    }
+  }
+};
+
 export const useInvoiceSubmission = (onSuccess?: () => void) => {
   const session = useSession();
   const queryClient = useQueryClient();
@@ -161,6 +214,15 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
     }
 
     try {
+      // Create or update customer record first
+      await createOrUpdateCustomer({
+        name: values.customer_name,
+        phone: values.customer_phone,
+        email: values.customer_email,
+        birth_date: values.customer_birth_date,
+        address: values.customer_address,
+      });
+
       // Create the invoice
       const { data: invoice, error: invoiceError } = await supabase
         .from("invoices")
@@ -273,6 +335,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["sales-report"] });
       queryClient.invalidateQueries({ queryKey: ["lens-stock"] });
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
 
       console.log("Invoice created successfully");
       toast.success("Invoice created successfully");
