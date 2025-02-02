@@ -15,7 +15,7 @@ export function PrescriptionFields({
   return (
     <div>
       <h5 className="text-sm font-medium mb-2">
-        {side === "left" ? "Left Eye" : "Right Eye"}
+        {side === "right" ? "Right Eye (OD)" : "Left Eye (OS)"}
       </h5>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <EyeField

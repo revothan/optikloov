@@ -115,8 +115,8 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
               <CommonFields form={form} index={index} />
               
               <div className="space-y-4">
-                <PrescriptionFields form={form} index={index} side="left" />
                 <PrescriptionFields form={form} index={index} side="right" />
+                <PrescriptionFields form={form} index={index} side="left" />
               </div>
             </div>
           )}
