@@ -14,6 +14,7 @@ import { Loader2, Cake, User, UserMinus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
 import { MessageTemplateDialog } from "@/components/admin/MessageTemplateDialog";
+import { MigrateCustomersButton } from "@/components/admin/MigrateCustomersButton";
 import { Badge } from "@/components/ui/badge";
 
 export function CustomerTable() {
@@ -101,6 +102,7 @@ export function CustomerTable() {
             <div className="flex items-center gap-4">
               <CardTitle>Customers</CardTitle>
               <MessageTemplateDialog />
+              <MigrateCustomersButton />
             </div>
             {birthdaysToday > 0 && (
               <p className="text-sm text-muted-foreground mt-1">

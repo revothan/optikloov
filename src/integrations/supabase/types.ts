@@ -46,7 +46,7 @@ export type Database = {
           email?: string | null
           expired_date?: string | null
           gender?: string | null
-          id: number
+          id?: number
           is_active?: boolean | null
           join_date?: string | null
           loyalty_points?: number | null
