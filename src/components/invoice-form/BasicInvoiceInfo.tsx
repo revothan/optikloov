@@ -16,6 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 interface BasicInvoiceInfoProps {
   form: UseFormReturn<any>;
@@ -47,6 +49,42 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
     return str.replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
+  // Watch the phone number field for changes
+  const phoneNumber = form.watch("customer_phone");
+
+  // Query to fetch customer by phone number
+  const { data: customerData } = useQuery({
+    queryKey: ["customer", phoneNumber],
+    queryFn: async () => {
+      if (!phoneNumber) return null;
+      
+      const { data, error } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("phone", phoneNumber)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error("Error fetching customer:", error);
+        return null;
+      }
+
+      return data;
+    },
+    enabled: !!phoneNumber,
+  });
+
+  // Auto-fill customer details when found
+  useEffect(() => {
+    if (customerData) {
+      form.setValue("customer_name", customerData.name);
+      form.setValue("customer_email", customerData.email || "");
+      form.setValue("customer_birth_date", customerData.birth_date || "");
+      form.setValue("customer_address", customerData.address || "");
+      toast.success("Customer details found and filled automatically");
+    }
+  }, [customerData, form]);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <FormField
@@ -71,6 +109,20 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
             <FormLabel>Tanggal</FormLabel>
             <FormControl>
               <Input type="date" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="customer_phone"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Nomor Telepon</FormLabel>
+            <FormControl>
+              <Input {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -119,20 +171,6 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
             <FormLabel>Tanggal Lahir</FormLabel>
             <FormControl>
               <Input type="date" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="customer_phone"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Nomor Telepon</FormLabel>
-            <FormControl>
-              <Input {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
