@@ -39,173 +39,210 @@ const createOrUpdateCustomer = async (customerData: {
   birth_date?: string | null;
   address?: string | null;
 }) => {
-  if (!customerData.phone) return;
+  // Only proceed if we have a phone number
+  if (!customerData.phone) {
+    console.log("No phone number provided, skipping customer creation/update");
+    return;
+  }
 
-  // Check if customer exists
-  const { data: existingCustomer } = await supabase
-    .from("customers")
-    .select("*")
-    .eq("phone", customerData.phone)
-    .maybeSingle();
-
-  if (existingCustomer) {
-    // Update existing customer
-    const { error: updateError } = await supabase
+  try {
+    // Check if customer exists
+    const { data: existingCustomer, error: searchError } = await supabase
       .from("customers")
-      .update({
+      .select("*")
+      .eq("phone", customerData.phone)
+      .maybeSingle();
+
+    if (searchError) {
+      console.error("Error searching for customer:", searchError);
+      toast.error("Failed to check existing customer");
+      return;
+    }
+
+    if (existingCustomer) {
+      console.log("Customer exists, updating information...");
+      // Update existing customer only if new data is provided
+      const updateData: any = {};
+      
+      if (customerData.name && customerData.name !== existingCustomer.name) {
+        updateData.name = customerData.name;
+      }
+      if (customerData.email && customerData.email !== existingCustomer.email) {
+        updateData.email = customerData.email;
+      }
+      if (customerData.birth_date && customerData.birth_date !== existingCustomer.birth_date) {
+        updateData.birth_date = customerData.birth_date;
+      }
+      if (customerData.address && customerData.address !== existingCustomer.address) {
+        updateData.address = customerData.address;
+      }
+
+      // Only update if there are changes
+      if (Object.keys(updateData).length > 0) {
+        updateData.updated_at = new Date().toISOString();
+        
+        const { error: updateError } = await supabase
+          .from("customers")
+          .update(updateData)
+          .eq("phone", customerData.phone);
+
+        if (updateError) {
+          console.error("Error updating customer:", updateError);
+          toast.error("Failed to update customer information");
+        } else {
+          toast.success("Customer information updated");
+        }
+      } else {
+        console.log("No new information to update");
+      }
+    } else {
+      console.log("Creating new customer...");
+      // Create new customer
+      const { error: insertError } = await supabase.from("customers").insert({
         name: customerData.name,
+        phone: customerData.phone,
         email: customerData.email,
         birth_date: customerData.birth_date,
         address: customerData.address,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("phone", customerData.phone);
+        membership_type: "Classic",
+        is_active: true,
+        join_date: new Date().toISOString(),
+      });
+
+      if (insertError) {
+        console.error("Error creating customer:", insertError);
+        toast.error("Failed to create customer record");
+      } else {
+        toast.success("New customer record created");
+      }
+    }
+  } catch (error) {
+    console.error("Error in createOrUpdateCustomer:", error);
+    toast.error("Failed to process customer information");
+  }
+};
+
+const updateProductStock = async (productId: string, quantity: number) => {
+  const { data: product, error: productError } = await supabase
+    .from("products")
+    .select("track_inventory, stock_qty")
+    .eq("id", productId)
+    .maybeSingle();
+
+  if (productError) {
+    console.error("Error fetching product:", productError);
+    return;
+  }
+
+  if (product?.track_inventory && product.stock_qty !== null) {
+    const newStock = Math.max(0, (product.stock_qty || 0) - quantity);
+
+    const { error: updateError } = await supabase
+      .from("products")
+      .update({ stock_qty: newStock })
+      .eq("id", productId);
 
     if (updateError) {
-      console.error("Error updating customer:", updateError);
-      toast.error("Failed to update customer information");
+      console.error("Error updating product stock:", updateError);
+      toast.error(`Failed to update stock for product ID ${productId}`);
     }
-  } else {
-    // Create new customer
-    const { error: insertError } = await supabase.from("customers").insert({
-      name: customerData.name,
-      phone: customerData.phone,
-      email: customerData.email,
-      birth_date: customerData.birth_date,
-      address: customerData.address,
-      membership_type: "Classic",
-      is_active: true,
-      join_date: new Date().toISOString(),
-    });
+  }
+};
 
-    if (insertError) {
-      console.error("Error creating customer:", insertError);
-      toast.error("Failed to create customer record");
+const updateLensStock = async (
+  productId: string,
+  quantity: number,
+  invoiceId: string,
+) => {
+  try {
+    console.log(`Checking lens stock for product ${productId}...`);
+
+    // First get the product details to check if it's a lens product
+    const { data: product, error: productError } = await supabase
+      .from("products")
+      .select("*, lens_stock:lens_stock_id(*)")
+      .eq("id", productId)
+      .maybeSingle();
+
+    if (productError) {
+      console.error("Error checking product:", productError);
+      return false;
     }
+
+    if (
+      !product ||
+      product.category !== "Stock Lens" ||
+      !product.lens_stock_id
+    ) {
+      console.log(`Product ${productId} is not a stock lens item`);
+      return false;
+    }
+
+    // Get current lens stock
+    const { data: lensStock, error: lensStockError } = await supabase
+      .from("lens_stock")
+      .select("quantity")
+      .eq("id", product.lens_stock_id)
+      .single();
+
+    if (lensStockError) {
+      console.error("Error checking lens stock:", lensStockError);
+      return false;
+    }
+
+    // Calculate and update new quantity
+    const currentQuantity = lensStock.quantity || 0;
+    const newQuantity = Math.max(0, currentQuantity - quantity);
+
+    console.log(
+      `Updating lens stock ${product.lens_stock_id} from ${currentQuantity} to ${newQuantity}`,
+    );
+
+    // Update the lens stock quantity
+    const { error: updateError } = await supabase
+      .from("lens_stock")
+      .update({
+        quantity: newQuantity,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", product.lens_stock_id);
+
+    if (updateError) {
+      console.error("Error updating lens stock:", updateError);
+      toast.error(`Failed to update lens stock quantity`);
+      return false;
+    }
+
+    // Create a stock movement record
+    const { error: movementError } = await supabase
+      .from("lens_stock_movements")
+      .insert({
+        lens_stock_id: product.lens_stock_id,
+        movement_type: "sale",
+        quantity: -quantity,
+        created_by: session?.user?.id,
+        created_at: new Date().toISOString(),
+        invoice_id: invoiceId,
+        notes: `Stock reduced by ${quantity} due to sale in invoice ${invoiceId}`,
+      });
+
+    if (movementError) {
+      console.error("Error creating stock movement record:", movementError);
+    }
+
+    console.log(
+      `Successfully updated lens stock and created movement record`,
+    );
+    return true;
+  } catch (error) {
+    console.error("Error in updateLensStock:", error);
+    return false;
   }
 };
 
 export const useInvoiceSubmission = (onSuccess?: () => void) => {
   const session = useSession();
   const queryClient = useQueryClient();
-
-  const updateProductStock = async (productId: string, quantity: number) => {
-    const { data: product, error: productError } = await supabase
-      .from("products")
-      .select("track_inventory, stock_qty")
-      .eq("id", productId)
-      .maybeSingle();
-
-    if (productError) {
-      console.error("Error fetching product:", productError);
-      return;
-    }
-
-    if (product?.track_inventory && product.stock_qty !== null) {
-      const newStock = Math.max(0, (product.stock_qty || 0) - quantity);
-
-      const { error: updateError } = await supabase
-        .from("products")
-        .update({ stock_qty: newStock })
-        .eq("id", productId);
-
-      if (updateError) {
-        console.error("Error updating product stock:", updateError);
-        toast.error(`Failed to update stock for product ID ${productId}`);
-      }
-    }
-  };
-
-  const updateLensStock = async (
-    productId: string,
-    quantity: number,
-    invoiceId: string,
-  ) => {
-    try {
-      console.log(`Checking lens stock for product ${productId}...`);
-
-      // First get the product details to check if it's a lens product
-      const { data: product, error: productError } = await supabase
-        .from("products")
-        .select("*, lens_stock:lens_stock_id(*)")
-        .eq("id", productId)
-        .maybeSingle();
-
-      if (productError) {
-        console.error("Error checking product:", productError);
-        return false;
-      }
-
-      if (
-        !product ||
-        product.category !== "Stock Lens" ||
-        !product.lens_stock_id
-      ) {
-        console.log(`Product ${productId} is not a stock lens item`);
-        return false;
-      }
-
-      // Get current lens stock
-      const { data: lensStock, error: lensStockError } = await supabase
-        .from("lens_stock")
-        .select("quantity")
-        .eq("id", product.lens_stock_id)
-        .single();
-
-      if (lensStockError) {
-        console.error("Error checking lens stock:", lensStockError);
-        return false;
-      }
-
-      // Calculate and update new quantity
-      const currentQuantity = lensStock.quantity || 0;
-      const newQuantity = Math.max(0, currentQuantity - quantity);
-
-      console.log(
-        `Updating lens stock ${product.lens_stock_id} from ${currentQuantity} to ${newQuantity}`,
-      );
-
-      // Update the lens stock quantity
-      const { error: updateError } = await supabase
-        .from("lens_stock")
-        .update({
-          quantity: newQuantity,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", product.lens_stock_id);
-
-      if (updateError) {
-        console.error("Error updating lens stock:", updateError);
-        toast.error(`Failed to update lens stock quantity`);
-        return false;
-      }
-
-      // Create a stock movement record
-      const { error: movementError } = await supabase
-        .from("lens_stock_movements")
-        .insert({
-          lens_stock_id: product.lens_stock_id,
-          movement_type: "sale",
-          quantity: -quantity,
-          created_by: session?.user?.id,
-          created_at: new Date().toISOString(),
-          invoice_id: invoiceId,
-          notes: `Stock reduced by ${quantity} due to sale in invoice ${invoiceId}`,
-        });
-
-      if (movementError) {
-        console.error("Error creating stock movement record:", movementError);
-      }
-
-      console.log(
-        `Successfully updated lens stock and created movement record`,
-      );
-      return true;
-    } catch (error) {
-      console.error("Error in updateLensStock:", error);
-      return false;
-    }
-  };
 
   const submitInvoice = async (values: FormData, totals: Totals) => {
     if (!session?.user?.id) {
