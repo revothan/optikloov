@@ -56,22 +56,23 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
   const { data: customerData } = useQuery({
     queryKey: ["customer", phoneNumber],
     queryFn: async () => {
-      if (!phoneNumber) return null;
+      // Only search if phone number is at least 10 digits
+      if (!phoneNumber || phoneNumber.length < 10) return null;
       
       const { data, error } = await supabase
         .from("customers")
         .select("*")
         .eq("phone", phoneNumber)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error("Error fetching customer:", error);
         return null;
       }
 
       return data;
     },
-    enabled: !!phoneNumber,
+    enabled: !!phoneNumber && phoneNumber.length >= 10,
   });
 
   // Auto-fill customer details when found
@@ -122,7 +123,15 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
           <FormItem>
             <FormLabel>Nomor Telepon</FormLabel>
             <FormControl>
-              <Input {...field} />
+              <Input 
+                {...field} 
+                placeholder="Minimal 10 digit"
+                onChange={(e) => {
+                  // Only allow numbers
+                  const value = e.target.value.replace(/[^\d]/g, '');
+                  field.onChange(value);
+                }}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
