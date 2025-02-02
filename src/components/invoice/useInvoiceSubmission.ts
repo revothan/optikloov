@@ -227,14 +227,25 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         return false;
       }
 
-      // Create payment record for down payment if exists
+      // Create payment record based on payment status
       if (totals.downPayment > 0) {
-        await createPaymentRecord(
-          invoice.id,
-          totals.downPayment,
-          values.payment_type,
-          true
-        );
+        if (totals.downPayment === totals.grandTotal) {
+          // If paying full amount, record as final payment
+          await createPaymentRecord(
+            invoice.id,
+            totals.downPayment,
+            values.payment_type,
+            false // Not a down payment
+          );
+        } else {
+          // If partial payment, record as down payment
+          await createPaymentRecord(
+            invoice.id,
+            totals.downPayment,
+            values.payment_type,
+            true // Is a down payment
+          );
+        }
       }
 
       // Update product stock quantities
