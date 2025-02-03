@@ -19,7 +19,7 @@ export function JobOrderList() {
         .from("invoices")
         .select(`
           *,
-          invoice_items!inner (
+          invoice_items (
             *,
             products (*)
           )
@@ -28,7 +28,31 @@ export function JobOrderList() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+
+      // Transform the data to include prescription details
+      return data.map(invoice => ({
+        ...invoice,
+        items: invoice.invoice_items.map(item => ({
+          ...item,
+          product: item.products,
+          right_eye: {
+            sph: item.right_eye_sph,
+            cyl: item.right_eye_cyl,
+            axis: item.right_eye_axis,
+            add_power: item.right_eye_add_power,
+            mpd: item.right_eye_mpd,
+            dbl: item.dbl
+          },
+          left_eye: {
+            sph: item.left_eye_sph,
+            cyl: item.left_eye_cyl,
+            axis: item.left_eye_axis,
+            add_power: item.left_eye_add_power,
+            mpd: item.left_eye_mpd,
+            dbl: item.dbl
+          }
+        }))
+      }));
     },
   });
 
