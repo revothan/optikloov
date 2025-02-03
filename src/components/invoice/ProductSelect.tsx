@@ -70,6 +70,10 @@ export function ProductSelect({
 }: ProductSelectProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [lensTypeFilter, setLensTypeFilter] = useState("");
+  const [materialFilter, setMaterialFilter] = useState("");
+  const [sphFilter, setSphFilter] = useState("");
+  const [cylFilter, setCylFilter] = useState("");
   const [isCustomProduct, setIsCustomProduct] = useState(false);
   const [customProductName, setCustomProductName] = useState("");
   const [customProductCategory, setCustomProductCategory] = useState("Others");
@@ -141,11 +145,18 @@ export function ProductSelect({
     if (!Array.isArray(lensStock)) return [];
 
     return lensStock.filter((stock) => {
-      const searchString =
-        `${stock.lens_type?.name} ${stock.lens_type?.material} SPH:${formatNumber(stock.sph)} CYL:${formatNumber(stock.cyl)}`.toLowerCase();
-      return searchString.includes(searchQuery.toLowerCase());
+      const matchesLensType = !lensTypeFilter || 
+        stock.lens_type?.name.toLowerCase().includes(lensTypeFilter.toLowerCase());
+      const matchesMaterial = !materialFilter || 
+        stock.lens_type?.material.toLowerCase().includes(materialFilter.toLowerCase());
+      const matchesSph = !sphFilter || 
+        stock.sph === parseFloat(sphFilter);
+      const matchesCyl = !cylFilter || 
+        stock.cyl === parseFloat(cylFilter);
+
+      return matchesLensType && matchesMaterial && matchesSph && matchesCyl;
     });
-  }, [lensStock, searchQuery]);
+  }, [lensStock, lensTypeFilter, materialFilter, sphFilter, cylFilter]);
 
   const selectedProduct = useMemo(() => {
     if (!Array.isArray(products)) return undefined;
@@ -169,7 +180,6 @@ export function ProductSelect({
         return;
       }
 
-      // Get the lens type details including price
       const { data: lensType, error: lensTypeError } = await supabase
         .from("lens_types")
         .select("*")
@@ -182,7 +192,6 @@ export function ProductSelect({
         return;
       }
 
-      // Create a product from the lens stock
       const productName = `${stock.lens_type?.name} ${stock.lens_type?.material} SPH:${formatNumber(stock.sph)} CYL:${formatNumber(stock.cyl)}`;
       const customProductId = generateUUID();
       const { data: userData } = await supabase.auth.getUser();
@@ -375,21 +384,16 @@ export function ProductSelect({
                   <TabsTrigger value="lens-stock">Lens Stock</TabsTrigger>
                 </TabsList>
 
-                <div className="flex items-center space-x-2 sticky top-0 bg-background p-2">
-                  <Search className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder={
-                      activeTab === "products"
-                        ? "Search products..."
-                        : "Search lens stock..."
-                    }
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-
                 <TabsContent value="products">
+                  <div className="flex items-center space-x-2 sticky top-0 bg-background p-2">
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search products..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
                   <ScrollArea className="h-[50vh]">
                     {filteredProducts.length === 0 ? (
                       <div className="py-6 text-center text-sm text-muted-foreground">
@@ -432,6 +436,36 @@ export function ProductSelect({
                 </TabsContent>
 
                 <TabsContent value="lens-stock">
+                  <div className="space-y-4 sticky top-0 bg-background p-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        placeholder="Lens Type..."
+                        value={lensTypeFilter}
+                        onChange={(e) => setLensTypeFilter(e.target.value)}
+                      />
+                      <Input
+                        placeholder="Material..."
+                        value={materialFilter}
+                        onChange={(e) => setMaterialFilter(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        placeholder="SPH (e.g. -2.00)"
+                        value={sphFilter}
+                        onChange={(e) => setSphFilter(e.target.value)}
+                        type="number"
+                        step="0.25"
+                      />
+                      <Input
+                        placeholder="CYL (e.g. -0.50)"
+                        value={cylFilter}
+                        onChange={(e) => setCylFilter(e.target.value)}
+                        type="number"
+                        step="0.25"
+                      />
+                    </div>
+                  </div>
                   <ScrollArea className="h-[50vh]">
                     {isLoadingLensStock ? (
                       <div className="py-6 text-center">
