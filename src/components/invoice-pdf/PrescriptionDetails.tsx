@@ -57,10 +57,15 @@ const styles = StyleSheet.create({
   },
 });
 
-const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' | 'add' | 'cyl' | 'other'): string => {
+const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' | 'add' | 'cyl' | 'mpd' | 'pv' | 'prism' | 'other'): string => {
   if (value === null || value === undefined) return "-";
   
   if (typeof value !== 'number') return String(value);
+
+  // Special handling for MPD, PV, and Prism - no fixed decimal places
+  if (type === 'mpd' || type === 'pv' || type === 'prism') {
+    return value === 0 ? "0" : String(value);
+  }
 
   const absValue = Math.abs(value).toFixed(2);
 
@@ -108,7 +113,7 @@ export function PrescriptionDetails({ items }: { items: any[] }) {
             </View>
             <View style={styles.tableRow}>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.pv, 'other')}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.pv, 'pv')}</Text>
               </View>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>{item.v_frame || "-"}</Text>
@@ -117,7 +122,7 @@ export function PrescriptionDetails({ items }: { items: any[] }) {
                 <Text style={styles.tableCell}>{item.f_size || "-"}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.prism, 'other')}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.prism, 'prism')}</Text>
               </View>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>{item.quantity || "-"}</Text>
@@ -158,7 +163,7 @@ export function PrescriptionDetails({ items }: { items: any[] }) {
                 <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye_add_power, 'add')}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye_mpd, 'other')}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye_mpd, 'mpd')}</Text>
               </View>
             </View>
           </View>
@@ -196,7 +201,7 @@ export function PrescriptionDetails({ items }: { items: any[] }) {
                 <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye_add_power, 'add')}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye_mpd, 'other')}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye_mpd, 'mpd')}</Text>
               </View>
             </View>
           </View>
