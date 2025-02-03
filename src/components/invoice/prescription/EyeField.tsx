@@ -14,7 +14,7 @@ interface EyeFieldProps {
   side: "left" | "right";
   fieldName: string;
   label: string;
-  type: "sph" | "cyl" | "add" | "mpd" | "axis" | "dbl";
+  type: "sph" | "cyl" | "add" | "mpd" | "axis";
 }
 
 export function EyeField({
@@ -33,17 +33,61 @@ export function EyeField({
       return;
     }
 
-    if (value === "0" || value === "0.0" || value === "0.00") {
-      if (type === "mpd" || type === "dbl") {
-        form.setValue(`items.${index}.${side}_eye.${fieldName}`, "0");
-      } else {
-        form.setValue(`items.${index}.${side}_eye.${fieldName}`, "0.00");
-      }
-      return;
-    }
+    // Handle different field types
+    switch (type) {
+      case "sph":
+        // Allow both positive and negative values for SPH
+        if (/^[+-]?\d*\.?\d*$/.test(value)) {
+          const numValue = parseFloat(value);
+          if (!isNaN(numValue)) {
+            form.setValue(`items.${index}.${side}_eye.${fieldName}`, parseFloat(numValue.toFixed(2)));
+          }
+        }
+        break;
 
-    if (isValidInput(value, type)) {
-      form.setValue(`items.${index}.${side}_eye.${fieldName}`, parseFloat(value));
+      case "cyl":
+        // Always negative for CYL, remove any positive sign
+        if (/^-?\d*\.?\d*$/.test(value)) {
+          const numValue = parseFloat(value);
+          if (!isNaN(numValue)) {
+            // Ensure it's negative
+            const negativeValue = numValue <= 0 ? numValue : -numValue;
+            form.setValue(`items.${index}.${side}_eye.${fieldName}`, parseFloat(negativeValue.toFixed(2)));
+          }
+        }
+        break;
+
+      case "axis":
+        // Axis should be a whole number
+        if (/^\d*$/.test(value)) {
+          const numValue = parseInt(value);
+          if (!isNaN(numValue)) {
+            form.setValue(`items.${index}.${side}_eye.${fieldName}`, numValue);
+          }
+        }
+        break;
+
+      case "add":
+        // Always positive for ADD
+        if (/^\+?\d*\.?\d*$/.test(value)) {
+          const numValue = parseFloat(value);
+          if (!isNaN(numValue)) {
+            // Ensure it's positive
+            const positiveValue = Math.abs(numValue);
+            form.setValue(`items.${index}.${side}_eye.${fieldName}`, parseFloat(positiveValue.toFixed(2)));
+          }
+        }
+        break;
+
+      case "mpd":
+        // MPD should be a number
+        if (/^\d*$/.test(value)) {
+          const numValue = parseInt(value);
+          if (!isNaN(numValue)) {
+            form.setValue(`items.${index}.${side}_eye.${fieldName}`, numValue);
+          }
+        }
+        break;
     }
   };
 
@@ -52,35 +96,30 @@ export function EyeField({
     
     if (typeof value === "number") {
       if (value === 0) {
-        if (type === "mpd" || type === "dbl") return "0";
-        return "0.00";
+        switch (type) {
+          case "mpd":
+            return "0";
+          case "axis":
+            return "0";
+          default:
+            return "0.00";
+        }
       }
       
-      if (type === "mpd" || type === "dbl") {
-        return value.toString();
+      switch (type) {
+        case "sph":
+        case "cyl":
+        case "add":
+          return value.toFixed(2);
+        case "axis":
+        case "mpd":
+          return value.toString();
+        default:
+          return value;
       }
-      
-      return value.toFixed(2);
     }
     
     return value;
-  };
-
-  const isValidInput = (value: string, type: string): boolean => {
-    switch (type) {
-      case "sph":
-      case "cyl":
-        return /^[+-]?\d*\.?\d*$/.test(value);
-      case "add":
-        return /^\+?\d*\.?\d*$/.test(value);
-      case "mpd":
-      case "dbl":
-        return /^\d*$/.test(value);
-      case "axis":
-        return /^\d*$/.test(value);
-      default:
-        return true;
-    }
   };
 
   return (
