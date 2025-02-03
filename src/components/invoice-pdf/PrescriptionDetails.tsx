@@ -6,22 +6,16 @@ const styles = StyleSheet.create({
   },
   table: {
     width: "100%",
-    borderStyle: "solid",
-    borderWidth: 1,
-    borderColor: "#000",
+    border: "1 solid #000",
     marginBottom: 8,
   },
   tableRow: {
     flexDirection: "row",
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#000",
-    borderBottomStyle: "solid",
+    borderBottom: "0.5 solid #000",
     minHeight: 16,
   },
   tableCol: {
     width: "20%",
-    borderLeftWidth: 0.5,
-    borderLeftColor: "#000",
     justifyContent: "center",
     padding: 2,
   },
@@ -31,8 +25,6 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     backgroundColor: "#f0f0f0",
-    borderBottomWidth: 1,
-    borderBottomColor: "#000",
   },
   headerCell: {
     fontSize: 7,
