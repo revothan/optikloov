@@ -21,10 +21,11 @@ interface InvoiceFormProps {
 }
 
 export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
+  const [submitting, setSubmitting] = useState(false);
+
   const { data: latestInvoice, isLoading: isLoadingInvoice } = useQuery({
     queryKey: ["latest-invoice-number"],
     queryFn: async () => {
-      console.log("Fetching latest invoice number...");
       const { data, error } = await supabase
         .from("invoices")
         .select("invoice_number")
@@ -32,11 +33,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
         .limit(1)
         .single();
 
-      if (error) {
-        console.error("Error fetching latest invoice:", error);
-        throw error;
-      }
-      console.log("Latest invoice data:", data);
+      if (error) throw error;
       return data?.invoice_number || "0124";
     },
   });
@@ -62,7 +59,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       acknowledged_by: "",
       received_by: "",
       notes: "",
-      branch: "Gading Serpong", // Set default branch
+      branch: "Gading Serpong",
       items: [],
     },
   });
@@ -74,15 +71,17 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     }
   }, [latestInvoice, isLoadingInvoice, form]);
 
-  const { fields, append, remove, swap, move, insert, prepend } = useFieldArray({
-    name: "items",
-    control: form.control,
-  });
+  const { fields, append, remove, swap, move, insert, prepend } = useFieldArray(
+    {
+      name: "items",
+      control: form.control,
+    },
+  );
 
   const calculateTotals = () => {
     const items = form.watch("items") || [];
     const totalAmount = items.reduce((sum, item) => {
-      return sum + (item.quantity * item.price);
+      return sum + item.quantity * item.price;
     }, 0);
 
     const discountAmount = items.reduce((sum, item) => {
@@ -105,9 +104,43 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const totals = calculateTotals();
   const { submitInvoice } = useInvoiceSubmission(onSuccess);
 
+  // Handle form submission
+
+  // Inside InvoiceForm.tsx
+
+  // Handle form submission
+  const handleSubmit = async (values: FormData) => {
+    console.log("Form submission started");
+    console.log("Form values:", values);
+    console.log("Totals:", totals);
+
+    try {
+      setSubmitting(true);
+      console.log("Calling submitInvoice...");
+      const result = await submitInvoice(values, totals);
+      console.log("submitInvoice result:", result);
+    } catch (error) {
+      console.error("Form submission error:", error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Add this console log on form render
+  // Prevent form submission on Enter key
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+      e.preventDefault();
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((values) => submitInvoice(values, totals))} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-6"
+        onKeyDown={handleKeyDown}
+      >
         <BasicInvoiceInfo form={form} />
 
         <InvoiceItemForm
@@ -134,12 +167,12 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
         <PaymentSignature form={form} totals={totals} />
 
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           className="w-full"
-          disabled={form.formState.isSubmitting || fields.length === 0}
+          disabled={submitting || fields.length === 0}
         >
-          {form.formState.isSubmitting ? (
+          {submitting ? (
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Creating...</span>

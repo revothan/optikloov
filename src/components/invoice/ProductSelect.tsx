@@ -35,6 +35,7 @@ interface Product {
   name: string;
   store_price: number;
   category: string;
+  lens_stock_id?: string;
 }
 
 interface LensStock {
@@ -111,7 +112,8 @@ export function ProductSelect({
           lens_type_id,
           lens_type:lens_type_id (
             name,
-            material
+            material,
+            price
           )
         `,
         )
@@ -145,14 +147,18 @@ export function ProductSelect({
     if (!Array.isArray(lensStock)) return [];
 
     return lensStock.filter((stock) => {
-      const matchesLensType = !lensTypeFilter || 
-        stock.lens_type?.name.toLowerCase().includes(lensTypeFilter.toLowerCase());
-      const matchesMaterial = !materialFilter || 
-        stock.lens_type?.material.toLowerCase().includes(materialFilter.toLowerCase());
-      const matchesSph = !sphFilter || 
-        stock.sph === parseFloat(sphFilter);
-      const matchesCyl = !cylFilter || 
-        stock.cyl === parseFloat(cylFilter);
+      const matchesLensType =
+        !lensTypeFilter ||
+        stock.lens_type?.name
+          .toLowerCase()
+          .includes(lensTypeFilter.toLowerCase());
+      const matchesMaterial =
+        !materialFilter ||
+        stock.lens_type?.material
+          .toLowerCase()
+          .includes(materialFilter.toLowerCase());
+      const matchesSph = !sphFilter || stock.sph === parseFloat(sphFilter);
+      const matchesCyl = !cylFilter || stock.cyl === parseFloat(cylFilter);
 
       return matchesLensType && matchesMaterial && matchesSph && matchesCyl;
     });
@@ -164,8 +170,17 @@ export function ProductSelect({
   }, [products, value]);
 
   const handleProductSelect = (product: Product) => {
+    console.log("ProductSelect - Selected Product:", product);
     onChange(product.id);
-    onProductSelect(product);
+
+    const productToSelect = {
+      ...product,
+      lens_stock_id: product.lens_stock_id,
+    };
+
+    console.log("ProductSelect - Product to Select:", productToSelect);
+    onProductSelect(productToSelect);
+
     setOpen(false);
     setSearchQuery("");
     if (product.id.includes("-")) {
@@ -201,17 +216,20 @@ export function ProductSelect({
         return;
       }
 
-      const { error: insertError } = await supabase.from("products").insert({
-        id: customProductId,
-        name: productName,
-        store_price: lensType.price || 0,
-        category: "Stock Lens",
-        user_id: userData.user.id,
-        lens_stock_id: stock.id,
-        lens_type_id: stock.lens_type_id,
-        lens_sph: stock.sph,
-        lens_cyl: stock.cyl,
-      });
+      const { data: insertedProduct, error: insertError } = await supabase
+        .from("products")
+        .insert({
+          id: customProductId,
+          name: productName,
+          store_price: lensType.price || 0,
+          category: "Stock Lens",
+          user_id: userData.user.id,
+          lens_type_id: stock.lens_type_id,
+          lens_sph: stock.sph,
+          lens_cyl: stock.cyl,
+        })
+        .select()
+        .single();
 
       if (insertError) throw insertError;
 
@@ -220,6 +238,7 @@ export function ProductSelect({
         name: productName,
         store_price: lensType.price || 0,
         category: "Stock Lens",
+        lens_stock_id: stock.id, // Pass the lens_stock_id separately
       };
 
       handleProductSelect(product);
