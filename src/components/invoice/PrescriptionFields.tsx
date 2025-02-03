@@ -13,7 +13,7 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
       <h5 className="text-sm font-medium mb-2">
         {side === "right" ? "Right Eye (OD)" : "Left Eye (OS)"}
       </h5>
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <EyeField
           form={form}
           index={index}
@@ -53,14 +53,6 @@ export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProp
           fieldName="mpd"
           label="MPD"
           type="mpd"
-        />
-        <EyeField
-          form={form}
-          index={index}
-          side={side}
-          fieldName="dbl"
-          label="DBL"
-          type="dbl"
         />
       </div>
     </div>
