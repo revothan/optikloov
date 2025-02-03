@@ -54,18 +54,40 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session);
-      setIsAuthenticated(!!session);
-      setIsLoading(false);
-
-      if (event === 'SIGNED_OUT') {
+      
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('Token refreshed successfully');
+        setIsAuthenticated(true);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
+        setIsAuthenticated(false);
         toast.info("You have been signed out");
       } else if (event === 'SIGNED_IN') {
+        console.log('User signed in');
+        setIsAuthenticated(true);
         toast.success("Successfully signed in!");
+      } else if (event === 'USER_DELETED' || event === 'USER_UPDATED') {
+        console.log('User account updated');
+        checkAuth(); // Recheck authentication
       }
+
+      setIsLoading(false);
     });
+
+    // Handle token refresh errors
+    const handleTokenRefreshError = (error: any) => {
+      console.error('Token refresh error:', error);
+      setIsAuthenticated(false);
+      toast.error("Session expired. Please login again.");
+      supabase.auth.signOut(); // Clear the invalid session
+    };
+
+    // Add listener for token refresh errors
+    window.addEventListener('supabase.auth.refreshSession.error', handleTokenRefreshError);
 
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('supabase.auth.refreshSession.error', handleTokenRefreshError);
     };
   }, []);
 
@@ -83,7 +105,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionContextProvider supabaseClient={supabase} initialSession={null}>
+      <SessionContextProvider 
+        supabaseClient={supabase} 
+        initialSession={null}
+      >
         <TooltipProvider>
           <Toaster />
           <BrowserRouter>
