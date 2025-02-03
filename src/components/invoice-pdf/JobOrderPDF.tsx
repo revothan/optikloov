@@ -1,30 +1,33 @@
 import { Document, Page, StyleSheet } from "@react-pdf/renderer";
 import { CustomerDetails } from "./CustomerDetails";
 import { PrescriptionDetails } from "./PrescriptionDetails";
+import { InvoiceHeader } from "./InvoiceHeader";
 
 const styles = StyleSheet.create({
   page: {
-    padding: 16,
-    fontSize: 7,
+    padding: 20,
+    fontSize: 10, // Increased base font size
   },
   bottomSection: {
     flexDirection: "row",
-    marginTop: 4,
+    marginTop: 8,
   },
   notesSection: {
     width: "100%",
   },
   notesContainer: {
-    padding: 4,
+    padding: 8,
     border: "1 solid #999",
     minHeight: 40,
   },
   notesTitle: {
     fontFamily: "Helvetica-Bold",
-    marginBottom: 2,
+    marginBottom: 4,
+    fontSize: 12, // Increased font size for notes title
   },
   notesText: {
     color: "#666",
+    fontSize: 10, // Increased font size for notes content
   },
 });
 
@@ -39,6 +42,12 @@ export function JobOrderPDF({ invoice, items }: JobOrderPDFProps) {
   return (
     <Document>
       <Page size="A5" orientation="landscape" style={styles.page}>
+        <InvoiceHeader
+          invoiceNumber={invoice.invoice_number}
+          saleDate={invoice.sale_date}
+          acknowledgedBy={invoice.acknowledged_by}
+        />
+
         <CustomerDetails
           name={invoice.customer_name}
           email={invoice.customer_email}
