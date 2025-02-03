@@ -2,18 +2,17 @@ import { Text, View, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   details: {
-    marginBottom: 8,
-    padding: 6,
+    marginBottom: 6,
+    padding: 4,
     border: '1 solid #999',
-    fontSize: 9, // Increased from 7
+    fontSize: 7,
   },
   row: {
     flexDirection: 'row',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   label: {
     width: '60',
-    fontFamily: 'Helvetica-Bold',
   },
   colon: {
     width: '10',
@@ -54,13 +53,11 @@ export function CustomerDetails({ name, address, phone, paymentType, email }: Cu
         <Text style={styles.colon}>:</Text>
         <Text style={styles.value}>{phone || '-'}</Text>
       </View>
-      {paymentType && (
-        <View style={styles.row}>
-          <Text style={styles.label}>Payment Type</Text>
-          <Text style={styles.colon}>:</Text>
-          <Text style={styles.value}>{paymentType}</Text>
-        </View>
-      )}
+      <View style={styles.row}>
+        <Text style={styles.label}>Payment Type</Text>
+        <Text style={styles.colon}>:</Text>
+        <Text style={styles.value}>{paymentType || '-'}</Text>
+      </View>
     </View>
   );
 }

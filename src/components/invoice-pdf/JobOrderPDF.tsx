@@ -1,7 +1,6 @@
 import { Document, Page, StyleSheet } from "@react-pdf/renderer";
 import { CustomerDetails } from "./CustomerDetails";
 import { PrescriptionDetails } from "./PrescriptionDetails";
-import { InvoiceHeader } from "./InvoiceHeader";
 
 const styles = StyleSheet.create({
   page: {
@@ -40,12 +39,6 @@ export function JobOrderPDF({ invoice, items }: JobOrderPDFProps) {
   return (
     <Document>
       <Page size="A5" orientation="landscape" style={styles.page}>
-        <InvoiceHeader
-          invoiceNumber={invoice.invoice_number}
-          saleDate={invoice.sale_date}
-          acknowledgedBy={invoice.acknowledged_by}
-        />
-
         <CustomerDetails
           name={invoice.customer_name}
           email={invoice.customer_email}

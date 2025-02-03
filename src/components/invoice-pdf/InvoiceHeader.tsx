@@ -3,7 +3,7 @@ import { format } from "date-fns";
 
 const styles = StyleSheet.create({
   header: {
-    marginBottom: 10,
+    marginBottom: 8,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -18,8 +18,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   invoiceText: {
-    fontSize: 14, // Increased from 12
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 12,
+    fontWeight: 'bold',
     marginBottom: 2,
     textAlign: 'right',
   },
@@ -30,34 +30,34 @@ const styles = StyleSheet.create({
   rightInfoRow: {
     width: '100%',
     flexDirection: 'row',
-    marginBottom: 2,
+    marginBottom: 1,
     justifyContent: 'flex-end',
   },
   rightLabel: {
-    fontSize: 10, // Increased from 8
+    fontSize: 8,
     textAlign: 'right',
   },
   rightColon: {
-    fontSize: 10, // Increased from 8
+    fontSize: 8,
     width: '8',
     textAlign: 'center',
   },
   rightValue: {
-    fontSize: 10, // Increased from 8
+    fontSize: 8,
     width: '100',
     textAlign: 'right',
   },
   companyName: {
-    fontSize: 16, // Increased from 12
-    marginBottom: 4,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 12,
+    marginBottom: 2,
+    fontWeight: 'bold',
   },
   storeInfoContainer: {
-    fontSize: 8, // Increased from 6
+    fontSize: 6,
   },
   infoRow: {
     flexDirection: 'row',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   label: {
     width: '35',
@@ -112,7 +112,7 @@ export function InvoiceHeader({ invoiceNumber, saleDate, acknowledgedBy }: Invoi
       
       <View style={styles.rightSection}>
         <Text style={styles.invoiceText}>
-          Job Order No. {invoiceNumber}
+          Invoice No. {invoiceNumber}
         </Text>
         <View style={styles.rightInfoContainer}>
           <View style={styles.rightInfoRow}>
