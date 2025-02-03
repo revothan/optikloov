@@ -24,13 +24,20 @@ export function JobOrderList() {
             products (*)
           )
         `)
-        .or('right_eye_mpd.neq.null,left_eye_mpd.neq.null', { foreignTable: 'invoice_items' })
+        .not('invoice_items', 'is', null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
+      // Filter invoices that have items with MPD values
+      const filteredData = data.filter(invoice => 
+        invoice.invoice_items.some(item => 
+          item.right_eye_mpd !== null || item.left_eye_mpd !== null
+        )
+      );
+
       // Transform the data to include prescription details
-      return data.map(invoice => ({
+      return filteredData.map(invoice => ({
         ...invoice,
         items: invoice.invoice_items.map(item => ({
           ...item,
