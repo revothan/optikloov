@@ -40,19 +40,19 @@ export function EyeField({
         if (/^[+-]?\d*\.?\d*$/.test(value)) {
           const numValue = parseFloat(value);
           if (!isNaN(numValue)) {
-            form.setValue(`items.${index}.${side}_eye.${fieldName}`, parseFloat(numValue.toFixed(2)));
+            form.setValue(`items.${index}.${side}_eye.${fieldName}`, numValue);
           }
         }
         break;
 
       case "cyl":
-        // Always negative for CYL, remove any positive sign
+        // Always negative for CYL
         if (/^-?\d*\.?\d*$/.test(value)) {
           const numValue = parseFloat(value);
           if (!isNaN(numValue)) {
             // Ensure it's negative
             const negativeValue = numValue <= 0 ? numValue : -numValue;
-            form.setValue(`items.${index}.${side}_eye.${fieldName}`, parseFloat(negativeValue.toFixed(2)));
+            form.setValue(`items.${index}.${side}_eye.${fieldName}`, negativeValue);
           }
         }
         break;
@@ -74,7 +74,7 @@ export function EyeField({
           if (!isNaN(numValue)) {
             // Ensure it's positive
             const positiveValue = Math.abs(numValue);
-            form.setValue(`items.${index}.${side}_eye.${fieldName}`, parseFloat(positiveValue.toFixed(2)));
+            form.setValue(`items.${index}.${side}_eye.${fieldName}`, positiveValue);
           }
         }
         break;
@@ -95,22 +95,11 @@ export function EyeField({
     if (value === null) return "";
     
     if (typeof value === "number") {
-      if (value === 0) {
-        switch (type) {
-          case "mpd":
-            return "0";
-          case "axis":
-            return "0";
-          default:
-            return "0.00";
-        }
-      }
-      
       switch (type) {
         case "sph":
         case "cyl":
         case "add":
-          return value.toFixed(2);
+          return value === 0 ? "0" : value.toFixed(2);
         case "axis":
         case "mpd":
           return value.toString();
