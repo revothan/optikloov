@@ -2,49 +2,49 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   section: {
-    marginVertical: 3, // Reduced from 4
+    marginVertical: 4,
   },
   table: {
     width: "100%",
     border: "1 solid #000",
-    marginBottom: 4, // Reduced from 6
+    marginBottom: 6,
   },
   tableRow: {
     flexDirection: "row",
     borderBottom: "0.5 solid #000",
-    minHeight: 10, // Reduced from 12
+    minHeight: 14,
   },
   tableCol: {
     width: "20%",
     justifyContent: "center",
-    padding: 0.5, // Reduced from 1
+    padding: 2,
   },
   tableCell: {
-    fontSize: 5, // Reduced from 6
+    fontSize: 8,
     textAlign: "center",
   },
   tableHeader: {
     backgroundColor: "#f0f0f0",
   },
   headerCell: {
-    fontSize: 5, // Reduced from 6
+    fontSize: 8,
     textAlign: "center",
     fontFamily: "Helvetica-Bold",
   },
   title: {
-    fontSize: 6, // Reduced from 7
-    marginBottom: 1, // Reduced from 2
+    fontSize: 10,
+    marginBottom: 2,
     fontFamily: "Helvetica-Bold",
   },
   subtitle: {
-    fontSize: 5, // Reduced from 6
-    marginTop: 1, // Reduced from 2
-    marginBottom: 0.5, // Reduced from 1
+    fontSize: 9,
+    marginTop: 2,
+    marginBottom: 1,
     fontFamily: "Helvetica-Bold",
   },
   productName: {
-    fontSize: 5, // Reduced from 6
-    marginBottom: 1, // Reduced from 2
+    fontSize: 8,
+    marginBottom: 2,
     color: "#666",
   },
 });
