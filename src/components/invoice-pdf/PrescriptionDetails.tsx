@@ -64,13 +64,21 @@ const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' |
 };
 
 export function PrescriptionDetails({ items }) {
+  // Filter items to only include those with category "Lensa" and have MPD values
+  const lensaItems = items.filter(item => 
+    item.products?.category === "Lensa" && 
+    (item.right_eye_mpd !== null || item.left_eye_mpd !== null)
+  );
+
+  if (lensaItems.length === 0) return null;
+
   return (
     <View style={styles.section}>
       <Text style={styles.title}>Prescription Details</Text>
-      {items.map((item, index) => (
+      {lensaItems.map((item, index) => (
         <View key={index} style={styles.itemContainer}>
           <View style={styles.productInfo}>
-            <Text style={styles.productName}>{item.product?.name || "-"}</Text>
+            <Text style={styles.productName}>{item.products?.name || "-"}</Text>
             <Text style={styles.commonDetails}>
               Frame Size: {item.f_size || "-"} | V-Frame: {item.v_frame || "-"} | 
               PV: {formatPrescriptionValue(item.pv, 'pv')} | 
