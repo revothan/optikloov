@@ -5,62 +5,63 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
   table: {
-    display: "flex",
     width: "100%",
     borderStyle: "solid",
     borderWidth: 1,
-    borderRightWidth: 0,
-    borderBottomWidth: 0,
+    borderColor: "#000",
+    marginBottom: 8,
   },
   tableRow: {
-    margin: "auto",
     flexDirection: "row",
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#000",
+    borderBottomStyle: "solid",
+    minHeight: 16,
   },
   tableCol: {
     width: "20%",
-    borderStyle: "solid",
-    borderWidth: 1,
-    borderLeftWidth: 0,
-    borderTopWidth: 0,
+    borderLeftWidth: 0.5,
+    borderLeftColor: "#000",
+    justifyContent: "center",
+    padding: 2,
   },
   tableCell: {
-    margin: 1.5,
-    fontSize: 5.5,
+    fontSize: 7,
     textAlign: "center",
   },
   tableHeader: {
     backgroundColor: "#f0f0f0",
+    borderBottomWidth: 1,
+    borderBottomColor: "#000",
+  },
+  headerCell: {
+    fontSize: 7,
+    textAlign: "center",
     fontFamily: "Helvetica-Bold",
   },
   title: {
-    fontSize: 7,
-    marginBottom: 2,
+    fontSize: 8,
+    marginBottom: 4,
     fontFamily: "Helvetica-Bold",
   },
   subtitle: {
-    fontSize: 6,
-    marginTop: 2,
-    marginBottom: 1.5,
+    fontSize: 7,
+    marginTop: 4,
+    marginBottom: 2,
     fontFamily: "Helvetica-Bold",
   },
   productName: {
-    fontSize: 6,
-    marginBottom: 2,
+    fontSize: 7,
+    marginBottom: 4,
     color: "#666",
   },
 });
 
-interface PrescriptionDetailsProps {
-  items: any[];
-}
-
 const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' | 'add' | 'cyl' | 'other'): string => {
   if (value === null || value === undefined) return "-";
   
-  // For non-numeric values, return as is
   if (typeof value !== 'number') return String(value);
 
-  // Format to always show 2 decimal places
   const absValue = Math.abs(value).toFixed(2);
 
   switch (type) {
@@ -75,7 +76,7 @@ const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' |
   }
 };
 
-export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
+export function PrescriptionDetails({ items }: { items: any[] }) {
   const lensItems = items.filter((item) => item.products?.category === "Lensa");
 
   if (lensItems.length === 0) return null;
@@ -90,19 +91,19 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>PV</Text>
+                <Text style={styles.headerCell}>PV</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>V FRAME</Text>
+                <Text style={styles.headerCell}>V FRAME</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>F SIZE</Text>
+                <Text style={styles.headerCell}>F SIZE</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>PRISM</Text>
+                <Text style={styles.headerCell}>PRISM</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>QTY</Text>
+                <Text style={styles.headerCell}>QTY</Text>
               </View>
             </View>
             <View style={styles.tableRow}>
@@ -128,19 +129,19 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>SPH</Text>
+                <Text style={styles.headerCell}>SPH</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>CYL</Text>
+                <Text style={styles.headerCell}>CYL</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>AXIS</Text>
+                <Text style={styles.headerCell}>AXIS</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>ADD</Text>
+                <Text style={styles.headerCell}>ADD</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>MPD</Text>
+                <Text style={styles.headerCell}>MPD</Text>
               </View>
             </View>
             <View style={styles.tableRow}>
@@ -166,19 +167,19 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>SPH</Text>
+                <Text style={styles.headerCell}>SPH</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>CYL</Text>
+                <Text style={styles.headerCell}>CYL</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>AXIS</Text>
+                <Text style={styles.headerCell}>AXIS</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>ADD</Text>
+                <Text style={styles.headerCell}>ADD</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>MPD</Text>
+                <Text style={styles.headerCell}>MPD</Text>
               </View>
             </View>
             <View style={styles.tableRow}>
