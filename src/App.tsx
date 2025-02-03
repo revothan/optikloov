@@ -66,7 +66,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         console.log('User signed in');
         setIsAuthenticated(true);
         toast.success("Successfully signed in!");
-      } else if (event === 'USER_DELETED' || event === 'USER_UPDATED') {
+      } else if (event === 'USER_UPDATED') {
         console.log('User account updated');
         checkAuth(); // Recheck authentication
       }
