@@ -2,7 +2,6 @@ import { Document, Page, Text, StyleSheet, View } from "@react-pdf/renderer";
 import { InvoiceHeader } from "./invoice-pdf/InvoiceHeader";
 import { CustomerDetails } from "./invoice-pdf/CustomerDetails";
 import { ItemsTable } from "./invoice-pdf/ItemsTable";
-import { PrescriptionDetails } from "./invoice-pdf/PrescriptionDetails";
 import { PaymentDetails } from "./invoice-pdf/PaymentDetails";
 import { InvoiceFooter } from "./invoice-pdf/InvoiceFooter";
 
@@ -16,12 +15,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   notesSection: {
-    width: "40%", // Keep consistent width
+    width: "40%",
   },
   notesContainer: {
     padding: 4,
     border: "1 solid #999",
-    minHeight: 40, // Ensure consistent height
+    minHeight: 40,
   },
   notesTitle: {
     fontFamily: "Helvetica-Bold",
@@ -32,7 +31,7 @@ const styles = StyleSheet.create({
   },
   paymentSection: {
     flex: 1,
-    paddingLeft: 20, // Add consistent spacing from notes
+    paddingLeft: 20,
   },
 });
 
@@ -42,7 +41,6 @@ interface InvoicePDFProps {
 }
 
 export function InvoicePDF({ invoice, items }: InvoicePDFProps) {
-  // Always show notes section, but with blank content if no notes
   const notesText = invoice.notes || "-";
 
   return (
@@ -63,8 +61,6 @@ export function InvoicePDF({ invoice, items }: InvoicePDFProps) {
         />
 
         <ItemsTable items={items} />
-
-        <PrescriptionDetails items={items} />
 
         <View style={styles.bottomSection}>
           <View style={styles.notesSection}>
@@ -90,4 +86,3 @@ export function InvoicePDF({ invoice, items }: InvoicePDFProps) {
     </Document>
   );
 }
-
