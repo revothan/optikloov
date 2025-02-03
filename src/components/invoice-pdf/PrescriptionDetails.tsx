@@ -51,15 +51,19 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
   },
+  commonDetails: {
+    marginBottom: 5,
+    fontSize: 8,
+  },
 });
 
-const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' | 'add' | 'cyl' | 'mpd' | 'pv' | 'prism' | 'dbl' | 'other'): string => {
+const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' | 'add' | 'cyl' | 'mpd' | 'pv' | 'prism' | 'other'): string => {
   if (value === null || value === undefined) return "-";
   
   if (typeof value !== 'number') return String(value);
 
-  // Special handling for MPD, PV, Prism, and DBL - no fixed decimal places
-  if (type === 'mpd' || type === 'pv' || type === 'prism' || type === 'dbl') {
+  // Special handling for MPD, PV, Prism - no fixed decimal places
+  if (type === 'mpd' || type === 'pv' || type === 'prism') {
     return value === 0 ? "0" : String(value);
   }
 
@@ -79,8 +83,10 @@ export function PrescriptionDetails({ items }) {
             <Text style={styles.itemDetails}>
               Frame Size: {item.f_size || "-"} | V-Frame: {item.v_frame || "-"}
             </Text>
-            <Text style={styles.itemDetails}>
-              PV: {formatPrescriptionValue(item.pv, 'pv')}
+            <Text style={styles.commonDetails}>
+              PV: {formatPrescriptionValue(item.pv, 'pv')} | 
+              PRISM: {formatPrescriptionValue(item.prism, 'prism')} | 
+              DBL: {formatPrescriptionValue(item.dbl, 'other')}
             </Text>
           </View>
 
@@ -105,12 +111,6 @@ export function PrescriptionDetails({ items }) {
               <View style={styles.tableCol}>
                 <Text style={styles.headerCell}>MPD</Text>
               </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>PRISM</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>DBL</Text>
-              </View>
             </View>
             <View style={styles.tableRow}>
               <View style={styles.tableCol}>
@@ -131,12 +131,6 @@ export function PrescriptionDetails({ items }) {
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye?.mpd, 'mpd')}</Text>
               </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.prism, 'prism')}</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye?.dbl, 'dbl')}</Text>
-              </View>
             </View>
             <View style={styles.tableRow}>
               <View style={styles.tableCol}>
@@ -156,12 +150,6 @@ export function PrescriptionDetails({ items }) {
               </View>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye?.mpd, 'mpd')}</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.prism, 'prism')}</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye?.dbl, 'dbl')}</Text>
               </View>
             </View>
           </View>
