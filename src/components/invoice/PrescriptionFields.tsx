@@ -7,11 +7,7 @@ interface PrescriptionFieldsProps {
   side: "left" | "right";
 }
 
-export function PrescriptionFields({
-  form,
-  index,
-  side,
-}: PrescriptionFieldsProps) {
+export function PrescriptionFields({ form, index, side }: PrescriptionFieldsProps) {
   return (
     <div>
       <h5 className="text-sm font-medium mb-2">

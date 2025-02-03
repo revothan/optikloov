@@ -1,12 +1,12 @@
+import { UseFormReturn } from "react-hook-form";
 import {
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { UseFormReturn } from "react-hook-form";
 
 interface EyeFieldProps {
   form: UseFormReturn<any>;
@@ -25,29 +25,31 @@ export function EyeField({
   label,
   type,
 }: EyeFieldProps) {
-  const handleValueChange = (value: string) => {
-    const fieldPath = `items.${index}.${side}_eye.${fieldName}`;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
 
-    if (value === "-" || value === "+") {
-      form.setValue(fieldPath, value);
+    if (value === "") {
+      form.setValue(`items.${index}.${side}_eye.${fieldName}`, null);
       return;
     }
 
     if (value === "0" || value === "0.0" || value === "0.00") {
       if (type === "mpd" || type === "dbl") {
-        form.setValue(fieldPath, "0");
+        form.setValue(`items.${index}.${side}_eye.${fieldName}`, "0");
       } else {
-        form.setValue(fieldPath, "0.00");
+        form.setValue(`items.${index}.${side}_eye.${fieldName}`, "0.00");
       }
       return;
     }
 
-    form.setValue(fieldPath, value);
+    if (isValidInput(value, type)) {
+      form.setValue(`items.${index}.${side}_eye.${fieldName}`, parseFloat(value));
+    }
   };
 
-  const formatDisplayValue = (value: any): string => {
-    if (typeof value === "string") return value;
-
+  const formatValue = (value: number | null) => {
+    if (value === null) return "";
+    
     if (typeof value === "number") {
       if (value === 0) {
         if (type === "mpd" || type === "dbl") return "0";
@@ -58,29 +60,17 @@ export function EyeField({
         return value.toString();
       }
       
-      const absValue = Math.abs(value).toFixed(2);
-
-      switch (type) {
-        case "sph":
-          return value > 0 ? `+${absValue}` : `-${absValue}`;
-        case "cyl":
-          return value === 0 ? "0.00" : `-${absValue}`;
-        case "add":
-          return value === 0 ? "0.00" : `+${absValue}`;
-        default:
-          return absValue;
-      }
+      return value.toFixed(2);
     }
-
-    return "";
+    
+    return value;
   };
 
-  const validateInput = (value: string): boolean => {
+  const isValidInput = (value: string, type: string): boolean => {
     switch (type) {
       case "sph":
-        return /^[+-]?\d*\.?\d*$/.test(value);
       case "cyl":
-        return /^-?\d*\.?\d*$/.test(value);
+        return /^[+-]?\d*\.?\d*$/.test(value);
       case "add":
         return /^\+?\d*\.?\d*$/.test(value);
       case "mpd":
@@ -89,7 +79,7 @@ export function EyeField({
       case "axis":
         return /^\d*$/.test(value);
       default:
-        return false;
+        return true;
     }
   };
 
@@ -102,26 +92,10 @@ export function EyeField({
           <FormLabel>{label}</FormLabel>
           <FormControl>
             <Input
-              type={type === "axis" ? "number" : "text"}
               {...field}
-              value={formatDisplayValue(field.value)}
-              onChange={(e) => {
-                const newValue = e.target.value;
-                if (validateInput(newValue)) {
-                  handleValueChange(newValue);
-                }
-              }}
-              onBlur={(e) => {
-                const value = e.target.value;
-                if (value === "0.00") {
-                  form.setValue(`items.${index}.${side}_eye.${fieldName}`, 0);
-                } else {
-                  const num = parseFloat(value.replace(/[+]/g, ""));
-                  if (!isNaN(num)) {
-                    form.setValue(`items.${index}.${side}_eye.${fieldName}`, num);
-                  }
-                }
-              }}
+              value={formatValue(field.value)}
+              onChange={handleChange}
+              className="text-center"
             />
           </FormControl>
           <FormMessage />

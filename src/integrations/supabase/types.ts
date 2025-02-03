@@ -87,6 +87,7 @@ export type Database = {
       invoice_items: {
         Row: {
           created_at: string
+          dbl: number | null
           discount: number
           f_size: string | null
           id: string
@@ -112,6 +113,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          dbl?: number | null
           discount?: number
           f_size?: string | null
           id?: string
@@ -137,6 +139,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          dbl?: number | null
           discount?: number
           f_size?: string | null
           id?: string

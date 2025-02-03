@@ -1,51 +1,53 @@
-import { View, Text, StyleSheet } from "@react-pdf/renderer";
+import { Text, View, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   section: {
-    marginVertical: 4,
+    margin: 10,
+    padding: 10,
+    border: "1px solid #000",
+    borderRadius: 5,
+  },
+  title: {
+    fontSize: 12,
+    marginBottom: 5,
+    fontWeight: "bold",
+  },
+  itemContainer: {
+    marginBottom: 10,
+  },
+  productInfo: {
+    marginBottom: 5,
+  },
+  itemDetails: {
+    fontSize: 10,
   },
   table: {
-    width: "100%",
-    border: "1 solid #000",
-    marginBottom: 6,
+    display: "table",
+    width: "auto",
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderColor: "#000",
+  },
+  tableHeader: {
+    margin: "auto",
+    flexDirection: "row",
   },
   tableRow: {
     flexDirection: "row",
-    borderBottom: "0.5 solid #000",
-    minHeight: 14,
   },
   tableCol: {
-    width: "20%",
-    justifyContent: "center",
-    padding: 2,
-  },
-  tableCell: {
-    fontSize: 8,
-    textAlign: "center",
-  },
-  tableHeader: {
-    backgroundColor: "#f0f0f0",
+    width: "14.28%",
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderColor: "#000",
+    padding: 5,
   },
   headerCell: {
-    fontSize: 8,
+    fontWeight: "bold",
     textAlign: "center",
-    fontFamily: "Helvetica-Bold",
   },
-  title: {
-    fontSize: 10,
-    marginBottom: 2,
-    fontFamily: "Helvetica-Bold",
-  },
-  subtitle: {
-    fontSize: 9,
-    marginTop: 2,
-    marginBottom: 1,
-    fontFamily: "Helvetica-Bold",
-  },
-  productName: {
-    fontSize: 8,
-    marginBottom: 2,
-    color: "#666",
+  tableCell: {
+    textAlign: "center",
   },
 });
 
@@ -59,42 +61,47 @@ const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' |
     return value === 0 ? "0" : String(value);
   }
 
-  const absValue = Math.abs(value).toFixed(2);
-
-  switch (type) {
-    case 'sph':
-      return value === 0 ? "0.00" : value > 0 ? `+${absValue}` : `-${absValue}`;
-    case 'add':
-      return value === 0 ? "0.00" : `+${absValue}`;
-    case 'cyl':
-      return value === 0 ? "0.00" : `-${absValue}`;
-    default:
-      return value === 0 ? "0.00" : absValue;
-  }
+  // For other types, show 2 decimal places
+  return value === 0 ? "0.00" : value.toFixed(2);
 };
 
-export function PrescriptionDetails({ items }: { items: any[] }) {
-  const lensItems = items.filter((item) => item.products?.category === "Lensa");
-
-  if (lensItems.length === 0) return null;
-
+export function PrescriptionDetails({ items }) {
   return (
     <View style={styles.section}>
-      {lensItems.map((item, index) => (
-        <View key={index} style={{ marginBottom: index < lensItems.length - 1 ? 8 : 0 }}>
-          <Text style={styles.title}>Prescription Details</Text>
-          <Text style={styles.productName}>{item.products?.name || "-"}</Text>
+      <Text style={styles.title}>Prescription Details</Text>
+      {items.map((item, index) => (
+        <View key={index} style={styles.itemContainer}>
+          {/* Product Info */}
+          <View style={styles.productInfo}>
+            <Text style={styles.productName}>{item.product?.name || "-"}</Text>
+            <Text style={styles.itemDetails}>
+              Frame Size: {item.f_size || "-"} | V-Frame: {item.v_frame || "-"}
+            </Text>
+            <Text style={styles.itemDetails}>
+              PV: {formatPrescriptionValue(item.pv, 'pv')}
+            </Text>
+          </View>
 
+          {/* Prescription Table */}
           <View style={styles.table}>
-            <View style={[styles.tableRow, styles.tableHeader]}>
+            <View style={styles.tableHeader}>
               <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>PV</Text>
+                <Text style={styles.headerCell}></Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>V FRAME</Text>
+                <Text style={styles.headerCell}>SPH</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>F SIZE</Text>
+                <Text style={styles.headerCell}>CYL</Text>
+              </View>
+              <View style={styles.tableCol}>
+                <Text style={styles.headerCell}>AXIS</Text>
+              </View>
+              <View style={styles.tableCol}>
+                <Text style={styles.headerCell}>ADD</Text>
+              </View>
+              <View style={styles.tableCol}>
+                <Text style={styles.headerCell}>MPD</Text>
               </View>
               <View style={styles.tableCol}>
                 <Text style={styles.headerCell}>PRISM</Text>
@@ -105,95 +112,54 @@ export function PrescriptionDetails({ items }: { items: any[] }) {
             </View>
             <View style={styles.tableRow}>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.pv, 'pv')}</Text>
+                <Text style={styles.tableCell}>R</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{item.v_frame || "-"}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye?.sph, 'sph')}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{item.f_size || "-"}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye?.cyl, 'cyl')}</Text>
+              </View>
+              <View style={styles.tableCol}>
+                <Text style={styles.tableCell}>{item.right_eye?.axis || "-"}</Text>
+              </View>
+              <View style={styles.tableCol}>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye?.add_power, 'add')}</Text>
+              </View>
+              <View style={styles.tableCol}>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye?.mpd, 'mpd')}</Text>
               </View>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>{formatPrescriptionValue(item.prism, 'prism')}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.dbl, 'dbl')}</Text>
-              </View>
-            </View>
-          </View>
-
-          <Text style={styles.subtitle}>Right Eye (OD)</Text>
-          <View style={styles.table}>
-            <View style={[styles.tableRow, styles.tableHeader]}>
-              <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>SPH</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>CYL</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>AXIS</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>ADD</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>MPD</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye?.dbl, 'dbl')}</Text>
               </View>
             </View>
             <View style={styles.tableRow}>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye_sph, 'sph')}</Text>
+                <Text style={styles.tableCell}>L</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye_cyl, 'cyl')}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye?.sph, 'sph')}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{item.right_eye_axis || "-"}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye?.cyl, 'cyl')}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye_add_power, 'add')}</Text>
+                <Text style={styles.tableCell}>{item.left_eye?.axis || "-"}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye_mpd, 'mpd')}</Text>
-              </View>
-            </View>
-          </View>
-
-          <Text style={styles.subtitle}>Left Eye (OS)</Text>
-          <View style={styles.table}>
-            <View style={[styles.tableRow, styles.tableHeader]}>
-              <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>SPH</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye?.add_power, 'add')}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>CYL</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye?.mpd, 'mpd')}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>AXIS</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.prism, 'prism')}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>ADD</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>MPD</Text>
-              </View>
-            </View>
-            <View style={styles.tableRow}>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye_sph, 'sph')}</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye_cyl, 'cyl')}</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{item.left_eye_axis || "-"}</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye_add_power, 'add')}</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye_mpd, 'mpd')}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye?.dbl, 'dbl')}</Text>
               </View>
             </View>
           </View>
