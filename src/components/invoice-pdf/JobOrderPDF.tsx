@@ -5,29 +5,27 @@ import { InvoiceHeader } from "./InvoiceHeader";
 
 const styles = StyleSheet.create({
   page: {
-    padding: 20,
-    fontSize: 10, // Increased base font size
+    padding: 16,
+    fontSize: 7,
   },
   bottomSection: {
     flexDirection: "row",
-    marginTop: 8,
+    marginTop: 4,
   },
   notesSection: {
     width: "100%",
   },
   notesContainer: {
-    padding: 8,
+    padding: 4,
     border: "1 solid #999",
     minHeight: 40,
   },
   notesTitle: {
     fontFamily: "Helvetica-Bold",
-    marginBottom: 4,
-    fontSize: 12, // Increased font size for notes title
+    marginBottom: 2,
   },
   notesText: {
     color: "#666",
-    fontSize: 10, // Increased font size for notes content
   },
 });
 
