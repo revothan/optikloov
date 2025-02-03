@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: 10,
+    marginVertical: 8,
   },
   table: {
     display: "flex",
@@ -24,22 +24,23 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
   },
   tableCell: {
-    margin: 5,
-    fontSize: 8,
+    margin: 3,
+    fontSize: 7,
+    textAlign: "center",
   },
   tableHeader: {
     backgroundColor: "#f0f0f0",
     fontFamily: "Helvetica-Bold",
   },
   title: {
-    fontSize: 12,
-    marginBottom: 5,
+    fontSize: 10,
+    marginBottom: 4,
     fontFamily: "Helvetica-Bold",
   },
   subtitle: {
-    fontSize: 10,
-    marginTop: 5,
-    marginBottom: 3,
+    fontSize: 8,
+    marginTop: 4,
+    marginBottom: 2,
     fontFamily: "Helvetica-Bold",
   },
 });
