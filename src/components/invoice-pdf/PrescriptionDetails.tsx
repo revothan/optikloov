@@ -49,13 +49,13 @@ const styles = StyleSheet.create({
   },
 });
 
-const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' | 'add' | 'cyl' | 'mpd' | 'pv' | 'prism' | 'other'): string => {
+const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' | 'add' | 'cyl' | 'mpd' | 'pv' | 'prism' | 'dbl' | 'other'): string => {
   if (value === null || value === undefined) return "-";
   
   if (typeof value !== 'number') return String(value);
 
-  // Special handling for MPD, PV, and Prism - no fixed decimal places
-  if (type === 'mpd' || type === 'pv' || type === 'prism') {
+  // Special handling for MPD, PV, Prism, and DBL - no fixed decimal places
+  if (type === 'mpd' || type === 'pv' || type === 'prism' || type === 'dbl') {
     return value === 0 ? "0" : String(value);
   }
 
@@ -100,7 +100,7 @@ export function PrescriptionDetails({ items }: { items: any[] }) {
                 <Text style={styles.headerCell}>PRISM</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.headerCell}>QTY</Text>
+                <Text style={styles.headerCell}>DBL</Text>
               </View>
             </View>
             <View style={styles.tableRow}>
@@ -117,7 +117,7 @@ export function PrescriptionDetails({ items }: { items: any[] }) {
                 <Text style={styles.tableCell}>{formatPrescriptionValue(item.prism, 'prism')}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{item.quantity || "-"}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.dbl, 'dbl')}</Text>
               </View>
             </View>
           </View>

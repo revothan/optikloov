@@ -14,7 +14,7 @@ interface EyeFieldProps {
   side: "left" | "right";
   fieldName: string;
   label: string;
-  type: "sph" | "cyl" | "add" | "mpd" | "axis";
+  type: "sph" | "cyl" | "add" | "mpd" | "axis" | "dbl";
 }
 
 export function EyeField({
@@ -34,7 +34,7 @@ export function EyeField({
     }
 
     if (value === "0" || value === "0.0" || value === "0.00") {
-      if (type === "mpd") {
+      if (type === "mpd" || type === "dbl") {
         form.setValue(fieldPath, "0");
       } else {
         form.setValue(fieldPath, "0.00");
@@ -50,11 +50,11 @@ export function EyeField({
 
     if (typeof value === "number") {
       if (value === 0) {
-        if (type === "mpd") return "0";
+        if (type === "mpd" || type === "dbl") return "0";
         return "0.00";
       }
       
-      if (type === "mpd") {
+      if (type === "mpd" || type === "dbl") {
         return value.toString();
       }
       
@@ -84,6 +84,7 @@ export function EyeField({
       case "add":
         return /^\+?\d*\.?\d*$/.test(value);
       case "mpd":
+      case "dbl":
         return /^\d*$/.test(value);
       case "axis":
         return /^\d*$/.test(value);
