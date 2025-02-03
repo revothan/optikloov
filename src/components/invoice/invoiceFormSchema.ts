@@ -28,7 +28,7 @@ export const schema = z.object({
         quantity: z.number().min(1, "Quantity must be at least 1"),
         price: z.number().min(0, "Price cannot be negative"),
         discount: z.number().min(0, "Discount cannot be negative").optional(),
-        sh: z.number().nullable(),
+        pv: z.number().nullable(),
         v_frame: z.string().nullable(),
         f_size: z.string().nullable(),
         prism: z.number().nullable(),

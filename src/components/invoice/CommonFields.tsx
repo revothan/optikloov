@@ -18,10 +18,10 @@ export function CommonFields({ form, index }: CommonFieldsProps) {
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
       <FormField
         control={form.control}
-        name={`items.${index}.sh`}
+        name={`items.${index}.pv`}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>SH</FormLabel>
+            <FormLabel>PV</FormLabel>
             <FormControl>
               <Input
                 type="number"

@@ -50,7 +50,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      invoice_number: "",  // Initialize as empty string
+      invoice_number: "",
       sale_date: new Date().toISOString().split("T")[0],
       customer_name: "",
       customer_email: "",
