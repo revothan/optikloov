@@ -24,8 +24,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
   },
   tableCell: {
-    margin: 2,
-    fontSize: 6,
+    margin: 1.5,
+    fontSize: 5.5,
     textAlign: "center",
   },
   tableHeader: {
@@ -33,19 +33,19 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
   },
   title: {
-    fontSize: 8,
-    marginBottom: 3,
-    fontFamily: "Helvetica-Bold",
-  },
-  subtitle: {
     fontSize: 7,
-    marginTop: 3,
     marginBottom: 2,
     fontFamily: "Helvetica-Bold",
   },
+  subtitle: {
+    fontSize: 6,
+    marginTop: 2,
+    marginBottom: 1.5,
+    fontFamily: "Helvetica-Bold",
+  },
   productName: {
-    fontSize: 7,
-    marginBottom: 3,
+    fontSize: 6,
+    marginBottom: 2,
     color: "#666",
   },
 });
