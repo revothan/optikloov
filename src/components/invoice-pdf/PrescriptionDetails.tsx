@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   section: {
-    marginVertical: 8,
+    marginVertical: 6,
   },
   table: {
     display: "flex",
@@ -17,15 +17,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   tableCol: {
-    width: "12.5%",
+    width: "20%",
     borderStyle: "solid",
     borderWidth: 1,
     borderLeftWidth: 0,
     borderTopWidth: 0,
   },
   tableCell: {
-    margin: 3,
-    fontSize: 7,
+    margin: 2,
+    fontSize: 6,
     textAlign: "center",
   },
   tableHeader: {
@@ -33,15 +33,20 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
   },
   title: {
-    fontSize: 10,
-    marginBottom: 4,
+    fontSize: 8,
+    marginBottom: 3,
     fontFamily: "Helvetica-Bold",
   },
   subtitle: {
-    fontSize: 8,
-    marginTop: 4,
+    fontSize: 7,
+    marginTop: 3,
     marginBottom: 2,
     fontFamily: "Helvetica-Bold",
+  },
+  productName: {
+    fontSize: 7,
+    marginBottom: 3,
+    color: "#666",
   },
 });
 
@@ -56,14 +61,13 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
 
   return (
     <View style={styles.section}>
-      <Text style={styles.title}>Prescription Details</Text>
       {lensItems.map((item, index) => (
-        <View key={index}>
+        <View key={index} style={{ marginBottom: index < lensItems.length - 1 ? 8 : 0 }}>
+          <Text style={styles.title}>Prescription Details</Text>
+          <Text style={styles.productName}>{item.products?.name || "-"}</Text>
+
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>Product</Text>
-              </View>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>PV</Text>
               </View>
@@ -76,11 +80,11 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>PRISM</Text>
               </View>
+              <View style={styles.tableCol}>
+                <Text style={styles.tableCell}>QTY</Text>
+              </View>
             </View>
             <View style={styles.tableRow}>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{item.products?.name || "-"}</Text>
-              </View>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>{item.pv || "-"}</Text>
               </View>
@@ -92,6 +96,9 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
               </View>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>{item.prism || "-"}</Text>
+              </View>
+              <View style={styles.tableCol}>
+                <Text style={styles.tableCell}>{item.quantity || "-"}</Text>
               </View>
             </View>
           </View>
