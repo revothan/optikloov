@@ -60,7 +60,19 @@ export default function InvoiceList() {
 
   const handleDelete = async (id: string) => {
     try {
-      // First delete associated payments
+      // First delete associated lens stock movements
+      const { error: stockMovementsError } = await supabase
+        .from("lens_stock_movements")
+        .delete()
+        .eq("invoice_id", id);
+
+      if (stockMovementsError) {
+        console.error("Error deleting lens stock movements:", stockMovementsError);
+        toast.error("Failed to delete lens stock movements");
+        return;
+      }
+
+      // Then delete associated payments
       const { error: paymentsError } = await supabase
         .from("payments")
         .delete()
