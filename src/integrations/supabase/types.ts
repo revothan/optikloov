@@ -97,6 +97,7 @@ export type Database = {
           left_eye_cyl: number | null
           left_eye_mpd: number | null
           left_eye_sph: number | null
+          lens_stock_id: string | null
           price: number
           prism: number | null
           product_id: string
@@ -123,6 +124,7 @@ export type Database = {
           left_eye_cyl?: number | null
           left_eye_mpd?: number | null
           left_eye_sph?: number | null
+          lens_stock_id?: string | null
           price: number
           prism?: number | null
           product_id: string
@@ -149,6 +151,7 @@ export type Database = {
           left_eye_cyl?: number | null
           left_eye_mpd?: number | null
           left_eye_sph?: number | null
+          lens_stock_id?: string | null
           price?: number
           prism?: number | null
           product_id?: string
@@ -169,6 +172,13 @@ export type Database = {
             columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_lens_stock_id_fkey"
+            columns: ["lens_stock_id"]
+            isOneToOne: false
+            referencedRelation: "lens_stock"
             referencedColumns: ["id"]
           },
           {

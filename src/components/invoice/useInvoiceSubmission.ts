@@ -16,13 +16,10 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
   const session = useSession();
   const queryClient = useQueryClient();
 
-  const updateLensStock = async (items: FormData["items"]) => {
+  const updateLensStock = async (items: FormData["items"], invoiceId: string) => {
     console.log("Updating lens stock for items:", items);
 
-    const lensStockUpdates = items.filter(
-      (item) => item.lens_stock_id, // Only update for lens stock items
-    );
-
+    const lensStockUpdates = items.filter(item => item.lens_stock_id);
     console.log("Lens stock updates:", lensStockUpdates);
 
     if (lensStockUpdates.length === 0) return;
@@ -34,45 +31,69 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         // Fetch current stock
         const { data: currentStock, error: fetchError } = await supabase
           .from("lens_stock")
-          .select("*")
+          .select("quantity")
           .eq("id", item.lens_stock_id)
           .single();
 
         if (fetchError) {
           console.error("Error fetching current stock:", fetchError);
-          throw fetchError;
+          throw new Error(`Failed to fetch current stock: ${fetchError.message}`);
+        }
+
+        if (!currentStock) {
+          throw new Error("Stock record not found");
         }
 
         console.log("Current stock:", currentStock);
 
+        // Validate stock quantity
+        if (currentStock.quantity < item.quantity) {
+          throw new Error(`Insufficient stock. Available: ${currentStock.quantity}, Requested: ${item.quantity}`);
+        }
+
         // Calculate new quantity
         const newQuantity = currentStock.quantity - item.quantity;
-        console.log(
-          `Reducing stock from ${currentStock.quantity} by ${item.quantity} to ${newQuantity}`,
-        );
+        console.log(`Reducing stock from ${currentStock.quantity} by ${item.quantity} to ${newQuantity}`);
 
-        // Update lens stock
-        const { data, error: updateError } = await supabase
+        // Update lens stock in a transaction
+        const { error: updateError } = await supabase
           .from("lens_stock")
           .update({
             quantity: newQuantity,
             updated_at: new Date().toISOString(),
           })
-          .eq("id", item.lens_stock_id)
-          .select(); // Add select to verify the update
+          .eq("id", item.lens_stock_id);
 
         if (updateError) {
           console.error("Error updating stock:", updateError);
           throw updateError;
         }
 
-        console.log("Updated stock record:", data);
+        // Create stock movement record
+        const { error: movementError } = await supabase
+          .from("lens_stock_movements")
+          .insert({
+            lens_stock_id: item.lens_stock_id,
+            movement_type: "sale",
+            quantity: -item.quantity, // Negative for sales
+            invoice_id: invoiceId,
+            created_by: session?.user?.id,
+            notes: `Sale through invoice ${invoiceId}`,
+          });
+
+        if (movementError) {
+          console.error("Error creating stock movement:", movementError);
+          throw movementError;
+        }
+
+        console.log("Successfully updated stock and created movement record");
       } catch (error) {
-        console.error(`Detailed error updating lens stock for item:`, error);
-        toast.error(`Failed to update stock for lens item`);
+        console.error(`Error updating lens stock for item:`, error);
+        throw error;
       }
     }
   };
+
   const submitInvoice = async (values: FormData, totals: Totals) => {
     if (!session?.user?.id) {
       toast.error("You must be logged in to create an invoice");
@@ -114,6 +135,9 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         throw invoiceError;
       }
 
+      // Update lens stock before creating invoice items
+      await updateLensStock(values.items, invoice.id);
+
       // Prepare invoice items for insertion
       const invoiceItemsToInsert = values.items.map((item) => {
         const baseItem = {
@@ -140,7 +164,6 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           right_eye_mpd: item.right_eye?.mpd || null,
         };
 
-        // Only add lens_stock_id if it exists (avoid schema error)
         if (item.lens_stock_id) {
           return {
             ...baseItem,
@@ -161,24 +184,17 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         throw itemsError;
       }
 
-      // Update lens stock for lens items
-      await updateLensStock(
-        invoiceItemsToInsert.map((item, index) => ({
-          ...values.items[index],
-          invoice_id: invoice.id,
-          lens_stock_id: item.lens_stock_id,
-        })),
-      );
-
       // Handle payments
       if (totals.downPayment > 0) {
-        const { error: paymentError } = await supabase.from("payments").insert({
-          invoice_id: invoice.id,
-          amount: totals.downPayment,
-          payment_type: values.payment_type,
-          payment_date: new Date().toISOString(),
-          is_down_payment: totals.downPayment < totals.grandTotal,
-        });
+        const { error: paymentError } = await supabase
+          .from("payments")
+          .insert({
+            invoice_id: invoice.id,
+            amount: totals.downPayment,
+            payment_type: values.payment_type,
+            payment_date: new Date().toISOString(),
+            is_down_payment: totals.downPayment < totals.grandTotal,
+          });
 
         if (paymentError) {
           console.error("Payment creation error:", paymentError);
@@ -208,4 +224,3 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
   return { submitInvoice };
 };
-
