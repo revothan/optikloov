@@ -24,7 +24,7 @@ export function JobOrderList() {
             products (*)
           )
         `)
-        .or('invoice_items.right_eye_mpd.not.is.null,invoice_items.left_eye_mpd.not.is.null')
+        .or('invoice_items.right_eye_mpd.neq.null,invoice_items.left_eye_mpd.neq.null')
         .order("created_at", { ascending: false });
 
       if (error) throw error;
