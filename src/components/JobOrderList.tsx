@@ -24,7 +24,6 @@ export function JobOrderList() {
             products (*)
           )
         `)
-        .not('invoice_items.right_eye_mpd', 'is', null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
