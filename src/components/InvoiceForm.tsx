@@ -67,7 +67,6 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     },
   });
 
-  // Update form when latest invoice number is fetched
   useEffect(() => {
     if (latestInvoice && !isLoadingInvoice) {
       const nextNumber = generateNextInvoiceNumber(latestInvoice);
