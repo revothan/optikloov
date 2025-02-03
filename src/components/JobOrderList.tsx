@@ -24,7 +24,7 @@ export function JobOrderList() {
             products (*)
           )
         `)
-        .or('invoice_items.right_eye_mpd.neq.null,invoice_items.left_eye_mpd.neq.null')
+        .or('right_eye_mpd.neq.null,left_eye_mpd.neq.null', { foreignTable: 'invoice_items' })
         .order("created_at", { ascending: false });
 
       if (error) throw error;
