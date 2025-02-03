@@ -55,7 +55,7 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
               quantity: 1,
               price: 0,
               discount: 0,
-              sh: null,
+              pv: null,
               v_frame: null,
               f_size: null,
               prism: null,
