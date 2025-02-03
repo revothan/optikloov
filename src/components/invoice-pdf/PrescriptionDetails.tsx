@@ -21,33 +21,35 @@ const styles = StyleSheet.create({
   itemDetails: {
     fontSize: 10,
   },
-  table: {
-    display: "table",
-    width: "auto",
-    borderStyle: "solid",
-    borderWidth: 1,
-    borderColor: "#000",
+  prescriptionTable: {
+    width: "100%",
   },
   tableHeader: {
-    margin: "auto",
     flexDirection: "row",
+    backgroundColor: "#f5f5f5",
+    borderBottom: "1px solid #000",
   },
   tableRow: {
     flexDirection: "row",
+    borderBottom: "1px solid #000",
   },
   tableCol: {
-    width: "14.28%",
-    borderStyle: "solid",
-    borderWidth: 1,
-    borderColor: "#000",
+    width: "12.5%",
     padding: 5,
+    borderRight: "1px solid #000",
   },
   headerCell: {
-    fontWeight: "bold",
+    fontFamily: "Helvetica-Bold",
+    fontSize: 8,
     textAlign: "center",
   },
   tableCell: {
+    fontSize: 8,
     textAlign: "center",
+  },
+  productName: {
+    fontSize: 10,
+    fontFamily: "Helvetica-Bold",
   },
 });
 
@@ -83,7 +85,7 @@ export function PrescriptionDetails({ items }) {
           </View>
 
           {/* Prescription Table */}
-          <View style={styles.table}>
+          <View style={styles.prescriptionTable}>
             <View style={styles.tableHeader}>
               <View style={styles.tableCol}>
                 <Text style={styles.headerCell}></Text>
