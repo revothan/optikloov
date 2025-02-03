@@ -62,7 +62,6 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       acknowledged_by: "",
       received_by: "",
       notes: "",
-      branch: "Gading Serpong", // Set default branch
       items: [],
     },
   });
