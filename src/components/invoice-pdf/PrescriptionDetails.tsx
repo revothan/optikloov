@@ -2,65 +2,63 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   section: {
-    marginVertical: 6,
+    marginVertical: 3, // Reduced from 4
   },
   table: {
-    display: "flex",
     width: "100%",
-    borderStyle: "solid",
-    borderWidth: 1,
-    borderRightWidth: 0,
-    borderBottomWidth: 0,
+    border: "1 solid #000",
+    marginBottom: 4, // Reduced from 6
   },
   tableRow: {
-    margin: "auto",
     flexDirection: "row",
+    borderBottom: "0.5 solid #000",
+    minHeight: 10, // Reduced from 12
   },
   tableCol: {
     width: "20%",
-    borderStyle: "solid",
-    borderWidth: 1,
-    borderLeftWidth: 0,
-    borderTopWidth: 0,
+    justifyContent: "center",
+    padding: 0.5, // Reduced from 1
   },
   tableCell: {
-    margin: 1.5,
-    fontSize: 5.5,
+    fontSize: 5, // Reduced from 6
     textAlign: "center",
   },
   tableHeader: {
     backgroundColor: "#f0f0f0",
+  },
+  headerCell: {
+    fontSize: 5, // Reduced from 6
+    textAlign: "center",
     fontFamily: "Helvetica-Bold",
   },
   title: {
-    fontSize: 7,
-    marginBottom: 2,
+    fontSize: 6, // Reduced from 7
+    marginBottom: 1, // Reduced from 2
     fontFamily: "Helvetica-Bold",
   },
   subtitle: {
-    fontSize: 6,
-    marginTop: 2,
-    marginBottom: 1.5,
+    fontSize: 5, // Reduced from 6
+    marginTop: 1, // Reduced from 2
+    marginBottom: 0.5, // Reduced from 1
     fontFamily: "Helvetica-Bold",
   },
   productName: {
-    fontSize: 6,
-    marginBottom: 2,
+    fontSize: 5, // Reduced from 6
+    marginBottom: 1, // Reduced from 2
     color: "#666",
   },
 });
 
-interface PrescriptionDetailsProps {
-  items: any[];
-}
-
-const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' | 'add' | 'cyl' | 'other'): string => {
+const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' | 'add' | 'cyl' | 'mpd' | 'pv' | 'prism' | 'other'): string => {
   if (value === null || value === undefined) return "-";
   
-  // For non-numeric values, return as is
   if (typeof value !== 'number') return String(value);
 
-  // Format to always show 2 decimal places
+  // Special handling for MPD, PV, and Prism - no fixed decimal places
+  if (type === 'mpd' || type === 'pv' || type === 'prism') {
+    return value === 0 ? "0" : String(value);
+  }
+
   const absValue = Math.abs(value).toFixed(2);
 
   switch (type) {
@@ -75,7 +73,7 @@ const formatPrescriptionValue = (value: number | null | undefined, type: 'sph' |
   }
 };
 
-export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
+export function PrescriptionDetails({ items }: { items: any[] }) {
   const lensItems = items.filter((item) => item.products?.category === "Lensa");
 
   if (lensItems.length === 0) return null;
@@ -90,24 +88,24 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>PV</Text>
+                <Text style={styles.headerCell}>PV</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>V FRAME</Text>
+                <Text style={styles.headerCell}>V FRAME</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>F SIZE</Text>
+                <Text style={styles.headerCell}>F SIZE</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>PRISM</Text>
+                <Text style={styles.headerCell}>PRISM</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>QTY</Text>
+                <Text style={styles.headerCell}>QTY</Text>
               </View>
             </View>
             <View style={styles.tableRow}>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.pv, 'other')}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.pv, 'pv')}</Text>
               </View>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>{item.v_frame || "-"}</Text>
@@ -116,7 +114,7 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
                 <Text style={styles.tableCell}>{item.f_size || "-"}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.prism, 'other')}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.prism, 'prism')}</Text>
               </View>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>{item.quantity || "-"}</Text>
@@ -128,19 +126,19 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>SPH</Text>
+                <Text style={styles.headerCell}>SPH</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>CYL</Text>
+                <Text style={styles.headerCell}>CYL</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>AXIS</Text>
+                <Text style={styles.headerCell}>AXIS</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>ADD</Text>
+                <Text style={styles.headerCell}>ADD</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>MPD</Text>
+                <Text style={styles.headerCell}>MPD</Text>
               </View>
             </View>
             <View style={styles.tableRow}>
@@ -157,7 +155,7 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
                 <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye_add_power, 'add')}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye_mpd, 'other')}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.right_eye_mpd, 'mpd')}</Text>
               </View>
             </View>
           </View>
@@ -166,19 +164,19 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]}>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>SPH</Text>
+                <Text style={styles.headerCell}>SPH</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>CYL</Text>
+                <Text style={styles.headerCell}>CYL</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>AXIS</Text>
+                <Text style={styles.headerCell}>AXIS</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>ADD</Text>
+                <Text style={styles.headerCell}>ADD</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>MPD</Text>
+                <Text style={styles.headerCell}>MPD</Text>
               </View>
             </View>
             <View style={styles.tableRow}>
@@ -195,7 +193,7 @@ export function PrescriptionDetails({ items }: PrescriptionDetailsProps) {
                 <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye_add_power, 'add')}</Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye_mpd, 'other')}</Text>
+                <Text style={styles.tableCell}>{formatPrescriptionValue(item.left_eye_mpd, 'mpd')}</Text>
               </View>
             </View>
           </View>
