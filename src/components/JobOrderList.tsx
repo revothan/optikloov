@@ -24,7 +24,7 @@ export function JobOrderList() {
             products (*)
           )
         `)
-        .contains('invoice_items.products.category', ['Lensa'])
+        .eq('invoice_items.products.category', 'Lensa')
         .order("created_at", { ascending: false });
 
       if (error) throw error;
