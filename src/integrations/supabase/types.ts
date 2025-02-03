@@ -180,6 +180,7 @@ export type Database = {
       invoices: {
         Row: {
           acknowledged_by: string | null
+          branch: string
           created_at: string
           customer_address: string | null
           customer_birth_date: string | null
@@ -205,6 +206,7 @@ export type Database = {
         }
         Insert: {
           acknowledged_by?: string | null
+          branch?: string
           created_at?: string
           customer_address?: string | null
           customer_birth_date?: string | null
@@ -230,6 +232,7 @@ export type Database = {
         }
         Update: {
           acknowledged_by?: string | null
+          branch?: string
           created_at?: string
           customer_address?: string | null
           customer_birth_date?: string | null
