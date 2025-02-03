@@ -50,34 +50,34 @@ export function ProductCard({ product, onDelete }: ProductCardProps) {
         </div>
 
         {/* Konten */}
-        <div className="p-4">
+        <div className="p-3">
           {/* Merek */}
-          <p className="text-sm text-gray-500 mb-1">{product.brand}</p>
+          <p className="text-xs text-gray-500 mb-0.5">{product.brand}</p>
 
           {/* Nama Produk */}
-          <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+          <h3 className="text-sm font-medium text-gray-900 mb-1 line-clamp-2">
             {product.name}
           </h3>
 
           {/* Label Kategori */}
-          <span className="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full mb-2">
+          <span className="inline-block px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full mb-1">
             {translateCategory(product.category)}
           </span>
 
           {/* Harga */}
-          <p className="text-lg font-semibold text-gray-900">
+          <p className="text-base font-semibold text-gray-900">
             {formatPrice(product.online_price || 0)}
           </p>
         </div>
       </Link>
       {(onDelete || product.id) && (
-        <div className="p-4 border-t flex gap-2">
+        <div className="p-3 border-t flex gap-2">
           <ProductDialog 
             mode="edit" 
             product={product as Tables<"products">}
             trigger={
-              <Button variant="outline" size="sm" className="flex-1">
-                <Edit className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" className="flex-1 text-xs">
+                <Edit className="h-3 w-3 mr-1" />
                 Edit
               </Button>
             }
@@ -86,10 +86,10 @@ export function ProductCard({ product, onDelete }: ProductCardProps) {
             <Button
               variant="destructive"
               size="sm"
-              className="flex-1"
+              className="flex-1 text-xs"
               onClick={() => onDelete(product.id)}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="h-3 w-3 mr-1" />
               Delete
             </Button>
           )}

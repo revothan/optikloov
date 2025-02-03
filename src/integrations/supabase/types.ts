@@ -99,13 +99,13 @@ export type Database = {
           price: number
           prism: number | null
           product_id: string
+          pv: number | null
           quantity: number
           right_eye_add_power: number | null
           right_eye_axis: number | null
           right_eye_cyl: number | null
           right_eye_mpd: number | null
           right_eye_sph: number | null
-          sh: number | null
           total: number
           updated_at: string
           v_frame: string | null
@@ -124,13 +124,13 @@ export type Database = {
           price: number
           prism?: number | null
           product_id: string
+          pv?: number | null
           quantity: number
           right_eye_add_power?: number | null
           right_eye_axis?: number | null
           right_eye_cyl?: number | null
           right_eye_mpd?: number | null
           right_eye_sph?: number | null
-          sh?: number | null
           total: number
           updated_at?: string
           v_frame?: string | null
@@ -149,13 +149,13 @@ export type Database = {
           price?: number
           prism?: number | null
           product_id?: string
+          pv?: number | null
           quantity?: number
           right_eye_add_power?: number | null
           right_eye_axis?: number | null
           right_eye_cyl?: number | null
           right_eye_mpd?: number | null
           right_eye_sph?: number | null
-          sh?: number | null
           total?: number
           updated_at?: string
           v_frame?: string | null
@@ -180,6 +180,7 @@ export type Database = {
       invoices: {
         Row: {
           acknowledged_by: string | null
+          branch: string
           created_at: string
           customer_address: string | null
           customer_birth_date: string | null
@@ -205,6 +206,7 @@ export type Database = {
         }
         Insert: {
           acknowledged_by?: string | null
+          branch?: string
           created_at?: string
           customer_address?: string | null
           customer_birth_date?: string | null
@@ -230,6 +232,7 @@ export type Database = {
         }
         Update: {
           acknowledged_by?: string | null
+          branch?: string
           created_at?: string
           customer_address?: string | null
           customer_birth_date?: string | null

@@ -1,5 +1,6 @@
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Form } from "@/components/ui/form";
@@ -12,7 +13,6 @@ import { PaymentSignature } from "./invoice-form/PaymentSignature";
 import { schema } from "./invoice/invoiceFormSchema";
 import { useInvoiceSubmission } from "./invoice/useInvoiceSubmission";
 import type { z } from "zod";
-import { useEffect } from "react";
 
 type FormData = z.infer<typeof schema>;
 
@@ -50,7 +50,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      invoice_number: "",  // Initialize as empty string
+      invoice_number: "",
       sale_date: new Date().toISOString().split("T")[0],
       customer_name: "",
       customer_email: "",
@@ -62,11 +62,11 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       acknowledged_by: "",
       received_by: "",
       notes: "",
+      branch: "Gading Serpong", // Set default branch
       items: [],
     },
   });
 
-  // Update form when latest invoice number is fetched
   useEffect(() => {
     if (latestInvoice && !isLoadingInvoice) {
       const nextNumber = generateNextInvoiceNumber(latestInvoice);

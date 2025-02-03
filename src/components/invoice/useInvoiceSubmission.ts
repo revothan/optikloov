@@ -304,7 +304,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           price: item.price,
           discount: item.discount || 0,
           total: item.quantity * item.price - (item.discount || 0),
-          sh: item.sh,
+          pv: item.pv,
           v_frame: item.v_frame,
           f_size: item.f_size,
           prism: item.prism,
