@@ -2,49 +2,49 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   section: {
-    marginVertical: 4, // Reduced from 6
+    marginVertical: 3, // Reduced from 4
   },
   table: {
     width: "100%",
     border: "1 solid #000",
-    marginBottom: 6, // Reduced from 8
+    marginBottom: 4, // Reduced from 6
   },
   tableRow: {
     flexDirection: "row",
     borderBottom: "0.5 solid #000",
-    minHeight: 12, // Reduced from 16
+    minHeight: 10, // Reduced from 12
   },
   tableCol: {
     width: "20%",
     justifyContent: "center",
-    padding: 1, // Reduced from 2
+    padding: 0.5, // Reduced from 1
   },
   tableCell: {
-    fontSize: 6, // Reduced from 7
+    fontSize: 5, // Reduced from 6
     textAlign: "center",
   },
   tableHeader: {
     backgroundColor: "#f0f0f0",
   },
   headerCell: {
-    fontSize: 6, // Reduced from 7
+    fontSize: 5, // Reduced from 6
     textAlign: "center",
     fontFamily: "Helvetica-Bold",
   },
   title: {
-    fontSize: 7, // Reduced from 8
-    marginBottom: 2, // Reduced from 4
-    fontFamily: "Helvetica-Bold",
-  },
-  subtitle: {
     fontSize: 6, // Reduced from 7
-    marginTop: 2, // Reduced from 4
     marginBottom: 1, // Reduced from 2
     fontFamily: "Helvetica-Bold",
   },
+  subtitle: {
+    fontSize: 5, // Reduced from 6
+    marginTop: 1, // Reduced from 2
+    marginBottom: 0.5, // Reduced from 1
+    fontFamily: "Helvetica-Bold",
+  },
   productName: {
-    fontSize: 6, // Reduced from 7
-    marginBottom: 2, // Reduced from 4
+    fontSize: 5, // Reduced from 6
+    marginBottom: 1, // Reduced from 2
     color: "#666",
   },
 });
