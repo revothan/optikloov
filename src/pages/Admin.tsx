@@ -24,6 +24,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProductCard } from "@/components/ProductCard";
 import { formatPrice } from "@/lib/utils";
 import { LensStockMatrix } from "@/components/lens-stock/LensStockMatrix";
+import { JobOrderList } from "@/components/JobOrderList";
 
 // Lazy load components
 const CustomerTable = lazy(() => import("@/components/CustomerList"));
@@ -118,6 +119,7 @@ export default function Admin() {
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="customers">Customers</TabsTrigger>
             <TabsTrigger value="invoices">Invoices</TabsTrigger>
+            <TabsTrigger value="job-orders">Job Orders</TabsTrigger>
             <TabsTrigger value="sales">Sales</TabsTrigger>
             <TabsTrigger value="lens-stock">Lens Stock</TabsTrigger>
           </TabsList>
@@ -162,6 +164,13 @@ export default function Admin() {
                 <InvoiceDialog />
               </div>
               <InvoiceList />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="job-orders">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-semibold mb-4">Job Orders</h2>
+              <JobOrderList />
             </div>
           </TabsContent>
 
