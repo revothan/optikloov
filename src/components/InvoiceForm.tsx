@@ -12,7 +12,6 @@ import { PaymentSignature } from "./invoice-form/PaymentSignature";
 import { schema } from "./invoice/invoiceFormSchema";
 import { useInvoiceSubmission } from "./invoice/useInvoiceSubmission";
 import type { z } from "zod";
-import { useEffect } from "react";
 
 type FormData = z.infer<typeof schema>;
 
@@ -62,6 +61,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       acknowledged_by: "",
       received_by: "",
       notes: "",
+      branch: "Gading Serpong", // Set default branch
       items: [],
     },
   });

@@ -24,7 +24,6 @@ interface BasicInvoiceInfoProps {
 }
 
 export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
-  // Fetch payment types from the database
   const { data: paymentTypes } = useQuery({
     queryKey: ["payment-types"],
     queryFn: async () => {
@@ -88,6 +87,28 @@ export function BasicInvoiceInfo({ form }: BasicInvoiceInfoProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <FormField
+        control={form.control}
+        name="branch"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Cabang</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih cabang" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="Gading Serpong">Gading Serpong</SelectItem>
+                <SelectItem value="Kelapa Dua">Kelapa Dua</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       <FormField
         control={form.control}
         name="invoice_number"

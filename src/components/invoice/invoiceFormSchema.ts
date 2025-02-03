@@ -21,6 +21,7 @@ export const schema = z.object({
   acknowledged_by: z.string().optional(),
   received_by: z.string().optional(),
   notes: z.string().optional(),
+  branch: z.string().min(1, "Branch is required"),
   items: z
     .array(
       z.object({
