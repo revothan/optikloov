@@ -20,6 +20,34 @@ interface InvoiceFormProps {
   onSuccess?: () => void;
 }
 
+type ItemFormData = {
+  lens_stock_id?: string;
+  product_id?: string;
+  dbl?: number;
+  discount?: number;
+  f_size?: string;
+  price?: number;
+  prism?: number;
+  pv?: number;
+  quantity?: number;
+  v_frame?: string;
+  category?: string;
+  right_eye?: {
+    cyl?: number;
+    sph?: number;
+    mpd?: number;
+    axis?: number;
+    add_power?: number;
+  };
+  left_eye?: {
+    cyl?: number;
+    sph?: number;
+    mpd?: number;
+    axis?: number;
+    add_power?: number;
+  };
+};
+
 export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const [submitting, setSubmitting] = useState(false);
 

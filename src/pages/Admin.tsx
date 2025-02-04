@@ -15,7 +15,14 @@ const JobOrdersPage = lazy(() => import("@/pages/admin/JobOrdersPage"));
 const SalesPage = lazy(() => import("@/pages/admin/SalesPage"));
 const LensStockPage = lazy(() => import("@/pages/admin/LensStockPage"));
 
-const MENU_ITEMS = [
+interface MenuItem {
+  id: string;
+  label: string;
+  path: string;
+  icon: React.ElementType;
+}
+
+const MENU_ITEMS: MenuItem[] = [
   { id: "invoices", label: "Invoices", path: "/admin/invoices", icon: FileText },
   { id: "products", label: "Products", path: "/admin/products", icon: ShoppingBag },
   { id: "customers", label: "Customers", path: "/admin/customers", icon: Users },
