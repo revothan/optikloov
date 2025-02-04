@@ -19,16 +19,47 @@ export function JobOrderList() {
         .from("invoices")
         .select(`
           *,
-          invoice_items!inner (
+          invoice_items (
             *,
             products (*)
           )
         `)
-        .not('invoice_items.right_eye_mpd', 'is', null)
+        .not('invoice_items', 'is', null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+
+      // Filter invoices that have items with MPD values
+      const filteredData = data.filter(invoice => 
+        invoice.invoice_items.some(item => 
+          item.right_eye_mpd !== null || item.left_eye_mpd !== null
+        )
+      );
+
+      // Transform the data to include prescription details
+      return filteredData.map(invoice => ({
+        ...invoice,
+        items: invoice.invoice_items.map(item => ({
+          ...item,
+          product: item.products,
+          right_eye: {
+            sph: item.right_eye_sph,
+            cyl: item.right_eye_cyl,
+            axis: item.right_eye_axis,
+            add_power: item.right_eye_add_power,
+            mpd: item.right_eye_mpd,
+            dbl: item.dbl
+          },
+          left_eye: {
+            sph: item.left_eye_sph,
+            cyl: item.left_eye_cyl,
+            axis: item.left_eye_axis,
+            add_power: item.left_eye_add_power,
+            mpd: item.left_eye_mpd,
+            dbl: item.dbl
+          }
+        }))
+      }));
     },
   });
 

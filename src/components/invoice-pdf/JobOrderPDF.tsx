@@ -8,6 +8,12 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 7,
   },
+  title: {
+    fontSize: 14,
+    fontFamily: "Helvetica-Bold",
+    textAlign: "center",
+    marginBottom: 8,
+  },
   bottomSection: {
     flexDirection: "row",
     marginTop: 4,
@@ -40,6 +46,8 @@ export function JobOrderPDF({ invoice, items }: JobOrderPDFProps) {
   return (
     <Document>
       <Page size="A5" orientation="landscape" style={styles.page}>
+        <Text style={styles.title}>JOB ORDER</Text>
+        
         <InvoiceHeader
           invoiceNumber={invoice.invoice_number}
           saleDate={invoice.sale_date}

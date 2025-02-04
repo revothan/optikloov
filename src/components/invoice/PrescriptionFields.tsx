@@ -12,6 +12,33 @@ export function PrescriptionFields({
   index,
   side,
 }: PrescriptionFieldsProps) {
+  const getNextFieldName = (currentField: string) => {
+    const fieldOrder = ["sph", "cyl", "axis", "add_power", "mpd"];
+
+    const currentIndex = fieldOrder.indexOf(currentField);
+    if (currentIndex === fieldOrder.length - 1) {
+      // If we're on the last field of right eye, move to left eye
+      if (side === "right") {
+        return "left_eye.sph";
+      }
+      // If we're on the last field of left eye, stop
+      return null;
+    }
+    return `${side}_eye.${fieldOrder[currentIndex + 1]}`;
+  };
+
+  const handleFieldComplete = (currentField: string) => {
+    const nextField = getNextFieldName(currentField);
+    if (nextField) {
+      const element = document.querySelector(
+        `[name="items.${index}.${nextField}"]`,
+      );
+      if (element) {
+        (element as HTMLElement).focus();
+      }
+    }
+  };
+
   return (
     <div>
       <h5 className="text-sm font-medium mb-2">
@@ -25,6 +52,7 @@ export function PrescriptionFields({
           fieldName="sph"
           label="SPH"
           type="sph"
+          onComplete={() => handleFieldComplete("sph")}
         />
         <EyeField
           form={form}
@@ -33,6 +61,7 @@ export function PrescriptionFields({
           fieldName="cyl"
           label="CYL"
           type="cyl"
+          onComplete={() => handleFieldComplete("cyl")}
         />
         <EyeField
           form={form}
@@ -41,6 +70,7 @@ export function PrescriptionFields({
           fieldName="axis"
           label="AXIS"
           type="axis"
+          onComplete={() => handleFieldComplete("axis")}
         />
         <EyeField
           form={form}
@@ -49,6 +79,7 @@ export function PrescriptionFields({
           fieldName="add_power"
           label="ADD"
           type="add"
+          onComplete={() => handleFieldComplete("add_power")}
         />
         <EyeField
           form={form}
@@ -57,8 +88,10 @@ export function PrescriptionFields({
           fieldName="mpd"
           label="MPD"
           type="mpd"
+          onComplete={() => handleFieldComplete("mpd")}
         />
       </div>
     </div>
   );
 }
+

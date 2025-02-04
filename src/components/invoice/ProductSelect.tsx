@@ -35,6 +35,7 @@ interface Product {
   name: string;
   store_price: number;
   category: string;
+  lens_stock_id?: string;
 }
 
 interface LensStock {
@@ -111,7 +112,8 @@ export function ProductSelect({
           lens_type_id,
           lens_type:lens_type_id (
             name,
-            material
+            material,
+            price
           )
         `,
         )
@@ -145,14 +147,18 @@ export function ProductSelect({
     if (!Array.isArray(lensStock)) return [];
 
     return lensStock.filter((stock) => {
-      const matchesLensType = !lensTypeFilter || 
-        stock.lens_type?.name.toLowerCase().includes(lensTypeFilter.toLowerCase());
-      const matchesMaterial = !materialFilter || 
-        stock.lens_type?.material.toLowerCase().includes(materialFilter.toLowerCase());
-      const matchesSph = !sphFilter || 
-        stock.sph === parseFloat(sphFilter);
-      const matchesCyl = !cylFilter || 
-        stock.cyl === parseFloat(cylFilter);
+      const matchesLensType =
+        !lensTypeFilter ||
+        stock.lens_type?.name
+          .toLowerCase()
+          .includes(lensTypeFilter.toLowerCase());
+      const matchesMaterial =
+        !materialFilter ||
+        stock.lens_type?.material
+          .toLowerCase()
+          .includes(materialFilter.toLowerCase());
+      const matchesSph = !sphFilter || stock.sph === parseFloat(sphFilter);
+      const matchesCyl = !cylFilter || stock.cyl === parseFloat(cylFilter);
 
       return matchesLensType && matchesMaterial && matchesSph && matchesCyl;
     });
@@ -164,8 +170,17 @@ export function ProductSelect({
   }, [products, value]);
 
   const handleProductSelect = (product: Product) => {
+    console.log("ProductSelect - Selected Product:", product);
     onChange(product.id);
-    onProductSelect(product);
+
+    const productToSelect = {
+      ...product,
+      lens_stock_id: product.lens_stock_id,
+    };
+
+    console.log("ProductSelect - Product to Select:", productToSelect);
+    onProductSelect(productToSelect);
+
     setOpen(false);
     setSearchQuery("");
     if (product.id.includes("-")) {
@@ -175,16 +190,30 @@ export function ProductSelect({
 
   const handleLensStockSelect = async (stock: LensStock) => {
     try {
+      console.log("=== Lens Stock Selection Debug ===");
+      console.log("1. Selected stock item:", stock);
+
       if (!stock.lens_type_id) {
         toast.error("Invalid lens type selection");
         return;
       }
 
+      // Get current user session
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+      if (sessionError || !session?.user?.id) {
+        toast.error("Authentication required");
+        return;
+      }
+
+      // Get the lens type details
       const { data: lensType, error: lensTypeError } = await supabase
         .from("lens_types")
         .select("*")
         .eq("id", stock.lens_type_id)
-        .maybeSingle();
+        .single();
 
       if (lensTypeError) throw lensTypeError;
       if (!lensType) {
@@ -192,35 +221,63 @@ export function ProductSelect({
         return;
       }
 
-      const productName = `${stock.lens_type?.name} ${stock.lens_type?.material} SPH:${formatNumber(stock.sph)} CYL:${formatNumber(stock.cyl)}`;
-      const customProductId = generateUUID();
-      const { data: userData } = await supabase.auth.getUser();
+      console.log("2. Found lens type:", lensType);
 
-      if (!userData.user?.id) {
-        toast.error("User not authenticated");
-        return;
+      // Check if we already have a product for this specific lens combination
+      const { data: existingProduct, error: queryError } = await supabase
+        .from("products")
+        .select("*")
+        .eq("lens_type_id", stock.lens_type_id)
+        .eq("lens_sph", stock.sph)
+        .eq("lens_cyl", stock.cyl)
+        .maybeSingle();
+
+      let productId;
+      const productName = `${lensType.name} ${lensType.material} SPH:${formatNumber(stock.sph)} CYL:${formatNumber(stock.cyl)}`;
+
+      if (existingProduct) {
+        console.log("3. Found existing product:", existingProduct);
+        productId = existingProduct.id;
+      } else {
+        // Create a new product entry for this lens combination
+        const { data: newProduct, error: insertError } = await supabase
+          .from("products")
+          .insert({
+            name: productName,
+            category: "Stock Lens",
+            store_price: lensType.price || 0,
+            lens_type_id: stock.lens_type_id,
+            lens_sph: stock.sph,
+            lens_cyl: stock.cyl,
+            brand: lensType.material, // Use material as brand for better organization
+            user_id: session.user.id, // Important: Set the user_id
+            published: true, // Optional: Set if needed
+            track_inventory: false, // Since we track through lens_stock
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error("Product creation error:", insertError);
+          throw insertError;
+        }
+        console.log("3. Created new product:", newProduct);
+        productId = newProduct.id;
       }
 
-      const { error: insertError } = await supabase.from("products").insert({
-        id: customProductId,
+      // Create the final product object
+      const product = {
+        id: productId,
         name: productName,
         store_price: lensType.price || 0,
         category: "Stock Lens",
-        user_id: userData.user.id,
         lens_stock_id: stock.id,
         lens_type_id: stock.lens_type_id,
         lens_sph: stock.sph,
         lens_cyl: stock.cyl,
-      });
-
-      if (insertError) throw insertError;
-
-      const product = {
-        id: customProductId,
-        name: productName,
-        store_price: lensType.price || 0,
-        category: "Stock Lens",
       };
+
+      console.log("4. Final product object:", product);
 
       handleProductSelect(product);
       toast.success("Lens stock selected successfully");
