@@ -67,10 +67,11 @@ export default function Admin() {
             <nav className="space-y-1 p-2">
               {MENU_ITEMS.map((item) => {
                 const Icon = item.icon;
+                const isActive = currentPath === item.path;
                 return (
                   <Button
                     key={item.id}
-                    variant={currentPath === item.path ? "secondary" : "ghost"}
+                    variant={isActive ? "secondary" : "ghost"}
                     className={cn(
                       "w-full justify-start",
                       isCollapsed ? "px-2" : "px-4"
@@ -98,6 +99,7 @@ export default function Admin() {
           <nav className="flex justify-around p-2">
             {MENU_ITEMS.map((item) => {
               const Icon = item.icon;
+              const isActive = currentPath === item.path;
               return (
                 <Button
                   key={item.id}
@@ -105,7 +107,7 @@ export default function Admin() {
                   size="icon"
                   className={cn(
                     "flex flex-col items-center justify-center",
-                    currentPath === item.path && "text-primary"
+                    isActive && "text-primary"
                   )}
                   onClick={() => navigate(item.path)}
                 >
@@ -121,7 +123,7 @@ export default function Admin() {
       {/* Main Content */}
       <main
         className={cn(
-          "transition-all duration-300 ease-in-out",
+          "transition-all duration-300 ease-in-out pt-4",
           "min-h-screen bg-gray-50",
           isMobile
             ? "pb-20 px-4"
@@ -139,12 +141,12 @@ export default function Admin() {
             }
           >
             <Routes>
-              <Route path="/invoices" element={<InvoicesPage />} />
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/customers" element={<CustomersPage />} />
-              <Route path="/job-orders" element={<JobOrdersPage />} />
-              <Route path="/sales" element={<SalesPage />} />
-              <Route path="/lens-stock" element={<LensStockPage />} />
+              <Route path="invoices" element={<InvoicesPage />} />
+              <Route path="products" element={<ProductsPage />} />
+              <Route path="customers" element={<CustomersPage />} />
+              <Route path="job-orders" element={<JobOrdersPage />} />
+              <Route path="sales" element={<SalesPage />} />
+              <Route path="lens-stock" element={<LensStockPage />} />
               <Route path="/" element={<Navigate to="/admin/invoices" replace />} />
             </Routes>
           </Suspense>
