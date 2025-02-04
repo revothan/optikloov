@@ -31,7 +31,7 @@ type ItemFormData = {
   pv?: number;
   quantity?: number;
   v_frame?: string;
-  category?: string;  // Added the missing category property
+  category?: string;
   right_eye?: {
     cyl?: number;
     sph?: number;
