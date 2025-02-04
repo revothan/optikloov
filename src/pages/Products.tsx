@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductFilters } from "@/components/products/ProductFilters";
@@ -7,8 +7,9 @@ import { ViewToggle } from "@/components/products/ViewToggle";
 import { Pagination } from "@/components/products/Pagination";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useDebounce } from "@/hooks/useDebounce";
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 10;
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,13 +21,21 @@ export default function ProductsPage() {
   const [view, setView] = useState<"grid" | "list">("grid");
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
+  // Debounce the search query
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, selectedCategory]);
+
   const {
-    data: allProducts = [],
+    data: productsData,
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["products", searchQuery, selectedType, selectedBrand, selectedCategory, sortBy],
+    queryKey: ["products", debouncedSearch, selectedType, selectedBrand, selectedCategory, sortBy],
     queryFn: async () => {
       try {
         let query = supabase
@@ -34,8 +43,8 @@ export default function ProductsPage() {
           .select("id, name, brand, image_url, online_price, category")
           .not("image_url", "is", null);
 
-        if (searchQuery) {
-          query = query.ilike("name", `%${searchQuery}%`);
+        if (debouncedSearch) {
+          query = query.ilike("name", `%${debouncedSearch}%`);
         }
         if (selectedType !== "all") {
           query = query.eq("category", selectedType);
@@ -67,8 +76,6 @@ export default function ProductsPage() {
         throw err;
       }
     },
-    retry: 2,
-    retryDelay: 1000,
   });
 
   const { data: brands = [] } = useQuery({
@@ -87,11 +94,11 @@ export default function ProductsPage() {
     },
   });
 
-  const totalPages = Math.ceil(allProducts.length / ITEMS_PER_PAGE);
-  const displayedProducts = allProducts.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  // Calculate pagination
+  const totalProducts = productsData?.length || 0;
+  const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const displayedProducts = productsData?.slice(startIndex, startIndex + ITEMS_PER_PAGE) || [];
 
   return (
     <div className="min-h-screen flex flex-col">
