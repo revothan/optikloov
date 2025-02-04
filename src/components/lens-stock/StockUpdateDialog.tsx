@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,98 +19,103 @@ interface StockUpdateDialogProps {
   lensTypeId: string | null;
 }
 
-export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({ lensTypeId }) => {
+export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({
+  lensTypeId,
+}) => {
   const [open, setOpen] = React.useState(false);
-  const [selectedLensType, setSelectedLensType] = React.useState<string | null>(lensTypeId);
+  const [selectedLensType, setSelectedLensType] = React.useState<string | null>(
+    lensTypeId,
+  );
   const queryClient = useQueryClient();
 
   const handleStockUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     if (!selectedLensType) {
-      toast.error('Please select a lens type');
+      toast.error("Please select a lens type");
       return;
     }
-    
+
     try {
-      // Check if stock already exists for these parameters
-      const { data: existingStock, error: checkError } = await supabase
-        .from('lens_stock')
-        .select('*')
-        .eq('lens_type_id', selectedLensType)
-        .eq('sph', parseFloat(formData.get('sph') as string))
-        .eq('cyl', parseFloat(formData.get('cyl') as string))
-        .maybeSingle();
+      // Get exact lens stock by compound key
+      const { data: existingStocks, error: checkError } = await supabase
+        .from("lens_stock")
+        .select("*")
+        .eq("lens_type_id", selectedLensType)
+        .eq("sph", parseFloat(formData.get("sph") as string))
+        .eq("cyl", parseFloat(formData.get("cyl") as string));
 
-      if (checkError) {
-        throw checkError;
-      }
+      if (checkError) throw checkError;
 
-      if (existingStock) {
-        // Update existing stock
+      if (existingStocks && existingStocks.length > 0) {
+        // Update the first matching stock entry
         const { error: updateError } = await supabase
-          .from('lens_stock')
+          .from("lens_stock")
           .update({
-            quantity: parseInt(formData.get('quantity') as string),
-            minimum_stock: parseInt(formData.get('minimum_stock') as string),
-            reorder_point: parseInt(formData.get('reorder_point') as string),
-            updated_at: new Date().toISOString()
+            quantity: parseInt(formData.get("quantity") as string),
+            minimum_stock: parseInt(formData.get("minimum_stock") as string),
+            reorder_point: parseInt(formData.get("reorder_point") as string),
+            updated_at: new Date().toISOString(),
           })
-          .eq('id', existingStock.id);
+          .eq("lens_type_id", selectedLensType)
+          .eq("sph", parseFloat(formData.get("sph") as string))
+          .eq("cyl", parseFloat(formData.get("cyl") as string));
 
         if (updateError) throw updateError;
-        toast.success('Stock updated successfully');
+        toast.success("Stock updated successfully");
       } else {
         // Insert new stock
         const { error: insertError } = await supabase
-          .from('lens_stock')
+          .from("lens_stock")
           .insert({
             lens_type_id: selectedLensType,
-            sph: parseFloat(formData.get('sph') as string),
-            cyl: parseFloat(formData.get('cyl') as string),
-            quantity: parseInt(formData.get('quantity') as string),
-            minimum_stock: parseInt(formData.get('minimum_stock') as string),
-            reorder_point: parseInt(formData.get('reorder_point') as string),
+            sph: parseFloat(formData.get("sph") as string),
+            cyl: parseFloat(formData.get("cyl") as string),
+            quantity: parseInt(formData.get("quantity") as string),
+            minimum_stock: parseInt(formData.get("minimum_stock") as string),
+            reorder_point: parseInt(formData.get("reorder_point") as string),
           });
 
         if (insertError) throw insertError;
-        toast.success('New stock added successfully');
+        toast.success("New stock added successfully");
       }
 
-      queryClient.invalidateQueries({ queryKey: ['lens-stock'] });
+      queryClient.invalidateQueries({ queryKey: ["lens-stock"] });
       setOpen(false);
     } catch (error) {
-      console.error('Error updating stock:', error);
-      toast.error('Failed to update stock');
+      console.error("Error updating stock:", error);
+      toast.error("Failed to update stock");
     }
   };
 
   const handleCreateLensType = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     try {
       const { data, error } = await supabase
-        .from('lens_types')
-        .insert([{
-          name: formData.get('name') as string,
-          material: formData.get('material') as string,
-          index: parseFloat(formData.get('index') as string),
-          description: formData.get('description') as string,
-          price: parseFloat(formData.get('price') as string) || 0,
-        }])
+        .from("lens_types")
+        .insert([
+          {
+            name: formData.get("name") as string,
+            material: formData.get("material") as string,
+            index: parseFloat(formData.get("index") as string),
+            description: formData.get("description") as string,
+            price: parseFloat(formData.get("price") as string) || 0,
+          },
+        ])
         .select()
         .single();
 
       if (error) throw error;
 
-      toast.success('Lens type created successfully');
-      queryClient.invalidateQueries({ queryKey: ['lens-types'] });
+      toast.success("Lens type created successfully");
+      queryClient.invalidateQueries({ queryKey: ["lens-types"] });
       setSelectedLensType(data.id);
     } catch (error) {
-      console.error('Error creating lens type:', error);
-      toast.error('Failed to create lens type');
+      console.error("Error creating lens type:", error);
+      toast.error("Failed to create lens type");
     }
   };
 
@@ -128,17 +133,17 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({ lensTypeId
             <TabsTrigger value="update">Update Stock</TabsTrigger>
             <TabsTrigger value="create">Create Lens Type</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="update">
             <form onSubmit={handleStockUpdate} className="space-y-4">
               <div className="space-y-2">
                 <Label>Lens Type</Label>
-                <LensTypeSelect 
-                  value={selectedLensType} 
+                <LensTypeSelect
+                  value={selectedLensType}
                   onChange={setSelectedLensType}
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="sph">SPH</Label>
@@ -195,7 +200,9 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({ lensTypeId
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full">Save Stock</Button>
+              <Button type="submit" className="w-full">
+                Save Stock
+              </Button>
             </form>
           </TabsContent>
 
@@ -249,7 +256,9 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({ lensTypeId
                   placeholder="Optional description"
                 />
               </div>
-              <Button type="submit" className="w-full">Create Lens Type</Button>
+              <Button type="submit" className="w-full">
+                Create Lens Type
+              </Button>
             </form>
           </TabsContent>
         </Tabs>
@@ -257,3 +266,4 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({ lensTypeId
     </Dialog>
   );
 };
+
