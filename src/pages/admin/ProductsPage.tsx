@@ -9,9 +9,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, Package, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/utils";
+import { Pagination } from "@/components/products/Pagination";
+import { useDebounce } from "@/hooks/useDebounce";
+
+const ITEMS_PER_PAGE = 10;
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
   const {
     data: productsData,
@@ -19,14 +25,30 @@ export default function ProductsPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", debouncedSearch, currentPage],
     queryFn: async () => {
-      const { data, error, count } = await supabase
-        .from("products")
-        .select("*", { count: "exact" });
+      try {
+        let query = supabase
+          .from("products")
+          .select("*", { count: "exact" });
 
-      if (error) throw error;
-      return { data, count };
+        if (debouncedSearch) {
+          query = query.ilike("name", `%${debouncedSearch}%`);
+        }
+
+        // Calculate offset based on current page
+        const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+        
+        const { data, error, count } = await query
+          .order("created_at", { ascending: false })
+          .range(offset, offset + ITEMS_PER_PAGE - 1);
+
+        if (error) throw error;
+        return { data, count };
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        throw error;
+      }
     },
   });
 
@@ -42,13 +64,8 @@ export default function ProductsPage() {
     }
   };
 
-  const filteredProducts =
-    productsData?.data?.filter(
-      (product) =>
-        product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.sku?.toLowerCase().includes(searchQuery.toLowerCase()),
-    ) || [];
+  const filteredProducts = productsData?.data || [];
+  const totalPages = Math.ceil((productsData?.count || 0) / ITEMS_PER_PAGE);
 
   const totalValue =
     productsData?.data?.reduce(
@@ -97,7 +114,10 @@ export default function ProductsPage() {
                 placeholder="Search products..."
                 className="pl-10"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1); // Reset to first page on search
+                }}
               />
             </div>
             <ProductDialog />
@@ -113,6 +133,14 @@ export default function ProductsPage() {
             />
           ))}
         </div>
+
+        {!isLoading && !error && totalPages > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </div>
     </div>
   );
