@@ -67,7 +67,10 @@ export default function InvoiceList() {
         .eq("invoice_id", id);
 
       if (stockMovementsError) {
-        console.error("Error deleting lens stock movements:", stockMovementsError);
+        console.error(
+          "Error deleting lens stock movements:",
+          stockMovementsError,
+        );
         toast.error("Failed to delete lens stock movements");
         return;
       }
@@ -105,36 +108,11 @@ export default function InvoiceList() {
       if (invoiceError) throw invoiceError;
 
       toast.success("Invoice deleted successfully");
-      // No need to manually invalidate query here as the real-time subscription will handle it
     } catch (error) {
       console.error("Error deleting invoice:", error);
       toast.error("Failed to delete invoice");
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 text-red-500">
-        <p>Error loading invoices</p>
-        <button
-          className="mt-4 text-blue-500 hover:underline"
-          onClick={() =>
-            queryClient.invalidateQueries({ queryKey: ["invoices"] })
-          }
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="rounded-md border">
@@ -160,3 +138,4 @@ export default function InvoiceList() {
     </div>
   );
 }
+

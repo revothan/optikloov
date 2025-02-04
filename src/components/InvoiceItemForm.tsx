@@ -21,23 +21,35 @@ interface InvoiceItemFormProps {
 }
 
 export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
-  const [selectedProductCategories, setSelectedProductCategories] = useState<Record<number, string>>({});
+  const [selectedProductCategories, setSelectedProductCategories] = useState<
+    Record<number, string>
+  >({});
 
   const calculateItemTotal = (index: number) => {
     const quantity = form.watch(`items.${index}.quantity`) || 0;
     const price = form.watch(`items.${index}.price`) || 0;
     const discount = form.watch(`items.${index}.discount`) || 0;
-    return (quantity * price) - discount;
+    return quantity * price - discount;
   };
 
   const handleProductSelect = (product: any, index: number) => {
     if (product) {
-      form.setValue(`items.${index}.price`, product.store_price || 0);
       form.setValue(`items.${index}.product_id`, product.id);
-      setSelectedProductCategories(prev => ({
+      form.setValue(`items.${index}.price`, product.store_price || 0);
+
+      setSelectedProductCategories((prev) => ({
         ...prev,
-        [index]: product.category
+        [index]: product.category,
       }));
+
+      // For Stock Lens products, also set these fields
+      if (product.category === "Stock Lens") {
+        form.setValue(`items.${index}.lens_stock_id`, product.lens_stock_id);
+        form.setValue(`items.${index}.lens_type_id`, product.lens_type_id);
+        // Display name should show SPH/CYL values
+        const displayName = `${product.name} SPH:${product.lens_sph} CYL:${product.lens_cyl}`;
+        form.setValue(`items.${index}.display_name`, displayName);
+      }
     }
   };
 
@@ -52,6 +64,7 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
           onClick={() =>
             itemFields.append({
               product_id: "",
+              lens_stock_id: null,
               quantity: 1,
               price: 0,
               discount: 0,
@@ -64,14 +77,14 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
                 cyl: null,
                 axis: null,
                 add_power: null,
-                mpd: null
+                mpd: null,
               },
               right_eye: {
                 sph: null,
                 cyl: null,
                 axis: null,
                 add_power: null,
-                mpd: null
+                mpd: null,
               },
             })
           }
@@ -98,7 +111,9 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
 
           <ProductSelect
             value={form.watch(`items.${index}.product_id`)}
-            onChange={(value) => form.setValue(`items.${index}.product_id`, value)}
+            onChange={(value) =>
+              form.setValue(`items.${index}.product_id`, value)
+            }
             onProductSelect={(product) => handleProductSelect(product, index)}
           />
 
@@ -111,9 +126,9 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
           {selectedProductCategories[index] === "Lensa" && (
             <div className="col-span-full">
               <h4 className="font-medium mb-2">Prescription Details</h4>
-              
+
               <CommonFields form={form} index={index} />
-              
+
               <div className="space-y-4">
                 <PrescriptionFields form={form} index={index} side="right" />
                 <PrescriptionFields form={form} index={index} side="left" />
@@ -131,3 +146,4 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
     </div>
   );
 }
+

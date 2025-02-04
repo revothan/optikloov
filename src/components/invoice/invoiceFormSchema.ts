@@ -26,7 +26,7 @@ export const schema = z.object({
     .array(
       z.object({
         product_id: z.string().min(1, "Product is required"),
-        lens_stock_id: z.string().optional(), // Added optional lens_stock_id
+        lens_stock_id: z.string().optional().nullable(), // Added lens_stock_id
         quantity: z.number().min(1, "Quantity must be at least 1"),
         price: z.number().min(0, "Price cannot be negative"),
         discount: z.number().min(0, "Discount cannot be negative").optional(),
@@ -43,4 +43,3 @@ export const schema = z.object({
 });
 
 export type FormData = z.infer<typeof schema>;
-

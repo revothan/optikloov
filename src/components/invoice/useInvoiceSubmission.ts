@@ -16,46 +16,50 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
   const session = useSession();
   const queryClient = useQueryClient();
 
-  const updateLensStock = async (items: FormData["items"], invoiceId: string) => {
-    console.log("Updating lens stock for items:", items);
+  const updateLensStock = async (
+    items: FormData["items"],
+    invoiceId: string,
+  ) => {
+    console.log("Starting lens stock update...");
 
-    const lensStockUpdates = items.filter(item => item.lens_stock_id);
-    console.log("Lens stock updates:", lensStockUpdates);
+    // Filter items that have lens_stock_id
+    const lensStockItems = items.filter((item) => item.lens_stock_id);
+    console.log(
+      `Found ${lensStockItems.length} lens stock items`,
+      lensStockItems,
+    );
 
-    if (lensStockUpdates.length === 0) return;
+    if (lensStockItems.length === 0) {
+      console.log("No lens stock items to update");
+      return;
+    }
 
-    for (const item of lensStockUpdates) {
+    for (const item of lensStockItems) {
       try {
-        console.log("Processing lens stock item:", item);
-
-        // Fetch current stock
+        // Get current stock
         const { data: currentStock, error: fetchError } = await supabase
           .from("lens_stock")
           .select("quantity")
           .eq("id", item.lens_stock_id)
           .single();
 
-        if (fetchError) {
-          console.error("Error fetching current stock:", fetchError);
-          throw new Error(`Failed to fetch current stock: ${fetchError.message}`);
-        }
-
+        if (fetchError) throw fetchError;
         if (!currentStock) {
-          throw new Error("Stock record not found");
+          throw new Error(`Stock not found for ID: ${item.lens_stock_id}`);
         }
 
-        console.log("Current stock:", currentStock);
+        console.log(
+          `Current stock for lens ${item.lens_stock_id}: ${currentStock.quantity}`,
+        );
 
-        // Validate stock quantity
         if (currentStock.quantity < item.quantity) {
-          throw new Error(`Insufficient stock. Available: ${currentStock.quantity}, Requested: ${item.quantity}`);
+          throw new Error(
+            `Insufficient stock (${currentStock.quantity}) for requested quantity (${item.quantity})`,
+          );
         }
 
-        // Calculate new quantity
+        // Update stock quantity
         const newQuantity = currentStock.quantity - item.quantity;
-        console.log(`Reducing stock from ${currentStock.quantity} by ${item.quantity} to ${newQuantity}`);
-
-        // Update lens stock in a transaction
         const { error: updateError } = await supabase
           .from("lens_stock")
           .update({
@@ -64,36 +68,33 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           })
           .eq("id", item.lens_stock_id);
 
-        if (updateError) {
-          console.error("Error updating stock:", updateError);
-          throw updateError;
-        }
+        if (updateError) throw updateError;
 
-        // Create stock movement record
+        // Record stock movement
         const { error: movementError } = await supabase
           .from("lens_stock_movements")
           .insert({
             lens_stock_id: item.lens_stock_id,
             movement_type: "sale",
-            quantity: -item.quantity, // Negative for sales
+            quantity: -item.quantity,
             invoice_id: invoiceId,
-            created_by: session?.user?.id,
             notes: `Sale through invoice ${invoiceId}`,
           });
 
-        if (movementError) {
-          console.error("Error creating stock movement:", movementError);
-          throw movementError;
-        }
+        if (movementError) throw movementError;
 
-        console.log("Successfully updated stock and created movement record");
+        console.log(
+          `Successfully updated stock for lens ${item.lens_stock_id} to ${newQuantity}`,
+        );
       } catch (error) {
-        console.error(`Error updating lens stock for item:`, error);
+        console.error(
+          `Error updating stock for lens ${item.lens_stock_id}:`,
+          error,
+        );
         throw error;
       }
     }
   };
-
   const submitInvoice = async (values: FormData, totals: Totals) => {
     if (!session?.user?.id) {
       toast.error("You must be logged in to create an invoice");
@@ -135,44 +136,34 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         throw invoiceError;
       }
 
-      // Update lens stock before creating invoice items
+      // Update lens stock BEFORE creating invoice items
       await updateLensStock(values.items, invoice.id);
 
-      // Prepare invoice items for insertion
-      const invoiceItemsToInsert = values.items.map((item) => {
-        const baseItem = {
-          invoice_id: invoice.id,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.price,
-          discount: item.discount || 0,
-          total: item.quantity * item.price - (item.discount || 0),
-          pv: item.pv,
-          v_frame: item.v_frame,
-          f_size: item.f_size,
-          prism: item.prism,
-          dbl: typeof item.dbl === "number" ? item.dbl : null,
-          left_eye_sph: item.left_eye?.sph || null,
-          left_eye_cyl: item.left_eye?.cyl || null,
-          left_eye_axis: item.left_eye?.axis || null,
-          left_eye_add_power: item.left_eye?.add_power || null,
-          left_eye_mpd: item.left_eye?.mpd || null,
-          right_eye_sph: item.right_eye?.sph || null,
-          right_eye_cyl: item.right_eye?.cyl || null,
-          right_eye_axis: item.right_eye?.axis || null,
-          right_eye_add_power: item.right_eye?.add_power || null,
-          right_eye_mpd: item.right_eye?.mpd || null,
-        };
-
-        if (item.lens_stock_id) {
-          return {
-            ...baseItem,
-            lens_stock_id: item.lens_stock_id,
-          };
-        }
-
-        return baseItem;
-      });
+      // Prepare invoice items
+      const invoiceItemsToInsert = values.items.map((item) => ({
+        invoice_id: invoice.id,
+        product_id: item.product_id,
+        lens_stock_id: item.lens_stock_id || null, // Ensure lens_stock_id is included
+        quantity: item.quantity,
+        price: item.price,
+        discount: item.discount || 0,
+        total: item.quantity * item.price - (item.discount || 0),
+        pv: item.pv,
+        v_frame: item.v_frame,
+        f_size: item.f_size,
+        prism: item.prism,
+        dbl: typeof item.dbl === "number" ? item.dbl : null,
+        left_eye_sph: item.left_eye?.sph || null,
+        left_eye_cyl: item.left_eye?.cyl || null,
+        left_eye_axis: item.left_eye?.axis || null,
+        left_eye_add_power: item.left_eye?.add_power || null,
+        left_eye_mpd: item.left_eye?.mpd || null,
+        right_eye_sph: item.right_eye?.sph || null,
+        right_eye_cyl: item.right_eye?.cyl || null,
+        right_eye_axis: item.right_eye?.axis || null,
+        right_eye_add_power: item.right_eye?.add_power || null,
+        right_eye_mpd: item.right_eye?.mpd || null,
+      }));
 
       // Insert invoice items
       const { error: itemsError } = await supabase
@@ -186,15 +177,13 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
       // Handle payments
       if (totals.downPayment > 0) {
-        const { error: paymentError } = await supabase
-          .from("payments")
-          .insert({
-            invoice_id: invoice.id,
-            amount: totals.downPayment,
-            payment_type: values.payment_type,
-            payment_date: new Date().toISOString(),
-            is_down_payment: totals.downPayment < totals.grandTotal,
-          });
+        const { error: paymentError } = await supabase.from("payments").insert({
+          invoice_id: invoice.id,
+          amount: totals.downPayment,
+          payment_type: values.payment_type,
+          payment_date: new Date().toISOString(),
+          is_down_payment: totals.downPayment < totals.grandTotal,
+        });
 
         if (paymentError) {
           console.error("Payment creation error:", paymentError);
@@ -202,11 +191,13 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         }
       }
 
-      // Update queries
-      queryClient.invalidateQueries({ queryKey: ["invoices"] });
-      queryClient.invalidateQueries({ queryKey: ["latest-invoice-number"] });
-      queryClient.invalidateQueries({ queryKey: ["customers"] });
-      queryClient.invalidateQueries({ queryKey: ["lens-stock"] });
+      // Invalidate relevant queries
+      await queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["latest-invoice-number"],
+      });
+      await queryClient.invalidateQueries({ queryKey: ["customers"] });
+      await queryClient.invalidateQueries({ queryKey: ["lens-stock"] }); // Add this to refresh lens stock data
 
       toast.success("Invoice created successfully");
 
@@ -224,3 +215,4 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
   return { submitInvoice };
 };
+

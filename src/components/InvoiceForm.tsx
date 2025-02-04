@@ -104,19 +104,20 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const totals = calculateTotals();
   const { submitInvoice } = useInvoiceSubmission(onSuccess);
 
-  // Handle form submission
-
-  // Inside InvoiceForm.tsx
-
-  // Handle form submission
   const handleSubmit = async (values: FormData) => {
-    console.log("Form submission started");
-    console.log("Form values:", values);
-    console.log("Totals:", totals);
+    console.log("=== Invoice Submission Debug ===");
+    console.log(
+      "Items being submitted:",
+      values.items.map((item) => ({
+        product_id: item.product_id,
+        lens_stock_id: item.lens_stock_id,
+        quantity: item.quantity,
+        category: item.category,
+      })),
+    );
 
     try {
       setSubmitting(true);
-      console.log("Calling submitInvoice...");
       const result = await submitInvoice(values, totals);
       console.log("submitInvoice result:", result);
     } catch (error) {
@@ -125,9 +126,6 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       setSubmitting(false);
     }
   };
-
-  // Add this console log on form render
-  // Prevent form submission on Enter key
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
       e.preventDefault();
