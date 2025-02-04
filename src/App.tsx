@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect, lazy, Suspense } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
@@ -17,7 +17,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Login from "./pages/Login";
 import { toast } from "sonner";
 
-// Lazy load pages
 const InvoicesPage = lazy(() => import("@/pages/admin/InvoicesPage"));
 const ProductsPage = lazy(() => import("@/pages/admin/ProductsPage"));
 const CustomersPage = lazy(() => import("@/pages/admin/CustomersPage"));
