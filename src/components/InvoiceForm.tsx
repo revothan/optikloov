@@ -101,12 +101,10 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     }
   }, [latestInvoice, isLoadingInvoice, form]);
 
-  const { fields, append, remove, swap, move, insert, prepend } = useFieldArray(
-    {
-      name: "items",
-      control: form.control,
-    },
-  );
+  const { fields, append, remove, swap, move, insert, prepend } = useFieldArray({
+    name: "items",
+    control: form.control,
+  });
 
   const calculateTotals = () => {
     const items = form.watch("items") || [];
@@ -156,18 +154,12 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       setSubmitting(false);
     }
   };
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
-      e.preventDefault();
-    }
-  };
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-6"
-        onKeyDown={handleKeyDown}
       >
         <BasicInvoiceInfo form={form} />
 
