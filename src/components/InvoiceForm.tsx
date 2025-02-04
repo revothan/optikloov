@@ -31,7 +31,7 @@ type ItemFormData = {
   pv?: number;
   quantity?: number;
   v_frame?: string;
-  category?: string;
+  category?: string;  // Added this line to fix the TypeScript error
   right_eye?: {
     cyl?: number;
     sph?: number;
