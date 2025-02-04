@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -10,27 +11,40 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, parseISO, getMonth, getDate } from "date-fns";
-import { Loader2, Cake, User, UserMinus } from "lucide-react";
+import { Loader2, Cake } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
 import { MessageTemplateDialog } from "@/components/admin/MessageTemplateDialog";
-import { Badge } from "@/components/ui/badge";
+import { SearchInput } from "./common/SearchInput";
+import { Pagination } from "@/components/ui/pagination";
+
+const ITEMS_PER_PAGE = 10;
 
 export function CustomerTable() {
-  // Fetch customers data
-  const { data: customers = [], isLoading } = useQuery({
-    queryKey: ["customers"],
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const { data: result = { data: [], total: 0 }, isLoading } = useQuery({
+    queryKey: ["customers", currentPage, searchQuery],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("customers")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select("*", { count: "exact" });
+
+      if (searchQuery) {
+        query = query.ilike("phone", `%${searchQuery}%`);
+      }
+
+      const { data, error, count } = await query
+        .order("created_at", { ascending: false })
+        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
 
       if (error) throw error;
-      return data;
+      return { data, total: count || 0 };
     },
-    refetchInterval: 5000,
   });
+
+  const totalPages = Math.ceil(result.total / ITEMS_PER_PAGE);
 
   // Function to check if today is someone's birthday (ignoring year)
   const isBirthdayToday = (birthDate: string) => {
@@ -42,46 +56,8 @@ export function CustomerTable() {
     );
   };
 
-  // Function to get days until next birthday
-  const getDaysUntilBirthday = (birthDate: string) => {
-    if (!birthDate) return Infinity;
-
-    const today = new Date();
-    const birth = parseISO(birthDate);
-
-    // Create a date for this year's birthday
-    const thisBirthday = new Date(
-      today.getFullYear(),
-      getMonth(birth),
-      getDate(birth),
-    );
-
-    // If birthday has passed this year, use next year's birthday
-    if (thisBirthday < today) {
-      thisBirthday.setFullYear(today.getFullYear() + 1);
-    }
-
-    return Math.ceil(
-      (thisBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-    );
-  };
-
-  // Sort customers by birthday proximity
-  const sortedCustomers = [...customers].sort((a, b) => {
-    const daysUntilA = getDaysUntilBirthday(a.birth_date);
-    const daysUntilB = getDaysUntilBirthday(b.birth_date);
-    return daysUntilA - daysUntilB;
-  });
-
-  // Format birthday (only month and day)
-  const formatBirthday = (birthDate: string) => {
-    if (!birthDate) return "-";
-    const date = parseISO(birthDate);
-    return format(date, "dd MMM");
-  };
-
   // Count birthdays today
-  const birthdaysToday = sortedCustomers.filter((customer) =>
+  const birthdaysToday = result.data.filter((customer) =>
     isBirthdayToday(customer.birth_date),
   ).length;
 
@@ -109,9 +85,12 @@ export function CustomerTable() {
               </p>
             )}
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="w-3 h-3 rounded-full bg-pink-200"></div>
-            <span>Birthday Today</span>
+          <div className="w-72">
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search phone number..."
+            />
           </div>
         </div>
       </CardHeader>
@@ -122,82 +101,53 @@ export function CustomerTable() {
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
-              <TableHead>Membership</TableHead>
               <TableHead>Birthday</TableHead>
-              <TableHead>Days Until Birthday</TableHead>
               <TableHead>Member Since</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedCustomers.map((customer) => {
-              const isToday = isBirthdayToday(customer.birth_date);
-              const daysUntil = getDaysUntilBirthday(customer.birth_date);
-              const isMember = customer.membership_type !== "Guest";
-
-              return (
-                <TableRow
-                  key={customer.id}
-                  className={cn(
-                    isToday && "bg-pink-50 hover:bg-pink-100",
-                    "transition-colors",
+            {result.data.map((customer) => (
+              <TableRow
+                key={customer.id}
+                className={cn(
+                  isBirthdayToday(customer.birth_date) && "bg-pink-50 hover:bg-pink-100",
+                  "transition-colors"
+                )}
+              >
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    {customer.name}
+                    {isBirthdayToday(customer.birth_date) && (
+                      <Cake className="h-4 w-4 text-pink-500" />
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>{customer.email}</TableCell>
+                <TableCell>{customer.phone}</TableCell>
+                <TableCell>{customer.birth_date ? format(parseISO(customer.birth_date), "dd MMM") : "-"}</TableCell>
+                <TableCell>
+                  {customer.created_at ? format(new Date(customer.created_at), "dd MMM yyyy") : "-"}
+                </TableCell>
+                <TableCell className="text-right">
+                  {customer.phone && (
+                    <WhatsAppButton phone={customer.phone} name={customer.name} />
                   )}
-                >
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      {customer.name}
-                      {isToday && <Cake className="h-4 w-4 text-pink-500" />}
-                    </div>
-                  </TableCell>
-                  <TableCell>{customer.email}</TableCell>
-                  <TableCell>{customer.phone}</TableCell>
-                  <TableCell>
-                    {isMember ? (
-                      <Badge
-                        variant="default"
-                        className="flex items-center gap-1"
-                      >
-                        <User className="h-3 w-3" /> Member
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="secondary"
-                        className="flex items-center gap-1"
-                      >
-                        <UserMinus className="h-3 w-3" /> Guest
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>{formatBirthday(customer.birth_date)}</TableCell>
-                  <TableCell>
-                    {customer.birth_date ? (
-                      isToday ? (
-                        <span className="text-pink-500 font-medium">
-                          Today! 🎂
-                        </span>
-                      ) : (
-                        `${daysUntil} days`
-                      )
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(customer.created_at), "dd MMM yyyy")}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {customer.phone && (
-                      <WhatsAppButton
-                        phone={customer.phone}
-                        name={customer.name}
-                      />
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
+
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-4">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

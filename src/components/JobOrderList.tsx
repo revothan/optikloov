@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -10,12 +11,19 @@ import {
 } from "@/components/ui/table";
 import { JobOrderTableRow } from "./job-order/JobOrderTableRow";
 import { Loader2 } from "lucide-react";
+import { SearchInput } from "./common/SearchInput";
+import { Pagination } from "@/components/ui/pagination";
+
+const ITEMS_PER_PAGE = 10;
 
 export function JobOrderList() {
-  const { data: invoices = [], isLoading } = useQuery({
-    queryKey: ["job-orders"],
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const { data: result = { data: [], total: 0 }, isLoading } = useQuery({
+    queryKey: ["job-orders", currentPage, searchQuery],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("invoices")
         .select(`
           *,
@@ -23,9 +31,16 @@ export function JobOrderList() {
             *,
             products (*)
           )
-        `)
+        `, { count: "exact" });
+
+      if (searchQuery) {
+        query = query.ilike("invoice_number", `%${searchQuery}%`);
+      }
+
+      const { data, error, count } = await query
         .not('invoice_items', 'is', null)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
 
       if (error) throw error;
 
@@ -36,32 +51,14 @@ export function JobOrderList() {
         )
       );
 
-      // Transform the data to include prescription details
-      return filteredData.map(invoice => ({
-        ...invoice,
-        items: invoice.invoice_items.map(item => ({
-          ...item,
-          product: item.products,
-          right_eye: {
-            sph: item.right_eye_sph,
-            cyl: item.right_eye_cyl,
-            axis: item.right_eye_axis,
-            add_power: item.right_eye_add_power,
-            mpd: item.right_eye_mpd,
-            dbl: item.dbl
-          },
-          left_eye: {
-            sph: item.left_eye_sph,
-            cyl: item.left_eye_cyl,
-            axis: item.left_eye_axis,
-            add_power: item.left_eye_add_power,
-            mpd: item.left_eye_mpd,
-            dbl: item.dbl
-          }
-        }))
-      }));
+      return {
+        data: filteredData,
+        total: count || 0
+      };
     },
   });
+
+  const totalPages = Math.ceil(result.total / ITEMS_PER_PAGE);
 
   if (isLoading) {
     return (
@@ -72,22 +69,44 @@ export function JobOrderList() {
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Job Order #</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {invoices.map((invoice) => (
-            <JobOrderTableRow key={invoice.id} invoice={invoice} />
-          ))}
-        </TableBody>
-      </Table>
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <div className="w-72">
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search job order number..."
+          />
+        </div>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Job Order #</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {result.data.map((invoice) => (
+              <JobOrderTableRow key={invoice.id} invoice={invoice} />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
     </div>
   );
 }

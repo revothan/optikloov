@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
@@ -20,7 +21,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
-import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -59,6 +59,37 @@ export function InvoiceTableRow({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const loadInvoiceItems = useCallback(async () => {
+    try {
+      const { data: invoiceItems, error } = await supabase
+        .from("invoice_items")
+        .select(
+          `
+            *,
+            products:product_id (
+              id,
+              name,
+              brand,
+              category
+            )
+          `,
+        )
+        .eq("invoice_id", invoice.id);
+
+      if (error) throw error;
+      setItems(invoiceItems || []);
+    } catch (error) {
+      console.error("Error loading invoice items:", error);
+      toast.error("Failed to load invoice items");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [invoice.id]);
+
+  useEffect(() => {
+    loadInvoiceItems();
+  }, [loadInvoiceItems]);
+
   useEffect(() => {
     const checkSession = async () => {
       const {
@@ -74,35 +105,26 @@ export function InvoiceTableRow({
   }, [navigate]);
 
   useEffect(() => {
-    const loadInvoiceItems = async () => {
-      try {
-        const { data: invoiceItems, error } = await supabase
-          .from("invoice_items")
-          .select(
-            `
-            *,
-            products:product_id (
-              id,
-              name,
-              brand,
-              category
-            )
-          `,
-          )
-          .eq("invoice_id", invoice.id);
+    const channel = supabase
+      .channel("invoice_items_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "invoice_items",
+          filter: `invoice_id=eq.${invoice.id}`,
+        },
+        () => {
+          loadInvoiceItems();
+        },
+      )
+      .subscribe();
 
-        if (error) throw error;
-        setItems(invoiceItems || []);
-      } catch (error) {
-        console.error("Error loading invoice items:", error);
-        toast.error("Failed to load invoice items");
-      } finally {
-        setIsLoading(false);
-      }
+    return () => {
+      supabase.removeChannel(channel);
     };
-
-    loadInvoiceItems();
-  }, [invoice.id]);
+  }, [invoice.id, loadInvoiceItems]);
 
   const handleConfirmPayment = useCallback(
     async (paymentType: string) => {
@@ -137,8 +159,11 @@ export function InvoiceTableRow({
 
         if (invoiceError) throw invoiceError;
 
-        await queryClient.invalidateQueries({ queryKey: ["invoices"] });
-        await queryClient.invalidateQueries({ queryKey: ["sales-report"] });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["invoices"] }),
+          queryClient.invalidateQueries({ queryKey: ["sales-report"] }),
+        ]);
+
         toast.success("Payment recorded successfully");
       } catch (error) {
         console.error("Error updating payment status:", error);
@@ -151,11 +176,13 @@ export function InvoiceTableRow({
     },
     [invoice.id, invoice.grand_total, invoice.remaining_balance, queryClient],
   );
+
   const handlePrint = async () => {
-    if (isProcessing || isPrinting) return;
+    if (isPrinting) return;
 
     try {
       setIsPrinting(true);
+      await loadInvoiceItems();
       const blob = await pdf(
         <InvoicePDF invoice={invoice} items={items} />,
       ).toBlob();
@@ -221,9 +248,14 @@ export function InvoiceTableRow({
     }
   };
 
-  const handleDelete = async () => {
-    await onDelete(invoice.id);
-    setIsDropdownOpen(false);
+  const handleDeleteWithRefresh = async () => {
+    try {
+      await onDelete(invoice.id);
+      await queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      setIsDropdownOpen(false);
+    } catch (error) {
+      console.error("Error deleting invoice:", error);
+    }
   };
 
   if (!isAuthenticated) {
@@ -305,7 +337,7 @@ export function InvoiceTableRow({
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={handleDelete}
+                  onClick={handleDeleteWithRefresh}
                   className="text-red-600 focus:text-red-600"
                   disabled={isProcessing}
                 >
@@ -337,4 +369,3 @@ export function InvoiceTableRow({
     </>
   );
 }
-

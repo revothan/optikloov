@@ -4,11 +4,12 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://vdnbihrqujhmmgnshhhn.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkbmJpaHJxdWpobW1nbnNoaGhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM4MDc1MDksImV4cCI6MjA0OTM4MzUwOX0.8_j4MMocXgT3CRS9PPdwEeeKj9_ShGkZArWSltfc_m0";
 
-// Add error handling and retry logic
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storage: window.localStorage
   },
   global: {
     headers: {

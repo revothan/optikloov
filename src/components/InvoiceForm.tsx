@@ -20,6 +20,36 @@ interface InvoiceFormProps {
   onSuccess?: () => void;
 }
 
+type ItemFormData = {
+  lens_stock_id?: string;
+  product_id?: string;
+  dbl?: number;
+  discount?: number;
+  f_size?: string;
+  price?: number;
+  prism?: number;
+  pv?: number;
+  quantity?: number;
+  v_frame?: string;
+  category?: string;
+  display_name?: string;
+  lens_type_id?: string;
+  right_eye?: {
+    cyl?: number;
+    sph?: number;
+    mpd?: number;
+    axis?: number;
+    add_power?: number;
+  };
+  left_eye?: {
+    cyl?: number;
+    sph?: number;
+    mpd?: number;
+    axis?: number;
+    add_power?: number;
+  };
+};
+
 export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const [submitting, setSubmitting] = useState(false);
 
@@ -71,12 +101,10 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     }
   }, [latestInvoice, isLoadingInvoice, form]);
 
-  const { fields, append, remove, swap, move, insert, prepend } = useFieldArray(
-    {
-      name: "items",
-      control: form.control,
-    },
-  );
+  const { fields, append, remove, swap, move, insert, prepend } = useFieldArray({
+    name: "items",
+    control: form.control,
+  });
 
   const calculateTotals = () => {
     const items = form.watch("items") || [];
@@ -126,18 +154,12 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       setSubmitting(false);
     }
   };
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
-      e.preventDefault();
-    }
-  };
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-6"
-        onKeyDown={handleKeyDown}
       >
         <BasicInvoiceInfo form={form} />
 
