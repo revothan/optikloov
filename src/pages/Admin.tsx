@@ -1,8 +1,8 @@
-import { Suspense, lazy } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Suspense, lazy, useState } from "react";
+import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/LogoutButton";
-import { Menu } from "lucide-react";
+import { Menu, FileText, Users, ShoppingBag, ClipboardList, TrendingUp, Glasses, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -16,18 +16,19 @@ const SalesPage = lazy(() => import("@/pages/admin/SalesPage"));
 const LensStockPage = lazy(() => import("@/pages/admin/LensStockPage"));
 
 const MENU_ITEMS = [
-  { id: "invoices", label: "Invoices", path: "/admin/invoices" },
-  { id: "products", label: "Products", path: "/admin/products" },
-  { id: "customers", label: "Customers", path: "/admin/customers" },
-  { id: "job-orders", label: "Job Orders", path: "/admin/job-orders" },
-  { id: "sales", label: "Sales", path: "/admin/sales" },
-  { id: "lens-stock", label: "Lens Stock", path: "/admin/lens-stock" },
+  { id: "invoices", label: "Invoices", path: "/admin/invoices", icon: FileText },
+  { id: "products", label: "Products", path: "/admin/products", icon: ShoppingBag },
+  { id: "customers", label: "Customers", path: "/admin/customers", icon: Users },
+  { id: "job-orders", label: "Job Orders", path: "/admin/job-orders", icon: ClipboardList },
+  { id: "sales", label: "Sales", path: "/admin/sales", icon: TrendingUp },
+  { id: "lens-stock", label: "Lens Stock", path: "/admin/lens-stock", icon: Glasses },
 ];
 
 export default function Admin() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const isMobile = useIsMobile();
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
 
   return (
@@ -57,22 +58,23 @@ export default function Admin() {
 
             {/* Navigation Items */}
             <nav className="space-y-1 p-2">
-              {MENU_ITEMS.map((item) => (
-                <Button
-                  key={item.id}
-                  variant={currentPath === item.path ? "secondary" : "ghost"}
-                  className={cn(
-                    "w-full justify-start",
-                    isCollapsed ? "px-2" : "px-4"
-                  )}
-                  onClick={() => navigate(item.path)}
-                >
-                  <Icon
-                    className={cn("h-5 w-5", isCollapsed ? "mr-0" : "mr-2")}
-                  />
-                  {!isCollapsed && <span>{item.label}</span>}
-                </Button>
-              ))}
+              {MENU_ITEMS.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={currentPath === item.path ? "secondary" : "ghost"}
+                    className={cn(
+                      "w-full justify-start",
+                      isCollapsed ? "px-2" : "px-4"
+                    )}
+                    onClick={() => navigate(item.path)}
+                  >
+                    <Icon className={cn("h-5 w-5", isCollapsed ? "mr-0" : "mr-2")} />
+                    {!isCollapsed && <span>{item.label}</span>}
+                  </Button>
+                );
+              })}
             </nav>
           </div>
 
