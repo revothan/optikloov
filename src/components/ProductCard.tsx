@@ -9,7 +9,7 @@ interface ProductCardProps {
   onDelete?: (id: string) => void;
 }
 
-export const ProductCard = ({ product, onDelete }: ProductCardProps) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) => {
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-4">
@@ -49,5 +49,4 @@ export const ProductCard = ({ product, onDelete }: ProductCardProps) => {
   );
 };
 
-// Add default export pointing to the named export
 export default ProductCard;

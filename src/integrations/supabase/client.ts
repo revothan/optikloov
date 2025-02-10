@@ -10,14 +10,17 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storage: window.localStorage,
-    flowType: 'pkce' // Add this line to use PKCE flow
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    flowType: 'pkce'
   },
   global: {
     headers: {
       'Content-Type': 'application/json',
     },
   },
+  db: {
+    schema: 'public'
+  }
 });
 
 // Add a helper to check connection
