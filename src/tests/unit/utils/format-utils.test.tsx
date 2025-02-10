@@ -1,0 +1,102 @@
+import { formatPrice, generateInvoiceNumber } from "@/lib/utils";
+import { format } from "date-fns";
+import { normalizeBranchName } from "@/lib/branch-utils";
+
+describe("formatPrice", () => {
+  it("formats price in IDR currency format", () => {
+    expect(formatPrice(1000000)).toBe("Rp 1.000.000");
+    expect(formatPrice(500)).toBe("Rp 500");
+    expect(formatPrice(0)).toBe("Rp 0");
+  });
+
+  it("handles null or undefined values", () => {
+    expect(formatPrice(null)).toBe("Rp 0");
+    expect(formatPrice(undefined)).toBe("Rp 0");
+  });
+
+  it("handles negative values", () => {
+    expect(formatPrice(-1000)).toBe("-Rp 1.000");
+  });
+});
+
+describe("formatDate", () => {
+  it("formats dates in the specified format", () => {
+    const date = new Date("2025-02-10T12:00:00Z");
+    expect(format(date, "dd MMM yyyy")).toBe("10 Feb 2025");
+    expect(format(date, "yyyy-MM-dd")).toBe("2025-02-10");
+  });
+
+  it("handles invalid dates", () => {
+    const formatWithFallback = (date: any, formatStr: string) => {
+      try {
+        return format(new Date(date), formatStr);
+      } catch {
+        return "-";
+      }
+    };
+
+    expect(formatWithFallback(null, "dd MMM yyyy")).toBe("-");
+    expect(formatWithFallback(undefined, "dd MMM yyyy")).toBe("-");
+    expect(formatWithFallback("invalid date", "dd MMM yyyy")).toBe("-");
+  });
+});
+
+describe("normalizeBranchName", () => {
+  it("normalizes branch names correctly", () => {
+    expect(normalizeBranchName("Gading Serpong")).toBe("GS");
+    expect(normalizeBranchName("Kelapa Dua")).toBe("KD");
+    expect(normalizeBranchName("GS")).toBe("GS");
+  });
+});
+
+describe("generateInvoiceNumber", () => {
+  const setupMockSupabase = (data: any = [], error: any = null) => ({
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          order: () => ({
+            limit: () => Promise.resolve({ data, error }),
+          }),
+        }),
+      }),
+    }),
+  });
+
+  it("generates invoice number with correct format", async () => {
+    const mockSupabase = setupMockSupabase([
+      { invoice_number: "INV/GS/202502/001" },
+    ]);
+    const result = await generateInvoiceNumber(
+      "Gading Serpong",
+      mockSupabase as any,
+    );
+    expect(result).toMatch(/INV\/GS\/\d{6}\/\d{3}/);
+  });
+
+  it("handles first invoice of the month", async () => {
+    const mockSupabase = setupMockSupabase([]);
+    const result = await generateInvoiceNumber(
+      "Kelapa Dua",
+      mockSupabase as any,
+    );
+    expect(result).toMatch(/INV\/KD\/\d{6}\/001/);
+  });
+
+  it("handles database errors", async () => {
+    const mockSupabase = setupMockSupabase(null, new Error("Database error"));
+    await expect(
+      generateInvoiceNumber("Gading Serpong", mockSupabase as any),
+    ).rejects.toThrow("Failed to generate invoice number");
+  });
+
+  it("pads sequence numbers correctly", async () => {
+    const mockSupabase = setupMockSupabase([
+      { invoice_number: "INV/GS/202502/099" },
+    ]);
+    const result = await generateInvoiceNumber(
+      "Gading Serpong",
+      mockSupabase as any,
+    );
+    expect(result).toMatch(/INV\/GS\/\d{6}\/100/);
+  });
+});
