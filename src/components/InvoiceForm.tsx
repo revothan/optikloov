@@ -112,27 +112,19 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     },
     retry: 1,
     refetchOnWindowFocus: true,
-    onError: (error) => {
-      console.error("Profile Query Error:", error);
-      toast.error("Failed to load user profile");
-    },
   });
 
-  const { data: nextInvoiceNumber, isLoading: isLoadingInvoiceNumber } =
-    useQuery({
-      queryKey: ["nextInvoiceNumber", userProfile?.branch],
-      queryFn: async () => {
-        if (!userProfile?.branch) {
-          throw new Error("Branch not available");
-        }
-        return generateInvoiceNumber(userProfile.branch, supabase);
-      },
-      enabled: !!userProfile?.branch,
-      retry: 1,
-      onError: (error) => {
-        toast.error("Error generating invoice number");
-      },
-    });
+  const { data: nextInvoiceNumber, isLoading: isLoadingInvoiceNumber } = useQuery({
+    queryKey: ["nextInvoiceNumber", userProfile?.branch],
+    queryFn: async () => {
+      if (!userProfile?.branch) {
+        throw new Error("Branch not available");
+      }
+      return generateInvoiceNumber(userProfile.branch, supabase);
+    },
+    enabled: !!userProfile?.branch,
+    retry: 1,
+  });
 
   useEffect(() => {
     if (userProfile?.branch) {

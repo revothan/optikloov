@@ -27,4 +27,9 @@ export const mockSupabase = {
       getPublicUrl: vi.fn(() => ({ data: { publicUrl: "https://test.com/test.jpg" } })),
     })),
   },
-};
+  // Add required properties for SupabaseClient
+  supabaseUrl: "http://localhost:54321",
+  supabaseKey: "test-key",
+  realtime: {},
+  realtimeUrl: "http://localhost:54321/realtime",
+} as const;

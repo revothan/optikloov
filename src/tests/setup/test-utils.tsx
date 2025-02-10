@@ -44,7 +44,7 @@ type WrapperProps = {
 
 const Wrapper = ({ children }: WrapperProps) => (
   <QueryClientProvider client={queryClient}>
-    <SessionContextProvider supabaseClient={mockSupabase as SupabaseClient}>
+    <SessionContextProvider supabaseClient={mockSupabase as unknown as SupabaseClient}>
       {children}
     </SessionContextProvider>
   </QueryClientProvider>

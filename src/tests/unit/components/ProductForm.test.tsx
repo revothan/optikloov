@@ -1,6 +1,6 @@
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
 import { ProductForm } from '@/components/ProductForm';
 import { renderWithProviders } from '../../setup/test-utils';
 

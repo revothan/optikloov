@@ -1,9 +1,6 @@
-import { test as base } from "@playwright/test";
-import { mockDateNow } from "../setup/test-utils";
 
-const test = base.extend({
-  // Add auth setup here if needed
-});
+import { test, expect } from "@playwright/test";
+import { mockDateNow } from "../setup/test-utils";
 
 test.describe("Invoice flow", () => {
   test.beforeEach(async ({ page }) => {

@@ -1,11 +1,12 @@
 
 import { renderHook } from '@testing-library/react';
 import { useInvoiceSubmission } from '@/components/invoice/useInvoiceSubmission';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { mockSupabase } from '../../setup/supabase.mock';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { mockInvoice } from '../../setup/test-utils';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 describe('useInvoiceSubmission', () => {
   let queryClient: QueryClient;
@@ -15,9 +16,9 @@ describe('useInvoiceSubmission', () => {
     vi.clearAllMocks();
   });
 
-  const wrapper = ({ children }) => (
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <SessionContextProvider supabaseClient={mockSupabase}>
+      <SessionContextProvider supabaseClient={mockSupabase as unknown as SupabaseClient}>
         {children}
       </SessionContextProvider>
     </QueryClientProvider>
@@ -37,4 +38,3 @@ describe('useInvoiceSubmission', () => {
       .resolves.not.toThrow();
   });
 });
-
