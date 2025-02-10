@@ -13,7 +13,6 @@ export const mockSupabase = {
       eq: vi.fn(() => ({
         order: vi.fn(() => ({
           desc: vi.fn(() => ({
-            range: vi.fn(() => Promise.resolve({ data: [], error: null })),
             limit: vi.fn(() => Promise.resolve({ data: [], error: null })),
           })),
         })),

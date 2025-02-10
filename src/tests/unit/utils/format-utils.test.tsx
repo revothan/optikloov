@@ -56,31 +56,45 @@ describe("normalizeBranchName", () => {
 });
 
 describe("generateInvoiceNumber", () => {
+  const setupMockSupabase = (mockData: any[] = []) => ({
+    ...mockSupabase,
+    from: () => ({
+      ...mockSupabase.from(),
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          order: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue({ data: mockData, error: null })
+          })
+        })
+      })
+    })
+  });
+
   it("generates invoice number with correct format", async () => {
+    const mockSupabase = setupMockSupabase([{ invoice_number: "GS202502001" }]);
     const result = await generateInvoiceNumber("Gading Serpong", mockSupabase);
     expect(result).toMatch(/GS\d{6}\d{3}/);
   });
 
   it("handles first invoice of the month", async () => {
+    const mockSupabase = setupMockSupabase([]);
     const result = await generateInvoiceNumber("Kelapa Dua", mockSupabase);
     expect(result).toMatch(/KD\d{6}001/);
   });
 
   it("handles database errors", async () => {
-    const errorMock = {
-      ...mockSupabase,
-      from: () => ({
-        ...mockSupabase.from(),
-        select: () => Promise.reject(new Error("Database error")),
-      }),
-    };
+    const errorMock = setupMockSupabase();
+    errorMock.from = () => ({
+      select: () => Promise.reject(new Error("Database error")),
+    });
     
     await expect(generateInvoiceNumber("Gading Serpong", errorMock))
       .rejects.toThrow();
   });
 
   it("pads sequence numbers correctly", async () => {
+    const mockSupabase = setupMockSupabase([{ invoice_number: "GS202502099" }]);
     const result = await generateInvoiceNumber("Gading Serpong", mockSupabase);
-    expect(result).toMatch(/GS\d{6}\d{3}/);
+    expect(result).toMatch(/GS\d{6}100/);
   });
 });

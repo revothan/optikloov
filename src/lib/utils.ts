@@ -15,7 +15,7 @@ export const formatPrice = (price: number | null | undefined) => {
     maximumFractionDigits: 0,
   })
     .format(Math.abs(number))
-    .replace("IDR", "Rp");
+    .replace(/^IDR\s?/, "Rp ");
   
   return number < 0 ? `-${formattedNumber}` : formattedNumber;
 };
