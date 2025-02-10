@@ -71,7 +71,7 @@ const MENU_ITEMS = [
     label: "Products",
     path: "/admin/products",
     icon: ShoppingBag,
-    allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"], // Updated to allow branch roles
+    allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
   },
   {
     id: "customers",
@@ -99,7 +99,7 @@ const MENU_ITEMS = [
     label: "Lens Stock",
     path: "/admin/lens-stock",
     icon: Glasses,
-    allowedRoles: ["admin"], // Keep lens stock management for admin only
+    allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"], // Updated to allow branch roles
   },
 ];
 
@@ -346,7 +346,7 @@ const App = () => {
                         <Route 
                           path="lens-stock" 
                           element={
-                            <ProtectedRoute allowedRoles={["admin"]}>
+                            <ProtectedRoute allowedRoles={["admin", "gadingserpongbranch", "kelapaduabranch"]}>
                               <LensStockPage />
                             </ProtectedRoute>
                           } 
