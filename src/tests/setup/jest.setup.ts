@@ -1,10 +1,14 @@
+
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
 
 // Mock window.fs for file operations
-global.window.fs = {
-  readFile: vi.fn(),
-};
+global.window = {
+  ...global.window,
+  fs: {
+    readFile: vi.fn(),
+  },
+} as any;
 
 // Mock ResizeObserver
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
