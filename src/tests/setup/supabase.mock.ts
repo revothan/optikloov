@@ -10,11 +10,12 @@ export const mockSupabase = {
   },
   from: vi.fn(() => ({
     select: vi.fn(() => ({
-      eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
-      order: vi.fn(() => ({
-        desc: vi.fn(() => ({
-          range: vi.fn(() => Promise.resolve({ data: [], error: null })),
-          limit: vi.fn(() => Promise.resolve({ data: [], error: null })),
+      eq: vi.fn(() => ({
+        order: vi.fn(() => ({
+          desc: vi.fn(() => ({
+            range: vi.fn(() => Promise.resolve({ data: [], error: null })),
+            limit: vi.fn(() => Promise.resolve({ data: [], error: null })),
+          })),
         })),
       })),
       range: vi.fn(() => Promise.resolve({ data: [], error: null })),
@@ -30,4 +31,3 @@ export const mockSupabase = {
     })),
   },
 };
-

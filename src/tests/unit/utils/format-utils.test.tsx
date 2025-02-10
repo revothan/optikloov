@@ -32,7 +32,10 @@ describe("formatDate", () => {
   it("handles invalid dates", () => {
     const formatWithFallback = (date: any, formatStr: string) => {
       try {
-        return format(new Date(date), formatStr);
+        if (!date) return "-";
+        const parsed = new Date(date);
+        if (isNaN(parsed.getTime())) return "-";
+        return format(parsed, formatStr);
       } catch {
         return "-";
       }
@@ -81,4 +84,3 @@ describe("generateInvoiceNumber", () => {
     expect(result).toMatch(/GS\d{6}\d{3}/);
   });
 });
-
