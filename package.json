@@ -15,6 +15,22 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },
+  "vitest": {
+    "setupFiles": [
+      "./src/tests/setup/jest.setup.ts"
+    ],
+    "environment": "happy-dom",
+    "globals": true,
+    "alias": {
+      "@": "./src"
+    }
+  },
+  "playwright": {
+    "testDir": "./src/tests/e2e",
+    "use": {
+      "baseURL": "http://localhost:5173"
+    }
+  },
   "dependencies": {
     "@calcom/embed-react": "^1.5.1",
     "@hookform/resolvers": "^3.10.0",
@@ -83,7 +99,6 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^22.5.5",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
