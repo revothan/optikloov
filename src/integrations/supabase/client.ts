@@ -37,3 +37,28 @@ export const checkSupabaseConnection = async () => {
     return false;
   }
 };
+
+// Add a helper to get user role and branch
+export const getUserProfile = async () => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('role, branch')
+      .eq('id', user.id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+
+    return profile;
+  } catch (err) {
+    console.error('Failed to get user profile:', err);
+    return null;
+  }
+};
+
