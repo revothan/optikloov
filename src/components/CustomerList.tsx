@@ -27,9 +27,7 @@ export function CustomerTable() {
   const { data: result = { data: [], total: 0 }, isLoading } = useQuery({
     queryKey: ["customers", currentPage, searchQuery],
     queryFn: async () => {
-      let query = supabase
-        .from("customers")
-        .select("*", { count: "exact" });
+      let query = supabase.from("customers").select("*", { count: "exact" });
 
       if (searchQuery) {
         query = query.ilike("phone", `%${searchQuery}%`);
@@ -37,7 +35,10 @@ export function CustomerTable() {
 
       const { data, error, count } = await query
         .order("created_at", { ascending: false })
-        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
+        .range(
+          (currentPage - 1) * ITEMS_PER_PAGE,
+          currentPage * ITEMS_PER_PAGE - 1,
+        );
 
       if (error) throw error;
       return { data, total: count || 0 };
@@ -46,16 +47,26 @@ export function CustomerTable() {
 
   const totalPages = Math.ceil(result.total / ITEMS_PER_PAGE);
 
-  // Function to check if today is someone's birthday (ignoring year)
-  const isBirthdayToday = (birthDate: string) => {
+  const isBirthdayToday = (birthDate: string | null) => {
     if (!birthDate) return false;
-    const today = new Date();
-    const birth = parseISO(birthDate);
-    return (
-      getMonth(today) === getMonth(birth) && getDate(today) === getDate(birth)
-    );
+    try {
+      const today = new Date();
+      const birth = parseISO(birthDate);
+      return (
+        getMonth(today) === getMonth(birth) && getDate(today) === getDate(birth)
+      );
+    } catch {
+      return false;
+    }
   };
-
+  const formatDate = (dateString: string | null, formatStr: string) => {
+    if (!dateString) return "-";
+    try {
+      return format(parseISO(dateString), formatStr);
+    } catch {
+      return "-";
+    }
+  };
   // Count birthdays today
   const birthdaysToday = result.data.filter((customer) =>
     isBirthdayToday(customer.birth_date),
@@ -111,8 +122,9 @@ export function CustomerTable() {
               <TableRow
                 key={customer.id}
                 className={cn(
-                  isBirthdayToday(customer.birth_date) && "bg-pink-50 hover:bg-pink-100",
-                  "transition-colors"
+                  isBirthdayToday(customer.birth_date) &&
+                    "bg-pink-50 hover:bg-pink-100",
+                  "transition-colors",
                 )}
               >
                 <TableCell className="font-medium">
@@ -125,13 +137,21 @@ export function CustomerTable() {
                 </TableCell>
                 <TableCell>{customer.email}</TableCell>
                 <TableCell>{customer.phone}</TableCell>
-                <TableCell>{customer.birth_date ? format(parseISO(customer.birth_date), "dd MMM") : "-"}</TableCell>
+
                 <TableCell>
-                  {customer.created_at ? format(new Date(customer.created_at), "dd MMM yyyy") : "-"}
+                  {formatDate(customer.birth_date, "dd MMM")}
                 </TableCell>
+
+                <TableCell>
+                  {formatDate(customer.created_at, "dd MMM yyyy")}
+                </TableCell>
+
                 <TableCell className="text-right">
                   {customer.phone && (
-                    <WhatsAppButton phone={customer.phone} name={customer.name} />
+                    <WhatsAppButton
+                      phone={customer.phone}
+                      name={customer.name}
+                    />
                   )}
                 </TableCell>
               </TableRow>

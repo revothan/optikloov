@@ -69,6 +69,23 @@ export function ProductSelect({
   onChange,
   onProductSelect,
 }: ProductSelectProps) {
+  // Add userProfile query
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user?.id) throw new Error("No user session");
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.session.user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [lensTypeFilter, setLensTypeFilter] = useState("");
@@ -87,15 +104,17 @@ export function ProductSelect({
     isError: isProductsError,
     refetch,
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", userProfile?.branch],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, store_price, category");
+        .select("id, name, store_price, category, stock_qty, track_inventory")
+        .eq("branch", userProfile?.branch);
 
       if (error) throw error;
       return data || [];
     },
+    enabled: !!userProfile?.branch,
   });
 
   const { data: lensStock = [], isLoading: isLoadingLensStock } = useQuery({
@@ -109,7 +128,10 @@ export function ProductSelect({
           sph,
           cyl,
           quantity,
-          lens_type_id,
+   
+
+
+lens_type_id,
           lens_type:lens_type_id (
             name,
             material,

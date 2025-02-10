@@ -1,4 +1,3 @@
-// SalesReport.tsx
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -10,6 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useUser } from "@/hooks/useUser"; // Add this hook to get user data
+
 import {
   Select,
   SelectContent,
@@ -40,7 +41,12 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-export function SalesReport() {
+interface SalesReportProps {
+  userBranch: string;
+  isAdmin: boolean;
+}
+
+export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
   const [dateRange, setDateRange] = useState<{
     from: Date;
     to: Date;
@@ -50,9 +56,9 @@ export function SalesReport() {
   });
 
   const { data: salesData, isLoading } = useQuery({
-    queryKey: ["sales-report", dateRange],
+    queryKey: ["sales-report", dateRange, userBranch],
     queryFn: async () => {
-      const { data: payments, error: paymentsError } = await supabase
+      let query = supabase
         .from("payments")
         .select(
           `
@@ -72,6 +78,13 @@ export function SalesReport() {
         .gte("payment_date", startOfDay(dateRange.from).toISOString())
         .lte("payment_date", endOfDay(dateRange.to).toISOString())
         .order("payment_date", { ascending: false });
+
+      // Apply branch filter if user is not admin
+      if (!isAdmin) {
+        query = query.eq("branch", userBranch);
+      }
+
+      const { data: payments, error: paymentsError } = await query;
 
       if (paymentsError) throw paymentsError;
       return payments;
@@ -297,4 +310,3 @@ export function SalesReport() {
     </div>
   );
 }
-

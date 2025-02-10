@@ -13,49 +13,96 @@ import { JobOrderTableRow } from "./job-order/JobOrderTableRow";
 import { Loader2 } from "lucide-react";
 import { SearchInput } from "./common/SearchInput";
 import { Pagination } from "@/components/ui/pagination";
+import { useSession } from "@supabase/auth-helpers-react";
 
 const ITEMS_PER_PAGE = 10;
 
 export function JobOrderList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const session = useSession();
 
   const { data: result = { data: [], total: 0 }, isLoading } = useQuery({
     queryKey: ["job-orders", currentPage, searchQuery],
     queryFn: async () => {
-      let query = supabase
-        .from("invoices")
-        .select(`
-          *,
-          invoice_items (
-            *,
-            products (*)
-          )
-        `, { count: "exact" });
-
-      if (searchQuery) {
-        query = query.ilike("invoice_number", `%${searchQuery}%`);
+      if (!session?.user?.id) {
+        throw new Error("No authenticated user");
       }
 
-      const { data, error, count } = await query
-        .not('invoice_items', 'is', null)
-        .order("created_at", { ascending: false })
-        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
+      try {
+        // Get user's profile to check role
+        const { data: userProfile, error: profileError } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.user.id)
+          .single();
 
-      if (error) throw error;
+        if (profileError) throw profileError;
 
-      // Filter invoices that have items with MPD values
-      const filteredData = data.filter(invoice => 
-        invoice.invoice_items.some(item => 
-          item.right_eye_mpd !== null || item.left_eye_mpd !== null
-        )
-      );
+        // Query the job_orders_view
+        let query = supabase
+          .from("job_orders_view")
+          .select("*", { count: "exact" });
 
-      return {
-        data: filteredData,
-        total: count || 0
-      };
+        // Apply search filter if exists
+        if (searchQuery) {
+          query = query.ilike("invoice_number", `%${searchQuery}%`);
+        }
+
+        // Apply branch filter based on role
+        if (userProfile.role === "gadingserpongbranch") {
+          query = query.eq("branch", "Gading Serpong");
+        } else if (userProfile.role === "kelapaduabranch") {
+          query = query.eq("branch", "Kelapa Dua");
+        }
+        // Admin sees all branches
+
+        const { data, error, count } = await query
+          .order("sale_date", { ascending: false })
+          .range(
+            (currentPage - 1) * ITEMS_PER_PAGE,
+            currentPage * ITEMS_PER_PAGE - 1,
+          );
+
+        if (error) throw error;
+
+        // Group by invoice_id to combine multiple items from same invoice
+        const groupedData = data.reduce((acc, item) => {
+          if (!acc[item.invoice_id]) {
+            acc[item.invoice_id] = {
+              id: item.invoice_id,
+              invoice_number: item.invoice_number,
+              sale_date: item.sale_date,
+              customer_name: item.customer_name,
+              customer_phone: item.customer_phone,
+              notes: item.notes,
+              branch: item.branch,
+              branch_prefix: item.branch_prefix,
+              invoice_items: [],
+            };
+          }
+          acc[item.invoice_id].invoice_items.push({
+            id: item.item_id,
+            right_eye_mpd: item.right_eye_mpd,
+            left_eye_mpd: item.left_eye_mpd,
+            right_eye_sph: item.right_eye_sph,
+            right_eye_cyl: item.right_eye_cyl,
+            left_eye_sph: item.left_eye_sph,
+            left_eye_cyl: item.left_eye_cyl,
+          });
+          return acc;
+        }, {});
+
+        return {
+          data: Object.values(groupedData),
+          total: count || 0,
+        };
+      } catch (error) {
+        console.error("Error fetching job orders:", error);
+        throw error;
+      }
     },
+    enabled: !!session?.user?.id,
   });
 
   const totalPages = Math.ceil(result.total / ITEMS_PER_PAGE);

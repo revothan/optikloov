@@ -4,98 +4,128 @@ import { format } from "date-fns";
 const styles = StyleSheet.create({
   header: {
     marginBottom: 8,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   leftSection: {
     flex: 1,
   },
   rightSection: {
-    width: '40%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end',
+    width: "40%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
   },
   invoiceText: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 2,
-    textAlign: 'right',
+    textAlign: "right",
   },
   rightInfoContainer: {
-    width: '100%',
-    alignItems: 'flex-end',
+    width: "100%",
+    alignItems: "flex-end",
   },
   rightInfoRow: {
-    width: '100%',
-    flexDirection: 'row',
+    width: "100%",
+    flexDirection: "row",
     marginBottom: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   rightLabel: {
     fontSize: 8,
-    textAlign: 'right',
+    textAlign: "right",
   },
   rightColon: {
     fontSize: 8,
-    width: '8',
-    textAlign: 'center',
+    width: "8",
+    textAlign: "center",
   },
   rightValue: {
     fontSize: 8,
-    width: '100',
-    textAlign: 'right',
+    width: "100",
+    textAlign: "right",
   },
   companyName: {
     fontSize: 12,
     marginBottom: 2,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   storeInfoContainer: {
     fontSize: 6,
   },
   infoRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 1,
   },
   label: {
-    width: '35',
+    width: "35",
   },
   colon: {
-    width: '8',
+    width: "8",
   },
   value: {
     flex: 1,
-  }
+  },
 });
 
 interface InvoiceHeaderProps {
   invoiceNumber: string;
   saleDate: string;
   acknowledgedBy?: string;
+  branch: string;
 }
 
-export function InvoiceHeader({ invoiceNumber, saleDate, acknowledgedBy }: InvoiceHeaderProps) {
+export function InvoiceHeader({
+  invoiceNumber,
+  saleDate,
+  acknowledgedBy,
+  branch,
+}: InvoiceHeaderProps) {
+  const getBranchInfo = () => {
+    if (branch === "Kelapa Dua") {
+      return {
+        storeName: "OPTIK LOOV (Kelapa Dua)",
+        address: [
+          "Ruko Kelapa Dua Square Blok D5 No. 8",
+          "Jl. KH. Dewantara No.1, RT 001/006, Bencongan Kelapa Dua Kabupaten Tangerang, 15810",
+        ],
+        phone: "0812 9063 5568",
+      };
+    }
+    // Default to Gading Serpong
+    return {
+      storeName: "OPTIK LOOV",
+      address: [
+        "Ruko Downtown Drive, kecamatan No.016 Blok DDBLV, Medang,",
+        "Kec. Pagedangan, Kabupaten Tangerang, Banten 15334",
+      ],
+      phone: "0812 8333 5568",
+    };
+  };
+
+  const branchInfo = getBranchInfo();
+
   return (
     <View style={styles.header}>
       <View style={styles.leftSection}>
-        <Text style={styles.companyName}>OPTIK LOOV</Text>
+        <Text style={styles.companyName}>{branchInfo.storeName}</Text>
         <View style={styles.storeInfoContainer}>
           <View style={styles.infoRow}>
             <Text style={styles.label}>Alamat</Text>
             <Text style={styles.colon}>:</Text>
-            <Text style={styles.value}>Ruko Downtown Drive, kecamatan No.016 Blok DDBLV, Medang,</Text>
+            <Text style={styles.value}>{branchInfo.address[0]}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.label}></Text>
             <Text style={styles.colon}></Text>
-            <Text style={styles.value}>Kec. Pagedangan, Kabupaten Tangerang, Banten 15334</Text>
+            <Text style={styles.value}>{branchInfo.address[1]}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.label}>Telp/WA</Text>
             <Text style={styles.colon}>:</Text>
-            <Text style={styles.value}>0812 8333 5568</Text>
+            <Text style={styles.value}>{branchInfo.phone}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.label}>Website</Text>
@@ -109,24 +139,27 @@ export function InvoiceHeader({ invoiceNumber, saleDate, acknowledgedBy }: Invoi
           </View>
         </View>
       </View>
-      
+
       <View style={styles.rightSection}>
-        <Text style={styles.invoiceText}>
-          Invoice No. {invoiceNumber}
-        </Text>
+        <Text style={styles.invoiceText}>Invoice No. {invoiceNumber}</Text>
         <View style={styles.rightInfoContainer}>
           <View style={styles.rightInfoRow}>
             <Text style={styles.rightLabel}>Date</Text>
             <Text style={styles.rightColon}>:</Text>
-            <Text style={styles.rightValue}>{format(new Date(saleDate), "dd MMM yyyy")}</Text>
+            <Text style={styles.rightValue}>
+              {format(new Date(saleDate), "dd MMM yyyy")}
+            </Text>
           </View>
           <View style={styles.rightInfoRow}>
             <Text style={styles.rightLabel}>Pemeriksa</Text>
             <Text style={styles.rightColon}>:</Text>
-            <Text style={styles.rightValue}>{acknowledgedBy || '_________________'}</Text>
+            <Text style={styles.rightValue}>
+              {acknowledgedBy || "_________________"}
+            </Text>
           </View>
         </View>
       </View>
     </View>
   );
 }
+

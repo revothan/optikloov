@@ -1,100 +1,197 @@
-import { Link } from "react-router-dom";
-import { formatPrice } from "@/lib/utils";
 import { useState } from "react";
-import { Button } from "./ui/button";
-import { Edit, Trash2 } from "lucide-react";
-import { ProductDialog } from "./ProductDialog";
-import { Tables } from "@/integrations/supabase/types";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@supabase/auth-helpers-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { JobOrderTableRow } from "./job-order/JobOrderTableRow";
+import { Loader2 } from "lucide-react";
+import { SearchInput } from "./common/SearchInput";
+import { Pagination } from "@/components/ui/pagination";
 
-type MinimalProduct = Pick<Tables<"products">, "id" | "name" | "brand" | "image_url" | "online_price" | "category">;
+const ITEMS_PER_PAGE = 10;
 
-interface ProductCardProps {
-  product: MinimalProduct;
-  onDelete?: (id: string) => Promise<void>;
-}
+export function JobOrderList() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const session = useSession();
 
-export function ProductCard({ product, onDelete }: ProductCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const { data: result = { data: [], total: 0 }, isLoading } = useQuery({
+    queryKey: ["job-orders", currentPage, searchQuery],
+    queryFn: async () => {
+      if (!session?.user?.id) {
+        throw new Error("No authenticated user");
+      }
 
-  const translateCategory = (category: string) => {
-    const categories: { [key: string]: string } = {
-      'Frame': 'Frame',
-      'Lensa': 'Lensa',
-      'Soft Lens': 'Soft Lens',
-      'Sunglasses': 'Kacamata Hitam',
-      'Others': 'Lainnya',
-    };
-    return categories[category] || category;
-  };
+      try {
+        // First get the user's role from profile
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.user.id)
+          .single();
+
+        if (profileError) throw profileError;
+
+        // Determine branch from role
+        const branch =
+          profile.role === "gadingserpongbranch"
+            ? "Gading Serpong"
+            : profile.role === "kelapaduabranch"
+              ? "Kelapa Dua"
+              : null;
+
+        let query = supabase.from("invoices").select(
+          `
+            id,
+            invoice_number,
+            sale_date,
+            customer_name,
+            customer_phone,
+            notes,
+            branch,
+            invoice_items (
+              id,
+              product_id,
+              quantity,
+              price,
+              discount,
+              total,
+              right_eye_sph,
+              right_eye_cyl,
+              right_eye_axis,
+              right_eye_add_power,
+              right_eye_mpd,
+              left_eye_sph,
+              left_eye_cyl,
+              left_eye_axis,
+              left_eye_add_power,
+              left_eye_mpd,
+              products (
+                id,
+                name,
+                brand,
+                category
+              )
+            )
+          `,
+          { count: "exact" },
+        );
+
+        if (searchQuery) {
+          query = query.ilike("invoice_number", `%${searchQuery}%`);
+        }
+
+        // For admin, don't filter by branch. For branch users, filter by their branch
+        if (profile.role !== "admin" && branch) {
+          query = query.eq("branch", branch);
+        }
+
+        const { data, error, count } = await query
+          .not("invoice_items", "is", null)
+          .order("created_at", { ascending: false })
+          .range(
+            (currentPage - 1) * ITEMS_PER_PAGE,
+            currentPage * ITEMS_PER_PAGE - 1,
+          );
+
+        if (error) throw error;
+
+        // Filter invoices that have items with prescription values
+        const filteredData = data.filter((invoice) =>
+          invoice.invoice_items.some(
+            (item) =>
+              item.right_eye_sph !== null ||
+              item.right_eye_cyl !== null ||
+              item.right_eye_axis !== null ||
+              item.right_eye_add_power !== null ||
+              item.right_eye_mpd !== null ||
+              item.left_eye_sph !== null ||
+              item.left_eye_cyl !== null ||
+              item.left_eye_axis !== null ||
+              item.left_eye_add_power !== null ||
+              item.left_eye_mpd !== null,
+          ),
+        );
+
+        return {
+          data: filteredData,
+          total: filteredData.length,
+        };
+      } catch (error) {
+        console.error("Error loading job orders:", error);
+        throw error;
+      }
+    },
+    enabled: !!session?.user?.id,
+  });
+
+  const totalPages = Math.ceil(result.total / ITEMS_PER_PAGE);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-48">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="group relative bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-all duration-300">
-      <Link
-        to={`/products/${product.id}`}
-        className="block"
-      >
-        {/* Container Gambar */}
-        <div className="aspect-square overflow-hidden bg-gray-50 relative">
-          {!imageLoaded && (
-            <div className="absolute inset-0 bg-gray-100 animate-pulse" />
-          )}
-          <img
-            src={product.image_url || ''}
-            alt={product.name}
-            loading="lazy"
-            onLoad={() => setImageLoaded(true)}
-            className={`w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 ${
-              imageLoaded ? "opacity-100" : "opacity-0"
-            }`}
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <div className="w-72">
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search job order number..."
           />
         </div>
+      </div>
 
-        {/* Konten */}
-        <div className="p-3">
-          {/* Merek */}
-          <p className="text-xs text-gray-500 mb-0.5">{product.brand}</p>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Job Order #</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {result.data.map((invoice) => (
+              <JobOrderTableRow key={invoice.id} invoice={invoice} />
+            ))}
+            {result.data.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="text-center py-4 text-gray-500"
+                >
+                  No job orders found
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-          {/* Nama Produk */}
-          <h3 className="text-sm font-medium text-gray-900 mb-1 line-clamp-2">
-            {product.name}
-          </h3>
-
-          {/* Label Kategori */}
-          <span className="inline-block px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full mb-1">
-            {translateCategory(product.category)}
-          </span>
-
-          {/* Harga */}
-          <p className="text-base font-semibold text-gray-900">
-            {formatPrice(product.online_price || 0)}
-          </p>
-        </div>
-      </Link>
-      {(onDelete || product.id) && (
-        <div className="p-3 border-t flex gap-2">
-          <ProductDialog 
-            mode="edit" 
-            product={product as Tables<"products">}
-            trigger={
-              <Button variant="outline" size="sm" className="flex-1 text-xs">
-                <Edit className="h-3 w-3 mr-1" />
-                Edit
-              </Button>
-            }
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
           />
-          {onDelete && (
-            <Button
-              variant="destructive"
-              size="sm"
-              className="flex-1 text-xs"
-              onClick={() => onDelete(product.id)}
-            >
-              <Trash2 className="h-3 w-3 mr-1" />
-              Delete
-            </Button>
-          )}
         </div>
       )}
     </div>
   );
 }
+

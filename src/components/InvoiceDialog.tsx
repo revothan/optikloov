@@ -39,8 +39,8 @@ export function InvoiceDialog() {
 
   return (
     <>
-      <Dialog 
-        open={open} 
+      <Dialog
+        open={open}
         onOpenChange={(isOpen) => {
           if (!isOpen) {
             handleClose();
@@ -60,20 +60,29 @@ export function InvoiceDialog() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={showExitConfirmation} onOpenChange={setShowExitConfirmation}>
+      <AlertDialog
+        open={showExitConfirmation}
+        onOpenChange={setShowExitConfirmation}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Keluar dari form?</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin keluar? Data yang belum disimpan akan hilang.
+              Apakah Anda yakin ingin keluar? Data yang belum disimpan akan
+              hilang.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelExit}>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmExit}>Ya, Keluar</AlertDialogAction>
+            <AlertDialogCancel onClick={handleCancelExit}>
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmExit}>
+              Ya, Keluar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
   );
 }
+

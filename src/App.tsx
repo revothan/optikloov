@@ -1,5 +1,13 @@
+import React from "react";
 import { useState, useEffect, lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
@@ -10,13 +18,23 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/LogoutButton";
-import { Menu, FileText, Users, ShoppingBag, ClipboardList, TrendingUp, Glasses, Loader2 } from "lucide-react";
+import {
+  Menu,
+  FileText,
+  Users,
+  ShoppingBag,
+  ClipboardList,
+  TrendingUp,
+  Glasses,
+  Loader2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Login from "./pages/Login";
 import { toast } from "sonner";
 
+// Lazy-loaded pages
 const InvoicesPage = lazy(() => import("@/pages/admin/InvoicesPage"));
 const ProductsPage = lazy(() => import("@/pages/admin/ProductsPage"));
 const CustomersPage = lazy(() => import("@/pages/admin/CustomersPage"));
@@ -24,7 +42,12 @@ const JobOrdersPage = lazy(() => import("@/pages/admin/JobOrdersPage"));
 const SalesPage = lazy(() => import("@/pages/admin/SalesPage"));
 const LensStockPage = lazy(() => import("@/pages/admin/LensStockPage"));
 
-// Create a client
+// Exported context for user profile
+export const UserProfileContext = React.createContext<{
+  role?: string;
+  branch?: string;
+} | null>(null);
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -35,101 +58,148 @@ const queryClient = new QueryClient({
 });
 
 const MENU_ITEMS = [
-  { id: "invoices", label: "Invoices", path: "/admin/invoices", icon: FileText },
-  { id: "products", label: "Products", path: "/admin/products", icon: ShoppingBag },
-  { id: "customers", label: "Customers", path: "/admin/customers", icon: Users },
-  { id: "job-orders", label: "Job Orders", path: "/admin/job-orders", icon: ClipboardList },
-  { id: "sales", label: "Sales", path: "/admin/sales", icon: TrendingUp },
-  { id: "lens-stock", label: "Lens Stock", path: "/admin/lens-stock", icon: Glasses },
+  {
+    id: "invoices",
+    label: "Invoices",
+    path: "/admin/invoices",
+    icon: FileText,
+    allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
+  },
+  {
+    id: "products",
+    label: "Products",
+    path: "/admin/products",
+    icon: ShoppingBag,
+    allowedRoles: ["admin"], // Only admin can access full product management
+  },
+  {
+    id: "customers",
+    label: "Customers",
+    path: "/admin/customers",
+    icon: Users,
+    allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
+  },
+  {
+    id: "job-orders",
+    label: "Job Orders",
+    path: "/admin/job-orders",
+    icon: ClipboardList,
+    allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
+  },
+  {
+    id: "sales",
+    label: "Sales",
+    path: "/admin/sales",
+    icon: TrendingUp,
+    allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
+  },
+  {
+    id: "lens-stock",
+    label: "Lens Stock",
+    path: "/admin/lens-stock",
+    icon: Glasses,
+    allowedRoles: ["admin"], // Only admin can manage lens stock
+  },
 ];
 
-// Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = ({
+  children,
+  allowedRoles = ["admin", "gadingserpongbranch", "kelapaduabranch"],
+}: {
+  children: React.ReactNode;
+  allowedRoles?: string[];
+}) => {
   const session = useSession();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userProfile, setUserProfile] = useState<{
+    role?: string;
+    branch?: string;
+  } | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Auth check error:', error);
-          toast.error("Authentication error. Please login again.");
-          setIsAuthenticated(false);
-        } else {
-          setIsAuthenticated(!!currentSession);
+        const {
+          data: { session: currentSession },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+
+        if (sessionError) {
+          throw sessionError;
         }
+
+        if (!currentSession) {
+          navigate("/login");
+          return;
+        }
+
+        // Fetch user profile
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("role, branch")
+          .eq("id", currentSession.user.id)
+          .single();
+
+        if (profileError) {
+          throw profileError;
+        }
+
+        if (!profile || !profile.role || !profile.branch) {
+          toast.error("User profile not properly configured");
+          navigate("/login");
+          return;
+        }
+
+        // Check role access
+        if (!allowedRoles.includes(profile.role)) {
+          toast.error("Access denied");
+          navigate("/admin");
+          return;
+        }
+
+        setUserProfile(profile);
       } catch (error) {
-        console.error('Auth check error:', error);
-        setIsAuthenticated(false);
+        console.error("Auth check error:", error);
+        toast.error("Authentication error");
+        navigate("/login");
       } finally {
         setIsLoading(false);
       }
     };
-    
-    // Initial auth check
+
     checkAuth();
+  }, [navigate, allowedRoles]);
 
-    // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session);
-      
-      if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed successfully');
-        setIsAuthenticated(true);
-      } else if (event === 'SIGNED_OUT') {
-        console.log('User signed out');
-        setIsAuthenticated(false);
-        toast.info("You have been signed out");
-      } else if (event === 'SIGNED_IN') {
-        console.log('User signed in');
-        setIsAuthenticated(true);
-        toast.success("Successfully signed in!");
-      } else if (event === 'USER_UPDATED') {
-        console.log('User account updated');
-        checkAuth(); // Recheck authentication
-      }
-
-      setIsLoading(false);
-    });
-
-    // Handle token refresh errors
-    const handleTokenRefreshError = (error: any) => {
-      console.error('Token refresh error:', error);
-      setIsAuthenticated(false);
-      toast.error("Session expired. Please login again.");
-      supabase.auth.signOut(); // Clear the invalid session
-    };
-
-    // Add listener for token refresh errors
-    window.addEventListener('supabase.auth.refreshSession.error', handleTokenRefreshError);
-
-    return () => {
-      subscription.unsubscribe();
-      window.removeEventListener('supabase.auth.refreshSession.error', handleTokenRefreshError);
-    };
-  }, []);
-
+  // Show loading state
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
+  // Provide user profile context
+  return (
+    <UserProfileContext.Provider value={userProfile}>
+      {children}
+    </UserProfileContext.Provider>
+  );
 };
 
-// Admin Layout Component
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const isMobile = useIsMobile();
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
+  const userProfile = React.useContext(UserProfileContext);
+
+  // Filter menu items based on user role
+  const accessibleMenuItems = MENU_ITEMS.filter(
+    (item) => userProfile && item.allowedRoles.includes(userProfile.role!),
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -139,26 +209,32 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           "fixed left-0 top-0 z-40 h-screen transition-all duration-300 ease-in-out",
           "border-r bg-white",
           isCollapsed ? "w-16" : "w-64",
-          isMobile && "hidden"
+          isMobile && "hidden",
         )}
       >
         <div className="flex h-full flex-col justify-between">
           <div>
-            {/* Logo/Brand */}
-            <div className="flex h-16 items-center justify-between px-4 border-b">
-              {!isCollapsed && <h1 className="text-xl font-bold">Admin</h1>}
+            {/* Logo/Brand with Branch Info */}
+            <div className="flex flex-col h-20 justify-center px-4 border-b relative">
+              {!isCollapsed && (
+                <>
+                  <h1 className="text-xl font-bold">Admin</h1>
+                  <p className="text-sm text-gray-500">{userProfile?.branch}</p>
+                </>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsCollapsed(!isCollapsed)}
+                className="absolute right-2 top-2"
               >
                 <Menu className="h-5 w-5" />
               </Button>
             </div>
 
-            {/* Navigation Items */}
+            {/* Navigation Items - Filtered by role */}
             <nav className="space-y-1 p-2">
-              {MENU_ITEMS.map((item) => {
+              {accessibleMenuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPath === item.path;
                 return (
@@ -167,11 +243,13 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     variant={isActive ? "secondary" : "ghost"}
                     className={cn(
                       "w-full justify-start",
-                      isCollapsed ? "px-2" : "px-4"
+                      isCollapsed ? "px-2" : "px-4",
                     )}
                     onClick={() => navigate(item.path)}
                   >
-                    <Icon className={cn("h-5 w-5", isCollapsed ? "mr-0" : "mr-2")} />
+                    <Icon
+                      className={cn("h-5 w-5", isCollapsed ? "mr-0" : "mr-2")}
+                    />
                     {!isCollapsed && <span>{item.label}</span>}
                   </Button>
                 );
@@ -186,11 +264,11 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Bottom Navigation - Filtered by role */}
       {isMobile && (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t">
           <nav className="flex justify-around p-2">
-            {MENU_ITEMS.map((item) => {
+            {accessibleMenuItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPath === item.path;
               return (
@@ -200,7 +278,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                   size="icon"
                   className={cn(
                     "flex flex-col items-center justify-center",
-                    isActive && "text-primary"
+                    isActive && "text-primary",
                   )}
                   onClick={() => navigate(item.path)}
                 >
@@ -218,11 +296,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         className={cn(
           "transition-all duration-300 ease-in-out pt-4",
           "min-h-screen bg-gray-50",
-          isMobile
-            ? "pb-20 px-4"
-            : isCollapsed
-              ? "pl-16"
-              : "pl-64"
+          isMobile ? "pb-20 px-4" : isCollapsed ? "pl-16" : "pl-64",
         )}
       >
         <ErrorBoundary>
@@ -244,10 +318,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionContextProvider 
-        supabaseClient={supabase} 
-        initialSession={null}
-      >
+      <SessionContextProvider supabaseClient={supabase} initialSession={null}>
         <TooltipProvider>
           <Toaster />
           <BrowserRouter>
@@ -265,7 +336,11 @@ const App = () => {
                         <Route path="job-orders" element={<JobOrdersPage />} />
                         <Route path="sales" element={<SalesPage />} />
                         <Route path="lens-stock" element={<LensStockPage />} />
-                        <Route path="/" element={<Navigate to="/admin/invoices" replace />} />
+                        {/* Default redirect for /admin */}
+                        <Route
+                          index
+                          element={<Navigate to="/admin/invoices" replace />}
+                        />
                       </Routes>
                     </AdminLayout>
                   </ProtectedRoute>

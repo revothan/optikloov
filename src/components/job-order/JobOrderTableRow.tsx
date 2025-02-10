@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { JobOrderPDF } from "@/components/invoice-pdf/JobOrderPDF";
+import JobOrderPDF from "@/components/invoice-pdf/JobOrderPDF";
 import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
 import {
   DropdownMenu,
@@ -61,7 +61,25 @@ export function JobOrderTableRow({ invoice }: { invoice: any }) {
 
     try {
       setIsPrinting(true);
-      const blob = await pdf(<JobOrderPDF invoice={invoice} items={items} />).toBlob();
+      const { data: fullInvoice, error } = await supabase
+        .from("invoices")
+        .select(
+          `
+          *,
+          invoice_items (
+            *,
+            products (*)
+          )
+        `,
+        )
+        .eq("id", invoice.id)
+        .single();
+
+      if (error) throw error;
+
+      const blob = await pdf(
+        <JobOrderPDF invoice={fullInvoice} items={fullInvoice.invoice_items} />,
+      ).toBlob();
       const url = URL.createObjectURL(blob);
       const printWindow = window.open(url);
       printWindow?.print();
@@ -73,7 +91,6 @@ export function JobOrderTableRow({ invoice }: { invoice: any }) {
       setIsDropdownOpen(false);
     }
   };
-
   return (
     <tr className="border-b">
       <td className="py-4 px-4">
@@ -131,3 +148,4 @@ export function JobOrderTableRow({ invoice }: { invoice: any }) {
     </tr>
   );
 }
+
