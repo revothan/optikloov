@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useState, useEffect, lazy, Suspense } from "react";
 import {
@@ -70,7 +71,7 @@ const MENU_ITEMS = [
     label: "Products",
     path: "/admin/products",
     icon: ShoppingBag,
-    allowedRoles: ["admin"], // Only admin can access full product management
+    allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"], // Updated to allow branch roles
   },
   {
     id: "customers",
@@ -98,7 +99,7 @@ const MENU_ITEMS = [
     label: "Lens Stock",
     path: "/admin/lens-stock",
     icon: Glasses,
-    allowedRoles: ["admin"], // Only admin can manage lens stock
+    allowedRoles: ["admin"], // Keep lens stock management for admin only
   },
 ];
 
@@ -331,11 +332,25 @@ const App = () => {
                     <AdminLayout>
                       <Routes>
                         <Route path="invoices" element={<InvoicesPage />} />
-                        <Route path="products" element={<ProductsPage />} />
+                        <Route 
+                          path="products" 
+                          element={
+                            <ProtectedRoute allowedRoles={["admin", "gadingserpongbranch", "kelapaduabranch"]}>
+                              <ProductsPage />
+                            </ProtectedRoute>
+                          } 
+                        />
                         <Route path="customers" element={<CustomersPage />} />
                         <Route path="job-orders" element={<JobOrdersPage />} />
                         <Route path="sales" element={<SalesPage />} />
-                        <Route path="lens-stock" element={<LensStockPage />} />
+                        <Route 
+                          path="lens-stock" 
+                          element={
+                            <ProtectedRoute allowedRoles={["admin"]}>
+                              <LensStockPage />
+                            </ProtectedRoute>
+                          } 
+                        />
                         {/* Default redirect for /admin */}
                         <Route
                           index
