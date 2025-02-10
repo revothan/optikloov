@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,10 +15,38 @@ import { useDebounce } from "@/hooks/useDebounce";
 
 const ITEMS_PER_PAGE = 10;
 
+const getBranchName = (branchCode: string | null) => {
+  switch (branchCode) {
+    case 'GS':
+      return 'Gading Serpong';
+    case 'KD':
+      return 'Kelapa Dua';
+    default:
+      return null;
+  }
+};
+
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const debouncedSearch = useDebounce(searchQuery, 300);
+
+  // Get user profile to determine branch
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("branch")
+        .eq("id", user.id)
+        .single();
+
+      return profile;
+    },
+  });
 
   const {
     data: productsData,
@@ -25,12 +54,17 @@ export default function ProductsPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["products", debouncedSearch, currentPage],
+    queryKey: ["products", debouncedSearch, currentPage, userProfile?.branch],
     queryFn: async () => {
       try {
+        const branchName = getBranchName(userProfile?.branch);
         let query = supabase
           .from("products")
           .select("*", { count: "exact" });
+
+        if (branchName) {
+          query = query.eq("branch", branchName);
+        }
 
         if (debouncedSearch) {
           query = query.ilike("name", `%${debouncedSearch}%`);
@@ -50,6 +84,7 @@ export default function ProductsPage() {
         throw error;
       }
     },
+    enabled: !!userProfile,
   });
 
   const handleDeleteProduct = async (id: string) => {

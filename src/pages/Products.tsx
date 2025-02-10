@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +12,17 @@ import { useDebounce } from "@/hooks/useDebounce";
 
 const ITEMS_PER_PAGE = 10;
 
+const getBranchName = (branchCode: string | null) => {
+  switch (branchCode) {
+    case 'GS':
+      return 'Gading Serpong';
+    case 'KD':
+      return 'Kelapa Dua';
+    default:
+      return null;
+  }
+};
+
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("all");
@@ -20,6 +32,23 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+
+  // Get user profile to determine branch
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("branch")
+        .eq("id", user.id)
+        .single();
+
+      return profile;
+    },
+  });
 
   // Debounce the search query
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -35,13 +64,20 @@ export default function ProductsPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["products", debouncedSearch, selectedType, selectedBrand, selectedCategory, sortBy],
+    queryKey: ["products", debouncedSearch, selectedType, selectedBrand, selectedCategory, sortBy, userProfile?.branch],
     queryFn: async () => {
       try {
+        const branchName = getBranchName(userProfile?.branch);
+        
         let query = supabase
           .from("products")
           .select("id, name, brand, image_url, online_price, category")
           .not("image_url", "is", null);
+
+        // Only filter by branch if user has a branch assigned
+        if (branchName) {
+          query = query.eq("branch", branchName);
+        }
 
         if (debouncedSearch) {
           query = query.ilike("name", `%${debouncedSearch}%`);
@@ -76,22 +112,31 @@ export default function ProductsPage() {
         throw err;
       }
     },
+    enabled: !!userProfile,
   });
 
   const { data: brands = [] } = useQuery({
-    queryKey: ["brands"],
+    queryKey: ["brands", userProfile?.branch],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const branchName = getBranchName(userProfile?.branch);
+      let query = supabase
         .from("products")
         .select("brand")
         .not("brand", "is", null)
         .not("image_url", "is", null);
 
+      if (branchName) {
+        query = query.eq("branch", branchName);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
+
       return [...new Set(data.map((item) => item.brand))]
         .filter(Boolean)
         .sort();
     },
+    enabled: !!userProfile,
   });
 
   // Calculate pagination
