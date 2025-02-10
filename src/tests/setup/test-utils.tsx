@@ -52,3 +52,4 @@ const Wrapper = ({ children }: WrapperProps) => (
 export function renderWithProviders(ui: React.ReactElement) {
   return render(ui, { wrapper: Wrapper });
 }
+
