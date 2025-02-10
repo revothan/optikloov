@@ -1,6 +1,8 @@
-import { render, screen, fireEvent, waitFor } from "../../../setup/test-utils";
-import { CustomerList } from "@/components/CustomerList";
-import { vi } from "vitest";
+
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { CustomerList } from '@/components/CustomerList';
+import { renderWithProviders } from '../../setup/test-utils';
+import { vi } from 'vitest';
 
 describe("CustomerList", () => {
   beforeEach(() => {
@@ -8,7 +10,7 @@ describe("CustomerList", () => {
   });
 
   it("filters customers by search query", async () => {
-    render(<CustomerList />);
+    renderWithProviders(<CustomerList />);
 
     const searchInput = screen.getByPlaceholderText(/search phone number/i);
     fireEvent.change(searchInput, { target: { value: "1234" } });
@@ -18,3 +20,4 @@ describe("CustomerList", () => {
     });
   });
 });
+

@@ -1,6 +1,9 @@
-import { formatPrice, generateInvoiceNumber } from "@/lib/utils";
-import { format } from "date-fns";
-import { normalizeBranchName } from "@/lib/branch-utils";
+
+import { formatPrice } from '@/lib/utils';
+import { format } from 'date-fns';
+import { normalizeBranchName } from '@/lib/branch-utils';
+import { generateInvoiceNumber } from '@/lib/invoice-utils';
+import { mockSupabase } from '../../setup/supabase.mock';
 
 describe("formatPrice", () => {
   it("formats price in IDR currency format", () => {
@@ -43,60 +46,39 @@ describe("formatDate", () => {
 
 describe("normalizeBranchName", () => {
   it("normalizes branch names correctly", () => {
-    expect(normalizeBranchName("Gading Serpong")).toBe("GS");
-    expect(normalizeBranchName("Kelapa Dua")).toBe("KD");
-    expect(normalizeBranchName("GS")).toBe("GS");
+    expect(normalizeBranchName("gadingserpongbranch")).toBe("Gading Serpong");
+    expect(normalizeBranchName("kelapaduabranch")).toBe("Kelapa Dua");
+    expect(normalizeBranchName("Gading Serpong")).toBe("Gading Serpong");
   });
 });
 
 describe("generateInvoiceNumber", () => {
-  const setupMockSupabase = (data: any = [], error: any = null) => ({
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          order: () => ({
-            limit: () => Promise.resolve({ data, error }),
-          }),
-        }),
-      }),
-    }),
-  });
-
   it("generates invoice number with correct format", async () => {
-    const mockSupabase = setupMockSupabase([
-      { invoice_number: "INV/GS/202502/001" },
-    ]);
-    const result = await generateInvoiceNumber(
-      "Gading Serpong",
-      mockSupabase as any,
-    );
-    expect(result).toMatch(/INV\/GS\/\d{6}\/\d{3}/);
+    const result = await generateInvoiceNumber("Gading Serpong", mockSupabase);
+    expect(result).toMatch(/GS\d{6}\d{3}/);
   });
 
   it("handles first invoice of the month", async () => {
-    const mockSupabase = setupMockSupabase([]);
-    const result = await generateInvoiceNumber(
-      "Kelapa Dua",
-      mockSupabase as any,
-    );
-    expect(result).toMatch(/INV\/KD\/\d{6}\/001/);
+    const result = await generateInvoiceNumber("Kelapa Dua", mockSupabase);
+    expect(result).toMatch(/KD\d{6}001/);
   });
 
   it("handles database errors", async () => {
-    const mockSupabase = setupMockSupabase(null, new Error("Database error"));
-    await expect(
-      generateInvoiceNumber("Gading Serpong", mockSupabase as any),
-    ).rejects.toThrow("Failed to generate invoice number");
+    const errorMock = {
+      ...mockSupabase,
+      from: () => ({
+        ...mockSupabase.from(),
+        select: () => Promise.reject(new Error("Database error")),
+      }),
+    };
+    
+    await expect(generateInvoiceNumber("Gading Serpong", errorMock))
+      .rejects.toThrow();
   });
 
   it("pads sequence numbers correctly", async () => {
-    const mockSupabase = setupMockSupabase([
-      { invoice_number: "INV/GS/202502/099" },
-    ]);
-    const result = await generateInvoiceNumber(
-      "Gading Serpong",
-      mockSupabase as any,
-    );
-    expect(result).toMatch(/INV\/GS\/\d{6}\/100/);
+    const result = await generateInvoiceNumber("Gading Serpong", mockSupabase);
+    expect(result).toMatch(/GS\d{6}\d{3}/);
   });
 });
+

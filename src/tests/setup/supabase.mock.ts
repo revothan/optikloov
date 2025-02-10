@@ -1,10 +1,9 @@
+
 import { vi } from "vitest";
 
 export const mockSupabase = {
   auth: {
-    getSession: vi.fn(() =>
-      Promise.resolve({ data: { session: null }, error: null }),
-    ),
+    getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
     onAuthStateChange: vi.fn(() => ({
       subscription: { unsubscribe: vi.fn() },
     })),
@@ -12,7 +11,12 @@ export const mockSupabase = {
   from: vi.fn(() => ({
     select: vi.fn(() => ({
       eq: vi.fn(() => Promise.resolve({ data: [], error: null })),
-      order: vi.fn(() => Promise.resolve({ data: [], error: null })),
+      order: vi.fn(() => ({
+        desc: vi.fn(() => ({
+          range: vi.fn(() => Promise.resolve({ data: [], error: null })),
+          limit: vi.fn(() => Promise.resolve({ data: [], error: null })),
+        })),
+      })),
       range: vi.fn(() => Promise.resolve({ data: [], error: null })),
     })),
     insert: vi.fn(() => Promise.resolve({ data: [], error: null })),
@@ -21,16 +25,9 @@ export const mockSupabase = {
   })),
   storage: {
     from: vi.fn(() => ({
-      upload: vi.fn(() =>
-        Promise.resolve({ data: { path: "test.jpg" }, error: null }),
-      ),
-      getPublicUrl: vi.fn(() => ({
-        data: { publicUrl: "https://test.com/test.jpg" },
-      })),
+      upload: vi.fn(() => Promise.resolve({ data: { path: "test.jpg" }, error: null })),
+      getPublicUrl: vi.fn(() => ({ data: { publicUrl: "https://test.com/test.jpg" } })),
     })),
   },
 };
 
-vi.mock("@supabase/supabase-js", () => ({
-  createClient: () => mockSupabase,
-}));

@@ -86,6 +86,7 @@ export type Database = {
       }
       invoice_items: {
         Row: {
+          branch: string | null
           created_at: string
           dbl: number | null
           discount: number
@@ -113,6 +114,7 @@ export type Database = {
           v_frame: string | null
         }
         Insert: {
+          branch?: string | null
           created_at?: string
           dbl?: number | null
           discount?: number
@@ -140,6 +142,7 @@ export type Database = {
           v_frame?: string | null
         }
         Update: {
+          branch?: string | null
           created_at?: string
           dbl?: number | null
           discount?: number
@@ -188,12 +191,20 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "invoice_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_products"
+            referencedColumns: ["id"]
+          },
         ]
       }
       invoices: {
         Row: {
           acknowledged_by: string | null
           branch: string
+          branch_prefix: string | null
           created_at: string
           customer_address: string | null
           customer_birth_date: string | null
@@ -220,6 +231,7 @@ export type Database = {
         Insert: {
           acknowledged_by?: string | null
           branch?: string
+          branch_prefix?: string | null
           created_at?: string
           customer_address?: string | null
           customer_birth_date?: string | null
@@ -246,6 +258,7 @@ export type Database = {
         Update: {
           acknowledged_by?: string | null
           branch?: string
+          branch_prefix?: string | null
           created_at?: string
           customer_address?: string | null
           customer_birth_date?: string | null
@@ -444,6 +457,7 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          branch: string | null
           id: string
           invoice_id: string | null
           is_down_payment: boolean | null
@@ -452,6 +466,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          branch?: string | null
           id?: string
           invoice_id?: string | null
           is_down_payment?: boolean | null
@@ -460,6 +475,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          branch?: string | null
           id?: string
           invoice_id?: string | null
           is_down_payment?: boolean | null
@@ -510,6 +526,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_products"
             referencedColumns: ["id"]
           },
         ]
@@ -1173,6 +1196,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          branch: string | null
           created_at: string
           email: string | null
           id: string
@@ -1180,6 +1204,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          branch?: string | null
           created_at?: string
           email?: string | null
           id: string
@@ -1187,6 +1212,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          branch?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -1197,9 +1223,141 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      job_orders_view: {
+        Row: {
+          branch: string | null
+          branch_prefix: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          discount: number | null
+          invoice_id: string | null
+          invoice_number: string | null
+          item_id: string | null
+          left_eye_cyl: number | null
+          left_eye_mpd: number | null
+          left_eye_sph: number | null
+          notes: string | null
+          price: number | null
+          product_id: string | null
+          quantity: number | null
+          right_eye_cyl: number | null
+          right_eye_mpd: number | null
+          right_eye_sph: number | null
+          sale_date: string | null
+          total: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "user_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_products: {
+        Row: {
+          alternative_name: string | null
+          alternative_variant_names: string | null
+          barcode: string | null
+          branch: string | null
+          brand: string | null
+          buy_price: number | null
+          category: string | null
+          classification_id: number | null
+          collections: string | null
+          comission: number | null
+          condition_id: string | null
+          created_at: string | null
+          description: string | null
+          has_variants: boolean | null
+          hold_qty: number | null
+          id: string | null
+          image_url: string | null
+          lens_cyl: number | null
+          lens_sph: number | null
+          lens_stock_id: string | null
+          lens_type_id: string | null
+          low_stock_alert: number | null
+          loyalty_points: number | null
+          market_price: number | null
+          name: string | null
+          notes: string | null
+          online_price: number | null
+          photo_1: string | null
+          photo_10: string | null
+          photo_2: string | null
+          photo_3: string | null
+          photo_4: string | null
+          photo_5: string | null
+          photo_6: string | null
+          photo_7: string | null
+          photo_8: string | null
+          photo_9: string | null
+          pos_hidden: boolean | null
+          pos_sell_price: number | null
+          pos_sell_price_dynamic: boolean | null
+          published: boolean | null
+          qty_fast_moving: number | null
+          sell_price: number | null
+          sku: string | null
+          stock_qty: number | null
+          store_price: number | null
+          tax_free_item: boolean | null
+          track_inventory: boolean | null
+          uom: string | null
+          updated_at: string | null
+          user_id: string | null
+          variant_label: string | null
+          variant_names: string | null
+          weight_kg: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_lens_stock_id_fkey"
+            columns: ["lens_stock_id"]
+            isOneToOne: false
+            referencedRelation: "lens_stock"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_lens_type_id_fkey"
+            columns: ["lens_type_id"]
+            isOneToOne: false
+            referencedRelation: "lens_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      check_invoice_access: {
+        Args: {
+          invoice_id: string
+        }
+        Returns: boolean
+      }
+      check_user_branch_access: {
+        Args: {
+          user_id: string
+        }
+        Returns: string
+      }
       remove_duplicate_products: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1211,6 +1369,23 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_product_stock:
+        | {
+            Args: {
+              p_product_id: string
+              p_branch: string
+              p_new_stock: number
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_product_id: string
+              p_branch: string
+              p_new_stock: number
+            }
+            Returns: undefined
+          }
     }
     Enums: {
       [_ in never]: never
