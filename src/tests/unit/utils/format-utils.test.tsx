@@ -71,15 +71,15 @@ describe("generateInvoiceNumber", () => {
   });
 
   it("generates invoice number with correct format", async () => {
-    const mockSupabase = setupMockSupabase([{ invoice_number: "GS202502001" }]);
+    const mockSupabase = setupMockSupabase([{ invoice_number: "GS2502001" }]);
     const result = await generateInvoiceNumber("Gading Serpong", mockSupabase);
-    expect(result).toMatch(/GS\d{6}\d{3}/);
+    expect(result).toBe("GS2502002");
   });
 
   it("handles first invoice of the month", async () => {
     const mockSupabase = setupMockSupabase([]);
     const result = await generateInvoiceNumber("Kelapa Dua", mockSupabase);
-    expect(result).toMatch(/KD\d{6}001/);
+    expect(result).toBe("KD2502001");
   });
 
   it("handles database errors", async () => {
@@ -93,8 +93,8 @@ describe("generateInvoiceNumber", () => {
   });
 
   it("pads sequence numbers correctly", async () => {
-    const mockSupabase = setupMockSupabase([{ invoice_number: "GS202502099" }]);
+    const mockSupabase = setupMockSupabase([{ invoice_number: "GS2502099" }]);
     const result = await generateInvoiceNumber("Gading Serpong", mockSupabase);
-    expect(result).toMatch(/GS\d{6}100/);
+    expect(result).toBe("GS2502100");
   });
 });
