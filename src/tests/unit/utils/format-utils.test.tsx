@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { normalizeBranchName } from '@/lib/branch-utils';
 import { generateInvoiceNumber } from '@/lib/invoice-utils';
 import { mockSupabase } from '../../setup/supabase.mock';
+import { vi, describe, it, expect } from 'vitest';
 
 describe("formatPrice", () => {
   it("formats price in IDR currency format", () => {
@@ -59,7 +60,6 @@ describe("generateInvoiceNumber", () => {
   const setupMockSupabase = (mockData: any[] = []) => ({
     ...mockSupabase,
     from: () => ({
-      ...mockSupabase.from(),
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
           order: vi.fn().mockReturnValue({

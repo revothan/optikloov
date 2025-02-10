@@ -5,16 +5,14 @@ export const mockSupabase = {
   auth: {
     getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
     onAuthStateChange: vi.fn(() => ({
-      subscription: { unsubscribe: vi.fn() },
+      data: { subscription: { unsubscribe: vi.fn() } },
     })),
   },
   from: vi.fn(() => ({
     select: vi.fn(() => ({
       eq: vi.fn(() => ({
         order: vi.fn(() => ({
-          desc: vi.fn(() => ({
-            limit: vi.fn(() => Promise.resolve({ data: [], error: null })),
-          })),
+          limit: vi.fn(() => Promise.resolve({ data: [], error: null })),
         })),
       })),
       range: vi.fn(() => Promise.resolve({ data: [], error: null })),

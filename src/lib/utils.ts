@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const formatPrice = (price: number | null | undefined) => {
-  const number = price || 0;
+  const number = price ?? 0;
   const formattedNumber = new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
@@ -15,7 +15,8 @@ export const formatPrice = (price: number | null | undefined) => {
     maximumFractionDigits: 0,
   })
     .format(Math.abs(number))
-    .replace(/^IDR\s?/, "Rp ");
+    .replace("IDR", "Rp")
+    .trim();
   
   return number < 0 ? `-${formattedNumber}` : formattedNumber;
 };

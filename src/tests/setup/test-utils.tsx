@@ -37,12 +37,18 @@ const queryClient = new QueryClient({
   },
 });
 
+type WrapperProps = {
+  children: React.ReactNode;
+};
+
+const Wrapper = ({ children }: WrapperProps) => (
+  <QueryClientProvider client={queryClient}>
+    <SessionContextProvider supabaseClient={mockSupabase}>
+      {children}
+    </SessionContextProvider>
+  </QueryClientProvider>
+);
+
 export function renderWithProviders(ui: React.ReactElement) {
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <SessionContextProvider supabaseClient={mockSupabase}>
-        {ui}
-      </SessionContextProvider>
-    </QueryClientProvider>
-  );
+  return render(ui, { wrapper: Wrapper });
 }
