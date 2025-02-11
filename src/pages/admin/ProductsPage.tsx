@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductDialog } from "@/components/ProductDialog";
@@ -29,6 +29,7 @@ const getBranchName = (branchCode: string | null) => {
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPending, startTransition] = useTransition();
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   // Get user profile to determine branch
@@ -92,11 +93,26 @@ export default function ProductsPage() {
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (error) throw error;
       toast.success("Product deleted successfully");
-      refetch();
+      startTransition(() => {
+        refetch();
+      });
     } catch (error) {
       console.error("Error deleting product:", error);
       toast.error("Failed to delete product");
     }
+  };
+
+  const handleSearch = (value: string) => {
+    startTransition(() => {
+      setSearchQuery(value);
+      setCurrentPage(1);
+    });
+  };
+
+  const handlePageChange = (page: number) => {
+    startTransition(() => {
+      setCurrentPage(page);
+    });
   };
 
   const filteredProducts = productsData?.data || [];
@@ -149,10 +165,7 @@ export default function ProductsPage() {
                 placeholder="Search products..."
                 className="pl-10"
                 value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1); // Reset to first page on search
-                }}
+                onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
             <ProductDialog />
@@ -173,7 +186,7 @@ export default function ProductsPage() {
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            onPageChange={handlePageChange}
           />
         )}
       </div>
