@@ -21,6 +21,15 @@ import { Pagination } from "@/components/ui/pagination";
 
 const ITEMS_PER_PAGE = 10;
 
+interface Customer {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  birth_date: string | null;
+  created_at: string;
+}
+
 export function CustomerTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,7 +53,7 @@ export function CustomerTable() {
           );
 
         if (error) throw error;
-        return { data: data || [], total: count || 0 };
+        return { data: data as Customer[], total: count || 0 };
       } catch (error) {
         console.error("Error fetching customers:", error);
         throw error;
@@ -52,6 +61,7 @@ export function CustomerTable() {
     },
     gcTime: 5000,
     retry: 1,
+    suspense: false,
   });
 
   const totalPages = Math.ceil(result.total / ITEMS_PER_PAGE);
@@ -59,7 +69,7 @@ export function CustomerTable() {
   const handleSearchChange = (value: string) => {
     startTransition(() => {
       setSearchQuery(value);
-      setCurrentPage(1); // Reset to first page on search
+      setCurrentPage(1);
     });
   };
 
@@ -91,7 +101,6 @@ export function CustomerTable() {
     }
   };
 
-  // Count birthdays today
   const birthdaysToday = result.data.filter((customer) =>
     isBirthdayToday(customer.birth_date),
   ).length;
