@@ -13,7 +13,7 @@ export default function SalesPage() {
   return (
     <div className="p-8">
       <h2 className="text-xl font-semibold mb-6">Sales Report</h2>
-      <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin" />}>
+      <Suspense fallback={<div className="flex justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
         <SalesReport userBranch={userBranch} isAdmin={isAdmin} />
       </Suspense>
     </div>

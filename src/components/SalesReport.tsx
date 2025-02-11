@@ -81,7 +81,6 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
           .lte("payment_date", endOfDay(dateRange.to).toISOString())
           .order("payment_date", { ascending: false });
 
-        // Apply branch filter if user is not admin
         if (!isAdmin) {
           query = query.eq("branch", userBranch);
         }
@@ -101,7 +100,7 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
         throw error;
       }
     },
-    staleTime: 30000, // Cache data for 30 seconds
+    staleTime: 30000,
     retry: 1,
   });
 
@@ -170,7 +169,10 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
       {/* Date Range Controls */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex gap-2">
-          <Select onValueChange={handleRangeSelect} defaultValue="today">
+          <Select 
+            onValueChange={(value) => startTransition(() => handleRangeSelect(value))} 
+            defaultValue="today"
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select date range" />
             </SelectTrigger>
