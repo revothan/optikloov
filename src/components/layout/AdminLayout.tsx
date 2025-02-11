@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Menu, Loader2 } from "lucide-react";
@@ -36,28 +35,31 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <div className="flex h-full flex-col justify-between">
           <div>
             {/* Logo/Brand with Branch Info */}
-            <div className="flex flex-col h-32 px-4 border-b relative">
-              {!isCollapsed && (
-                <>
-                  <h1 className="text-xl font-bold pt-4 mb-3">Admin</h1>
-                  <div className="space-y-2 mb-4">
-                    <p className="text-sm text-gray-600 italic leading-normal break-normal">
-                      Halo Tim {userProfile?.branch}!
-                    </p>
-                    <p className="text-xs text-gray-500 italic leading-normal break-normal">
-                      Untungnya bumi masih berputar, untungnya kita tak pilih menyerah. Semangat kerjanya ya kamu.
-                    </p>
-                  </div>
-                </>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="absolute right-2 top-2"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
+            <div className="relative border-b">
+              <div className={cn("px-4 py-4", !isCollapsed && "min-h-[160px]")}>
+                {!isCollapsed && (
+                  <>
+                    <h1 className="text-xl font-bold mb-4">Admin</h1>
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600 italic">
+                        Halo Tim {userProfile?.branch}!
+                      </p>
+                      <p className="text-xs text-gray-500 italic">
+                        Untungnya bumi masih berputar, untungnya kita tak pilih
+                        menyerah. Semangat kerjanya ya kamu.
+                      </p>
+                    </div>
+                  </>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="absolute right-2 top-2"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
 
             {/* Navigation Items */}
