@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -14,12 +15,14 @@ import { Loader2 } from "lucide-react";
 import { SearchInput } from "./common/SearchInput";
 import { Pagination } from "@/components/ui/pagination";
 import { useSession } from "@supabase/auth-helpers-react";
+import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;
 
 export function JobOrderList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
   const session = useSession();
 
   const { data: result = { data: [], total: 0 }, isLoading } = useQuery({
@@ -35,9 +38,17 @@ export function JobOrderList() {
           .from("profiles")
           .select("role")
           .eq("id", session.user.id)
-          .single();
+          .maybeSingle();
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          toast.error("Error fetching user profile");
+          throw profileError;
+        }
+
+        if (!userProfile) {
+          toast.error("User profile not found");
+          throw new Error("User profile not found");
+        }
 
         // Query the job_orders_view
         let query = supabase
@@ -64,10 +75,13 @@ export function JobOrderList() {
             currentPage * ITEMS_PER_PAGE - 1,
           );
 
-        if (error) throw error;
+        if (error) {
+          toast.error("Error fetching job orders");
+          throw error;
+        }
 
         // Group by invoice_id to combine multiple items from same invoice
-        const groupedData = data.reduce((acc, item) => {
+        const groupedData = (data || []).reduce((acc: any, item: any) => {
           if (!acc[item.invoice_id]) {
             acc[item.invoice_id] = {
               id: item.invoice_id,
@@ -99,7 +113,7 @@ export function JobOrderList() {
         };
       } catch (error) {
         console.error("Error fetching job orders:", error);
-        throw error;
+        return { data: [], total: 0 };
       }
     },
     enabled: !!session?.user?.id,
@@ -107,7 +121,20 @@ export function JobOrderList() {
 
   const totalPages = Math.ceil(result.total / ITEMS_PER_PAGE);
 
-  if (isLoading) {
+  const handleSearch = (value: string) => {
+    startTransition(() => {
+      setSearchQuery(value);
+      setCurrentPage(1);
+    });
+  };
+
+  const handlePageChange = (page: number) => {
+    startTransition(() => {
+      setCurrentPage(page);
+    });
+  };
+
+  if (isLoading || isPending) {
     return (
       <div className="flex items-center justify-center h-48">
         <Loader2 className="h-6 w-6 animate-spin" />
@@ -121,7 +148,7 @@ export function JobOrderList() {
         <div className="w-72">
           <SearchInput
             value={searchQuery}
-            onChange={setSearchQuery}
+            onChange={handleSearch}
             placeholder="Search job order number..."
           />
         </div>
@@ -150,7 +177,7 @@ export function JobOrderList() {
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            onPageChange={handlePageChange}
           />
         </div>
       )}

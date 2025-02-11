@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import JobOrderPDF from "@/components/invoice-pdf/JobOrderPDF";
@@ -11,7 +12,6 @@ import {
 import {
   Download,
   Printer,
-  MessageCircle,
   MoreHorizontal,
   Loader2,
 } from "lucide-react";
@@ -19,7 +19,18 @@ import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
 import { supabase } from "@/integrations/supabase/client";
 
-export function JobOrderTableRow({ invoice }: { invoice: any }) {
+interface JobOrderTableRowProps {
+  invoice: {
+    id: string;
+    invoice_number: string;
+    sale_date: string;
+    customer_name: string;
+    customer_phone?: string;
+    branch: string;
+  };
+}
+
+export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
   const [items, setItems] = useState<any[]>([]);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -91,12 +102,13 @@ export function JobOrderTableRow({ invoice }: { invoice: any }) {
       setIsDropdownOpen(false);
     }
   };
+
   return (
     <tr className="border-b">
       <td className="py-4 px-4">
         <div className="flex items-center">
           <PDFDownloadLink
-            document={<JobOrderPDF invoice={invoice} items={items} />}
+            document={<JobOrderPDF invoice={{ ...invoice, branch: invoice.branch }} items={items} />}
             fileName={`job-order-${invoice.invoice_number}.pdf`}
           >
             {invoice.invoice_number}
@@ -128,7 +140,7 @@ export function JobOrderTableRow({ invoice }: { invoice: any }) {
                 <div className="flex items-center">
                   <Download className="mr-2 h-4 w-4" />
                   <PDFDownloadLink
-                    document={<JobOrderPDF invoice={invoice} items={items} />}
+                    document={<JobOrderPDF invoice={{ ...invoice, branch: invoice.branch }} items={items} />}
                     fileName={`job-order-${invoice.invoice_number}.pdf`}
                   >
                     Download PDF
@@ -148,4 +160,3 @@ export function JobOrderTableRow({ invoice }: { invoice: any }) {
     </tr>
   );
 }
-
