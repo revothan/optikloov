@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -40,6 +39,7 @@ import {
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { normalizeBranchName } from "@/lib/branch-utils";
 
 interface SalesReportProps {
   userBranch: string;
@@ -81,7 +81,9 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
           .lte("payment_date", endOfDay(dateRange.to).toISOString())
           .order("payment_date", { ascending: false });
 
+        // If not admin and userBranch is present, filter by branch
         if (!isAdmin && userBranch) {
+          // Normalize the branch name in the query to match the database format
           query = query.eq("branch", userBranch);
         }
 
