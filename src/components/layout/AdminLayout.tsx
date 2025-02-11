@@ -36,13 +36,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <div className="flex h-full flex-col justify-between">
           <div>
             {/* Logo/Brand with Branch Info */}
-            <div className="flex flex-col h-20 justify-center px-4 border-b relative">
+            <div className="flex flex-col h-24 justify-center px-4 border-b relative">
               {!isCollapsed && (
                 <>
-                  <h1 className="text-xl font-bold">Admin</h1>
-                  <p className="text-sm text-gray-500">
-                    Halo Tim {userProfile?.branch}! Untungnya bumi masih berputar, untungnya kita tak pilih menyerah. Semangat kerjanya ya kamu.
-                  </p>
+                  <h1 className="text-xl font-bold mb-2">Admin</h1>
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-600 italic leading-relaxed">
+                      Halo Tim {userProfile?.branch}!
+                    </p>
+                    <p className="text-xs text-gray-500 italic leading-relaxed">
+                      Untungnya bumi masih berputar, untungnya kita tak pilih menyerah. Semangat kerjanya ya kamu.
+                    </p>
+                  </div>
                 </>
               )}
               <Button
