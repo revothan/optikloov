@@ -76,7 +76,6 @@ interface InvoiceHeaderProps {
   saleDate: string;
   acknowledgedBy?: string;
   branch: string;
-  branch_prefix?: string;
 }
 
 export function InvoiceHeader({
@@ -84,13 +83,9 @@ export function InvoiceHeader({
   saleDate,
   acknowledgedBy,
   branch,
-  branch_prefix,
 }: InvoiceHeaderProps) {
   const getBranchInfo = () => {
-    // Default to checking branch if branch_prefix is not provided
-    const prefix = branch_prefix || (branch === "Kelapa Dua" ? "KD" : "GS");
-
-    if (prefix === "KD") {
+    if (branch === "Kelapa Dua") {
       return {
         storeName: "OPTIK LOOV (Kelapa Dua)",
         address: [
@@ -168,4 +163,3 @@ export function InvoiceHeader({
     </View>
   );
 }
-
