@@ -1,3 +1,4 @@
+
 import { Text, View, StyleSheet } from "@react-pdf/renderer";
 import { format } from "date-fns";
 
@@ -75,6 +76,7 @@ interface InvoiceHeaderProps {
   saleDate: string;
   acknowledgedBy?: string;
   branch: string;
+  branch_prefix?: string;
 }
 
 export function InvoiceHeader({
@@ -82,14 +84,18 @@ export function InvoiceHeader({
   saleDate,
   acknowledgedBy,
   branch,
+  branch_prefix,
 }: InvoiceHeaderProps) {
   const getBranchInfo = () => {
-    if (branch === "Kelapa Dua") {
+    // Default to checking branch if branch_prefix is not provided
+    const prefix = branch_prefix || (branch === "Kelapa Dua" ? "KD" : "GS");
+
+    if (prefix === "KD") {
       return {
         storeName: "OPTIK LOOV (Kelapa Dua)",
         address: [
-          "Ruko Kelapa Dua Square Blok D5 No. 8",
-          "Jl. KH. Dewantara No.1, RT 001/006, Bencongan Kelapa Dua Kabupaten Tangerang, 15810",
+          "Ruko Sentra Niaga, Jl. Danau Klp. Dua Raya No. 11,",
+          "Klp. Dua, Kec. Klp. Dua, Kabupaten Tangerang, Banten 15810",
         ],
         phone: "0812 9063 5568",
       };
@@ -98,7 +104,7 @@ export function InvoiceHeader({
     return {
       storeName: "OPTIK LOOV",
       address: [
-        "Ruko Downtown Drive, kecamatan No.016 Blok DDBLV, Medang,",
+        "Ruko Downtown Drive, Kecamatan No. 016 Blok DDBLV, Medang,",
         "Kec. Pagedangan, Kabupaten Tangerang, Banten 15334",
       ],
       phone: "0812 8333 5568",
