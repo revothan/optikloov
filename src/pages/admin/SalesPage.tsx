@@ -1,10 +1,17 @@
+
 import { SalesReport } from "@/components/SalesReport";
+import { useUser } from "@/hooks/useUser";
 
 export default function SalesPage() {
+  const { data: user } = useUser();
+  
+  const isAdmin = user?.role === "admin";
+  const userBranch = user?.branch || "";
+
   return (
     <div className="p-8">
       <h2 className="text-xl font-semibold mb-6">Sales Report</h2>
-      <SalesReport />
+      <SalesReport userBranch={userBranch} isAdmin={isAdmin} />
     </div>
   );
 }
