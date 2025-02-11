@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, Loader2, Search, Plus } from "lucide-react";
@@ -156,7 +157,6 @@ export function ProductSelect({
 
   const filteredProducts = useMemo(() => {
     if (!Array.isArray(products)) return [];
-
     return products.filter((product) =>
       product.name?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
@@ -199,12 +199,6 @@ export function ProductSelect({
 
     console.log("ProductSelect - Product to Select:", productToSelect);
     onProductSelect(productToSelect);
-    
-    // Reset filters but don't clear the product list
-    setSearchQuery("");
-    if (product.id.includes("-")) {
-      setSelectedCustomName(product.name);
-    }
     setOpen(false);
   };
 
@@ -218,7 +212,6 @@ export function ProductSelect({
         return;
       }
 
-      // Get current user session
       const {
         data: { session },
         error: sessionError,
@@ -228,7 +221,6 @@ export function ProductSelect({
         return;
       }
 
-      // Get the lens type details
       const { data: lensType, error: lensTypeError } = await supabase
         .from("lens_types")
         .select("*")
@@ -243,7 +235,6 @@ export function ProductSelect({
 
       console.log("2. Found lens type:", lensType);
 
-      // Check if we already have a product for this specific lens combination
       const { data: existingProduct, error: queryError } = await supabase
         .from("products")
         .select("*")
@@ -259,7 +250,6 @@ export function ProductSelect({
         console.log("3. Found existing product:", existingProduct);
         productId = existingProduct.id;
       } else {
-        // Create a new product entry for this lens combination
         const { data: newProduct, error: insertError } = await supabase
           .from("products")
           .insert({
@@ -269,10 +259,10 @@ export function ProductSelect({
             lens_type_id: stock.lens_type_id,
             lens_sph: stock.sph,
             lens_cyl: stock.cyl,
-            brand: lensType.material, // Use material as brand for better organization
-            user_id: session.user.id, // Important: Set the user_id
-            published: true, // Optional: Set if needed
-            track_inventory: false, // Since we track through lens_stock
+            brand: lensType.material,
+            user_id: session.user.id,
+            published: true,
+            track_inventory: false,
           })
           .select()
           .single();
@@ -285,7 +275,6 @@ export function ProductSelect({
         productId = newProduct.id;
       }
 
-      // Create the final product object
       const product = {
         id: productId,
         name: productName,
@@ -326,7 +315,7 @@ export function ProductSelect({
           store_price: 0,
           category: customProductCategory,
           user_id: userData.user.id,
-          branch: userBranch, // Set branch based on user's branch
+          branch: userBranch,
         });
 
         if (insertError) throw insertError;
@@ -343,7 +332,6 @@ export function ProductSelect({
         setCustomProductName("");
         setCustomProductCategory("Others");
         setIsCustomProduct(false);
-        setOpen(false);
         toast.success("Custom product created successfully");
       } catch (error) {
         console.error("Error creating custom product:", error);
@@ -354,8 +342,8 @@ export function ProductSelect({
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
-    if (!newOpen) {
-      // Only reset filters when closing
+    // Reset all filters and states when opening the dialog
+    if (newOpen) {
       setSearchQuery("");
       setLensTypeFilter("");
       setMaterialFilter("");
@@ -364,6 +352,9 @@ export function ProductSelect({
       setIsCustomProduct(false);
       setCustomProductName("");
       setCustomProductCategory("Others");
+      setActiveTab("products");
+      // Refetch products when opening the dialog
+      refetch();
     }
   };
 
