@@ -1,6 +1,8 @@
 
 import { SalesReport } from "@/components/SalesReport";
 import { useUser } from "@/hooks/useUser";
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function SalesPage() {
   const { data: user } = useUser();
@@ -11,7 +13,9 @@ export default function SalesPage() {
   return (
     <div className="p-8">
       <h2 className="text-xl font-semibold mb-6">Sales Report</h2>
-      <SalesReport userBranch={userBranch} isAdmin={isAdmin} />
+      <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin" />}>
+        <SalesReport userBranch={userBranch} isAdmin={isAdmin} />
+      </Suspense>
     </div>
   );
 }

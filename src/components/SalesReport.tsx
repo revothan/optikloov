@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -9,8 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useUser } from "@/hooks/useUser"; // Add this hook to get user data
-
 import {
   Select,
   SelectContent,
@@ -38,8 +37,9 @@ import {
   startOfMonth,
   endOfMonth,
 } from "date-fns";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface SalesReportProps {
   userBranch: string;
@@ -54,41 +54,55 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
     from: startOfToday(),
     to: startOfToday(),
   });
+  const [isPending, startTransition] = useTransition();
 
   const { data: salesData, isLoading } = useQuery({
     queryKey: ["sales-report", dateRange, userBranch],
     queryFn: async () => {
-      let query = supabase
-        .from("payments")
-        .select(
-          `
-          *,
-          invoices (
-            id,
-            invoice_number,
-            customer_name,
-            invoice_items (
-              products (
-                name
+      try {
+        let query = supabase
+          .from("payments")
+          .select(
+            `
+            *,
+            invoices (
+              id,
+              invoice_number,
+              customer_name,
+              invoice_items (
+                products (
+                  name
+                )
               )
             )
+          `,
           )
-        `,
-        )
-        .gte("payment_date", startOfDay(dateRange.from).toISOString())
-        .lte("payment_date", endOfDay(dateRange.to).toISOString())
-        .order("payment_date", { ascending: false });
+          .gte("payment_date", startOfDay(dateRange.from).toISOString())
+          .lte("payment_date", endOfDay(dateRange.to).toISOString())
+          .order("payment_date", { ascending: false });
 
-      // Apply branch filter if user is not admin
-      if (!isAdmin) {
-        query = query.eq("branch", userBranch);
+        // Apply branch filter if user is not admin
+        if (!isAdmin) {
+          query = query.eq("branch", userBranch);
+        }
+
+        const { data: payments, error: paymentsError } = await query;
+
+        if (paymentsError) {
+          console.error("Error fetching sales data:", paymentsError);
+          toast.error("Failed to fetch sales data");
+          throw paymentsError;
+        }
+
+        return payments || [];
+      } catch (error) {
+        console.error("Error in sales report query:", error);
+        toast.error("Failed to load sales report");
+        throw error;
       }
-
-      const { data: payments, error: paymentsError } = await query;
-
-      if (paymentsError) throw paymentsError;
-      return payments;
     },
+    staleTime: 30000, // Cache data for 30 seconds
+    retry: 1,
   });
 
   // Calculate summary statistics
@@ -111,34 +125,36 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
   };
 
   const handleRangeSelect = (range: string) => {
-    const today = new Date();
-    switch (range) {
-      case "today":
-        setDateRange({ from: startOfToday(), to: startOfToday() });
-        break;
-      case "yesterday":
-        const yesterday = sub(today, { days: 1 });
-        setDateRange({ from: startOfDay(yesterday), to: endOfDay(yesterday) });
-        break;
-      case "last7days":
-        setDateRange({
-          from: startOfDay(sub(today, { days: 6 })),
-          to: endOfDay(today),
-        });
-        break;
-      case "thisWeek":
-        setDateRange({
-          from: startOfWeek(today, { weekStartsOn: 1 }),
-          to: endOfWeek(today, { weekStartsOn: 1 }),
-        });
-        break;
-      case "thisMonth":
-        setDateRange({
-          from: startOfMonth(today),
-          to: endOfMonth(today),
-        });
-        break;
-    }
+    startTransition(() => {
+      const today = new Date();
+      switch (range) {
+        case "today":
+          setDateRange({ from: startOfToday(), to: startOfToday() });
+          break;
+        case "yesterday":
+          const yesterday = sub(today, { days: 1 });
+          setDateRange({ from: startOfDay(yesterday), to: endOfDay(yesterday) });
+          break;
+        case "last7days":
+          setDateRange({
+            from: startOfDay(sub(today, { days: 6 })),
+            to: endOfDay(today),
+          });
+          break;
+        case "thisWeek":
+          setDateRange({
+            from: startOfWeek(today, { weekStartsOn: 1 }),
+            to: endOfWeek(today, { weekStartsOn: 1 }),
+          });
+          break;
+        case "thisMonth":
+          setDateRange({
+            from: startOfMonth(today),
+            to: endOfMonth(today),
+          });
+          break;
+      }
+    });
   };
 
   if (isLoading) {
@@ -171,7 +187,11 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={cn("justify-start text-left font-normal w-[280px]")}
+                className={cn(
+                  "justify-start text-left font-normal w-[280px]",
+                  isPending && "opacity-50 cursor-wait",
+                )}
+                disabled={isPending}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {dateRange?.from ? (
@@ -197,9 +217,11 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
                   to: dateRange.to,
                 }}
                 onSelect={(range) => {
-                  if (range?.from && range?.to) {
-                    setDateRange({ from: range.from, to: range.to });
-                  }
+                  startTransition(() => {
+                    if (range?.from && range?.to) {
+                      setDateRange({ from: range.from, to: range.to });
+                    }
+                  });
                 }}
                 numberOfMonths={2}
               />
