@@ -81,7 +81,7 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
           .lte("payment_date", endOfDay(dateRange.to).toISOString())
           .order("payment_date", { ascending: false });
 
-        if (!isAdmin) {
+        if (!isAdmin && userBranch) {
           query = query.eq("branch", userBranch);
         }
 
@@ -296,6 +296,7 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
               <TableHead>Payment Type</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Payment Category</TableHead>
+              {isAdmin && <TableHead>Branch</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -319,11 +320,12 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
                 <TableCell>
                   {payment.is_down_payment ? "Down Payment" : "Final Payment"}
                 </TableCell>
+                {isAdmin && <TableCell>{payment.branch}</TableCell>}
               </TableRow>
             ))}
             {!salesData?.length && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4">
+                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center py-4">
                   No transactions found for the selected period
                 </TableCell>
               </TableRow>

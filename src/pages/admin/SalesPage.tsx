@@ -3,12 +3,13 @@ import { SalesReport } from "@/components/SalesReport";
 import { useUser } from "@/hooks/useUser";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
+import { normalizeBranchName } from "@/lib/branch-utils";
 
 export default function SalesPage() {
   const { data: user } = useUser();
   
   const isAdmin = user?.role === "admin";
-  const userBranch = user?.branch || "";
+  const userBranch = user?.branch ? normalizeBranchName(user.branch) : "";
 
   return (
     <div className="p-8">
