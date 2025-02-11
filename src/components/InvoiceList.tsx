@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody } from "@/components/ui/table";
@@ -16,6 +17,7 @@ const ITEMS_PER_PAGE = 10;
 export default function InvoiceList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
   const session = useSession();
 
   const {
@@ -86,7 +88,7 @@ export default function InvoiceList() {
         if (invoicesError) throw invoicesError;
 
         return {
-          data,
+          data: data || [],
           total: count || 0,
         };
       } catch (err) {
@@ -96,7 +98,7 @@ export default function InvoiceList() {
     },
     enabled: !!session?.user?.id,
     staleTime: 30000,
-    cacheTime: 60000,
+    gcTime: 60000,
   });
 
   const handleDelete = async (id: string) => {
@@ -122,9 +124,22 @@ export default function InvoiceList() {
     }
   };
 
+  const handleSearchChange = (value: string) => {
+    startTransition(() => {
+      setSearchQuery(value);
+      setCurrentPage(1);
+    });
+  };
+
+  const handlePageChange = (page: number) => {
+    startTransition(() => {
+      setCurrentPage(page);
+    });
+  };
+
   const totalPages = Math.ceil((invoices?.total || 0) / ITEMS_PER_PAGE);
 
-  if (isLoading) {
+  if (isLoading || isPending) {
     return (
       <div className="flex items-center justify-center h-48">
         <Loader2 className="h-6 w-6 animate-spin" />
@@ -138,7 +153,7 @@ export default function InvoiceList() {
         <div className="w-72">
           <SearchInput
             value={searchQuery}
-            onChange={setSearchQuery}
+            onChange={handleSearchChange}
             placeholder="Search invoice number..."
           />
         </div>
@@ -164,7 +179,7 @@ export default function InvoiceList() {
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            onPageChange={handlePageChange}
           />
         </div>
       )}
