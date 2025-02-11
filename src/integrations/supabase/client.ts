@@ -48,17 +48,16 @@ export const getUserProfile = async () => {
       .from('profiles')
       .select('role, branch')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching user profile:', error);
-      return null;
+      throw error;
     }
 
     return profile;
   } catch (err) {
     console.error('Failed to get user profile:', err);
-    return null;
+    throw err;
   }
 };
-
