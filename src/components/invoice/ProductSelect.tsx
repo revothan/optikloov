@@ -1,5 +1,5 @@
-import { useState, useMemo, useQueryClient } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, Search, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -107,20 +107,26 @@ export function ProductSelect({
   } = useQuery({
     queryKey: ["products", userProfile?.branch, open],
     queryFn: async () => {
-      console.log("Fetching products for branch:", userProfile?.branch);
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, name, store_price, category, stock_qty, track_inventory")
-        .eq("branch", userProfile?.branch);
+      try {
+        console.log("Fetching products for branch:", userProfile?.branch);
+        const { data, error } = await supabase
+          .from("products")
+          .select("id, name, store_price, category, stock_qty, track_inventory")
+          .eq("branch", userProfile?.branch);
 
-      if (error) {
-        console.error("Error fetching products:", error);
-        throw error;
+        if (error) {
+          console.error("Error fetching products:", error);
+          throw error;
+        }
+        console.log("Fetched products:", data);
+        return data || [];
+      } catch (error) {
+        console.error("Products fetch error:", error);
+        return [];
       }
-      console.log("Fetched products:", data);
-      return data || [];
     },
     enabled: !!userProfile?.branch && open,
+    staleTime: 1000,
   });
 
   const { data: lensStock = [], isLoading: isLoadingLensStock } = useQuery({
