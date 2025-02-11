@@ -69,7 +69,6 @@ export function ProductSelect({
   onChange,
   onProductSelect,
 }: ProductSelectProps) {
-  // Add userProfile query
   const { data: userProfile } = useQuery({
     queryKey: ["userProfile"],
     queryFn: async () => {
@@ -86,6 +85,7 @@ export function ProductSelect({
       return data;
     },
   });
+
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [lensTypeFilter, setLensTypeFilter] = useState("");
@@ -128,10 +128,7 @@ export function ProductSelect({
           sph,
           cyl,
           quantity,
-   
-
-
-lens_type_id,
+          lens_type_id,
           lens_type:lens_type_id (
             name,
             material,
@@ -320,12 +317,15 @@ lens_type_id,
           return;
         }
 
+        const userBranch = userProfile?.branch || "Gading Serpong";
+
         const { error: insertError } = await supabase.from("products").insert({
           id: customProductId,
           name: customProductName,
           store_price: 0,
           category: customProductCategory,
           user_id: userData.user.id,
+          branch: userBranch, // Set branch based on user's branch
         });
 
         if (insertError) throw insertError;

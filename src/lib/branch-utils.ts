@@ -1,12 +1,15 @@
+
 export function normalizeBranchName(branch: string): string {
   const branchMap = {
     gadingserpongbranch: "Gading Serpong",
     kelapaduabranch: "Kelapa Dua",
+    gs: "Gading Serpong",
+    kd: "Kelapa Dua",
     "Gading Serpong": "Gading Serpong",
     "Kelapa Dua": "Kelapa Dua",
   };
 
-  return branchMap[branch] || branch;
+  return branchMap[branch.toLowerCase()] || branch;
 }
 
 export function getBranchPrefix(branch: string): string {
