@@ -369,7 +369,14 @@ export function ProductSelect({
 
   const getDisplayName = () => {
     if (isLoadingProducts) return "Loading...";
-    if (value?.includes("-")) return selectedCustomName;
+    if (isProductsError) return "Error loading products";
+    
+    const selectedProduct = Array.isArray(products) 
+      ? products.find((product) => product.id === value)
+      : null;
+      
+    console.log("Selected product for display:", selectedProduct);
+    
     return selectedProduct?.name || "Select product...";
   };
 
