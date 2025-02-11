@@ -9,6 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useUser } from "@/hooks/useUser";
+
 import {
   Select,
   SelectContent,
@@ -36,17 +38,10 @@ import {
   startOfMonth,
   endOfMonth,
 } from "date-fns";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { normalizeBranchName } from "@/lib/branch-utils";
 
-interface SalesReportProps {
-  userBranch: string;
-  isAdmin: boolean;
-}
-
-export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
+export function SalesReport() {
   const [dateRange, setDateRange] = useState<{
     from: Date;
     to: Date;
@@ -54,56 +49,59 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
     from: startOfToday(),
     to: startOfToday(),
   });
-  const [isPending, startTransition] = useTransition();
+
+  // Get user's profile to determine their branch
+  const { data: userProfile, isLoading: isLoadingProfile } = useUser();
+
+  const getBranchFromRole = (role: string | undefined) => {
+    switch (role) {
+      case "gadingserpongbranch":
+        return "Gading Serpong";
+      case "kelapaduabranch":
+        return "Kelapa Dua";
+      default:
+        return null;
+    }
+  };
+
+  const userBranch = getBranchFromRole(userProfile?.role);
+  const isAdmin = userProfile?.role === "admin";
 
   const { data: salesData, isLoading } = useQuery({
     queryKey: ["sales-report", dateRange, userBranch],
     queryFn: async () => {
-      try {
-        let query = supabase
-          .from("payments")
-          .select(
-            `
-            *,
-            invoices (
-              id,
-              invoice_number,
-              customer_name,
-              invoice_items (
-                products (
-                  name
-                )
+      let query = supabase
+        .from("payments")
+        .select(
+          `
+          *,
+          invoices (
+            id,
+            invoice_number,
+            customer_name,
+            invoice_items (
+              products (
+                name
               )
             )
-          `,
           )
-          .gte("payment_date", startOfDay(dateRange.from).toISOString())
-          .lte("payment_date", endOfDay(dateRange.to).toISOString())
-          .order("payment_date", { ascending: false });
+        `,
+        )
+        .gte("payment_date", startOfDay(dateRange.from).toISOString())
+        .lte("payment_date", endOfDay(dateRange.to).toISOString())
+        .order("payment_date", { ascending: false });
 
-        // If not admin and userBranch is present, filter by branch
-        if (!isAdmin && userBranch) {
-          // Normalize the branch name in the query to match the database format
-          query = query.eq("branch", userBranch);
-        }
-
-        const { data: payments, error: paymentsError } = await query;
-
-        if (paymentsError) {
-          console.error("Error fetching sales data:", paymentsError);
-          toast.error("Failed to fetch sales data");
-          throw paymentsError;
-        }
-
-        return payments || [];
-      } catch (error) {
-        console.error("Error in sales report query:", error);
-        toast.error("Failed to load sales report");
-        throw error;
+      // Apply branch filter if user is not admin
+      if (!isAdmin && userBranch) {
+        query = query.eq("branch", userBranch);
       }
+
+      const { data: payments, error: paymentsError } = await query;
+
+      if (paymentsError) throw paymentsError;
+      return payments;
     },
-    staleTime: 30000,
-    retry: 1,
+    enabled: !!userProfile, // Only run query when user profile is loaded
   });
 
   // Calculate summary statistics
@@ -126,39 +124,37 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
   };
 
   const handleRangeSelect = (range: string) => {
-    startTransition(() => {
-      const today = new Date();
-      switch (range) {
-        case "today":
-          setDateRange({ from: startOfToday(), to: startOfToday() });
-          break;
-        case "yesterday":
-          const yesterday = sub(today, { days: 1 });
-          setDateRange({ from: startOfDay(yesterday), to: endOfDay(yesterday) });
-          break;
-        case "last7days":
-          setDateRange({
-            from: startOfDay(sub(today, { days: 6 })),
-            to: endOfDay(today),
-          });
-          break;
-        case "thisWeek":
-          setDateRange({
-            from: startOfWeek(today, { weekStartsOn: 1 }),
-            to: endOfWeek(today, { weekStartsOn: 1 }),
-          });
-          break;
-        case "thisMonth":
-          setDateRange({
-            from: startOfMonth(today),
-            to: endOfMonth(today),
-          });
-          break;
-      }
-    });
+    const today = new Date();
+    switch (range) {
+      case "today":
+        setDateRange({ from: startOfToday(), to: startOfToday() });
+        break;
+      case "yesterday":
+        const yesterday = sub(today, { days: 1 });
+        setDateRange({ from: startOfDay(yesterday), to: endOfDay(yesterday) });
+        break;
+      case "last7days":
+        setDateRange({
+          from: startOfDay(sub(today, { days: 6 })),
+          to: endOfDay(today),
+        });
+        break;
+      case "thisWeek":
+        setDateRange({
+          from: startOfWeek(today, { weekStartsOn: 1 }),
+          to: endOfWeek(today, { weekStartsOn: 1 }),
+        });
+        break;
+      case "thisMonth":
+        setDateRange({
+          from: startOfMonth(today),
+          to: endOfMonth(today),
+        });
+        break;
+    }
   };
 
-  if (isLoading) {
+  if (isLoadingProfile) {
     return (
       <div className="flex justify-center items-center p-8">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -168,13 +164,17 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
 
   return (
     <div className="space-y-6">
+      {/* Branch indicator for admin */}
+      {isAdmin && (
+        <div className="text-sm text-muted-foreground">
+          Showing sales data for all branches
+        </div>
+      )}
+
       {/* Date Range Controls */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex gap-2">
-          <Select 
-            onValueChange={(value) => startTransition(() => handleRangeSelect(value))} 
-            defaultValue="today"
-          >
+          <Select onValueChange={handleRangeSelect} defaultValue="today">
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select date range" />
             </SelectTrigger>
@@ -191,11 +191,7 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={cn(
-                  "justify-start text-left font-normal w-[280px]",
-                  isPending && "opacity-50 cursor-wait",
-                )}
-                disabled={isPending}
+                className={cn("justify-start text-left font-normal w-[280px]")}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {dateRange?.from ? (
@@ -221,11 +217,9 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
                   to: dateRange.to,
                 }}
                 onSelect={(range) => {
-                  startTransition(() => {
-                    if (range?.from && range?.to) {
-                      setDateRange({ from: range.from, to: range.to });
-                    }
-                  });
+                  if (range?.from && range?.to) {
+                    setDateRange({ from: range.from, to: range.to });
+                  }
                 }}
                 numberOfMonths={2}
               />
@@ -327,7 +321,10 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
             ))}
             {!salesData?.length && (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center py-4">
+                <TableCell
+                  colSpan={isAdmin ? 8 : 7}
+                  className="text-center py-4"
+                >
                   No transactions found for the selected period
                 </TableCell>
               </TableRow>
