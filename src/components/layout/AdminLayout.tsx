@@ -40,7 +40,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               {!isCollapsed && (
                 <>
                   <h1 className="text-xl font-bold">Admin</h1>
-                  <p className="text-sm text-gray-500">{userProfile?.branch}</p>
+                  <p className="text-sm text-gray-500">
+                    Halo Tim {userProfile?.branch}! Untungnya bumi masih berputar, untungnya kita tak pilih menyerah. Semangat kerjanya ya kamu.
+                  </p>
                 </>
               )}
               <Button
