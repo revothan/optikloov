@@ -28,12 +28,12 @@ interface JobOrderViewRow {
   branch: string;
   branch_prefix: string;
   item_id: string;
-  right_eye_mpd: string | null;
-  left_eye_mpd: string | null;
-  right_eye_sph: string | null;
-  right_eye_cyl: string | null;
-  left_eye_sph: string | null;
-  left_eye_cyl: string | null;
+  right_eye_mpd: number | null;
+  left_eye_mpd: number | null;
+  right_eye_sph: number | null;
+  right_eye_cyl: number | null;
+  left_eye_sph: number | null;
+  left_eye_cyl: number | null;
 }
 
 interface GroupedJobOrder {
@@ -111,7 +111,7 @@ export function JobOrderList() {
           throw error;
         }
 
-        const groupedData = (data as JobOrderViewRow[] || []).reduce((acc: Record<string, GroupedJobOrder>, item) => {
+        const groupedData = (data as JobOrderViewRow[]).reduce((acc: Record<string, GroupedJobOrder>, item) => {
           if (!acc[item.invoice_id]) {
             acc[item.invoice_id] = {
               id: item.invoice_id,
@@ -126,12 +126,12 @@ export function JobOrderList() {
           }
           acc[item.invoice_id].invoice_items.push({
             id: item.item_id,
-            right_eye_mpd: item.right_eye_mpd,
-            left_eye_mpd: item.left_eye_mpd,
-            right_eye_sph: item.right_eye_sph,
-            right_eye_cyl: item.right_eye_cyl,
-            left_eye_sph: item.left_eye_sph,
-            left_eye_cyl: item.left_eye_cyl,
+            right_eye_mpd: item.right_eye_mpd?.toString() || null,
+            left_eye_mpd: item.left_eye_mpd?.toString() || null,
+            right_eye_sph: item.right_eye_sph?.toString() || null,
+            right_eye_cyl: item.right_eye_cyl?.toString() || null,
+            left_eye_sph: item.left_eye_sph?.toString() || null,
+            left_eye_cyl: item.left_eye_cyl?.toString() || null,
           });
           return acc;
         }, {});

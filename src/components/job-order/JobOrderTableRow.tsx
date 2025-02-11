@@ -27,6 +27,7 @@ interface JobOrderTableRowProps {
     customer_name: string;
     customer_phone?: string;
     branch: string;
+    branch_prefix: string;
   };
 }
 
@@ -71,7 +72,19 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
           .eq("invoice_id", invoice.id);
 
         if (error) throw error;
-        setItems(invoiceItems || []);
+        
+        const formattedItems: InvoiceItem[] = (invoiceItems || []).map(item => ({
+          id: item.id,
+          right_eye_mpd: item.right_eye_mpd?.toString() || null,
+          left_eye_mpd: item.left_eye_mpd?.toString() || null,
+          right_eye_sph: item.right_eye_sph?.toString() || null,
+          right_eye_cyl: item.right_eye_cyl?.toString() || null,
+          left_eye_sph: item.left_eye_sph?.toString() || null,
+          left_eye_cyl: item.left_eye_cyl?.toString() || null,
+          products: item.products,
+        }));
+        
+        setItems(formattedItems);
       } catch (error) {
         console.error("Error loading invoice items:", error);
         toast.error("Failed to load invoice items");
