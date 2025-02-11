@@ -199,12 +199,13 @@ export function ProductSelect({
 
     console.log("ProductSelect - Product to Select:", productToSelect);
     onProductSelect(productToSelect);
-
-    setOpen(false);
+    
+    // Reset filters but don't clear the product list
     setSearchQuery("");
     if (product.id.includes("-")) {
       setSelectedCustomName(product.name);
     }
+    setOpen(false);
   };
 
   const handleLensStockSelect = async (stock: LensStock) => {
@@ -351,6 +352,21 @@ export function ProductSelect({
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      // Only reset filters when closing
+      setSearchQuery("");
+      setLensTypeFilter("");
+      setMaterialFilter("");
+      setSphFilter("");
+      setCylFilter("");
+      setIsCustomProduct(false);
+      setCustomProductName("");
+      setCustomProductCategory("Others");
+    }
+  };
+
   const getDisplayName = () => {
     if (isLoadingProducts) return "Loading...";
     if (value?.includes("-")) return selectedCustomName;
@@ -376,7 +392,7 @@ export function ProductSelect({
   return (
     <FormItem className="flex flex-col">
       <FormLabel>Product</FormLabel>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
           <FormControl>
             <Button
