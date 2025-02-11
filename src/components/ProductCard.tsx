@@ -1,11 +1,14 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 import { Tables } from "@/integrations/supabase/types";
+import { ProductDialog } from "./ProductDialog";
+import { Pencil } from "lucide-react";
 
 interface ProductCardProps {
-  product: Pick<Tables<"products">, "id" | "name" | "brand" | "image_url" | "online_price" | "category">;
+  product: Tables<"products">;
   onDelete?: (id: string) => void;
 }
 
@@ -34,14 +37,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) =
             <p className="font-medium text-gray-900">
               {formatPrice(product.online_price)}
             </p>
-            {onDelete && (
-              <button
-                onClick={() => onDelete(product.id)}
-                className="text-red-600 hover:text-red-800 text-sm"
-              >
-                Delete
-              </button>
-            )}
+            <div className="flex gap-2">
+              <ProductDialog 
+                mode="edit" 
+                product={product}
+                trigger={
+                  <Button variant="outline" size="sm">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                }
+              />
+              {onDelete && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onDelete(product.id)}
+                >
+                  Delete
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
