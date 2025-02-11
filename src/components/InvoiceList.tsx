@@ -127,7 +127,7 @@ export default function InvoiceList() {
   const handleSearchChange = (value: string) => {
     startTransition(() => {
       setSearchQuery(value);
-      setCurrentPage(1);
+      setCurrentPage(1); // Reset to first page on search
     });
   };
 
@@ -139,10 +139,11 @@ export default function InvoiceList() {
 
   const totalPages = Math.ceil((invoices?.total || 0) / ITEMS_PER_PAGE);
 
-  if (isLoading || isPending) {
+  if (error) {
+    toast.error("Failed to load invoices");
     return (
-      <div className="flex items-center justify-center h-48">
-        <Loader2 className="h-6 w-6 animate-spin" />
+      <div className="flex items-center justify-center h-48 text-red-500">
+        Error loading invoices
       </div>
     );
   }
@@ -155,33 +156,50 @@ export default function InvoiceList() {
             value={searchQuery}
             onChange={handleSearchChange}
             placeholder="Search invoice number..."
+            disabled={isPending}
           />
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <InvoiceTableHeader />
-          <TableBody>
-            {invoices?.data.map((invoice) => (
-              <InvoiceTableRow
-                key={invoice.id}
-                invoice={invoice}
-                onDelete={handleDelete}
+      {(isLoading || isPending) ? (
+        <div className="flex items-center justify-center h-48">
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </div>
+      ) : (
+        <>
+          <div className="rounded-md border">
+            <Table>
+              <InvoiceTableHeader />
+              <TableBody>
+                {invoices?.data.map((invoice) => (
+                  <InvoiceTableRow
+                    key={invoice.id}
+                    invoice={invoice}
+                    onDelete={handleDelete}
+                  />
+                ))}
+                {invoices?.data.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-4 text-center text-muted-foreground">
+                      No invoices found
+                    </td>
+                  </tr>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-4">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                disabled={isPending}
               />
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
