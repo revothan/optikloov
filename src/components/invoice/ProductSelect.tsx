@@ -1,5 +1,4 @@
-
-import { useState, useMemo } from "react";
+import { useState, useMemo, useQueryClient } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, Loader2, Search, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -99,23 +98,29 @@ export function ProductSelect({
   const [selectedCustomName, setSelectedCustomName] = useState("");
   const [activeTab, setActiveTab] = useState("products");
 
+  const queryClient = useQueryClient();
+
   const {
     data: products = [],
     isLoading: isLoadingProducts,
     isError: isProductsError,
-    refetch,
   } = useQuery({
-    queryKey: ["products", userProfile?.branch],
+    queryKey: ["products", userProfile?.branch, open],
     queryFn: async () => {
+      console.log("Fetching products for branch:", userProfile?.branch);
       const { data, error } = await supabase
         .from("products")
         .select("id, name, store_price, category, stock_qty, track_inventory")
         .eq("branch", userProfile?.branch);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching products:", error);
+        throw error;
+      }
+      console.log("Fetched products:", data);
       return data || [];
     },
-    enabled: !!userProfile?.branch,
+    enabled: !!userProfile?.branch && open,
   });
 
   const { data: lensStock = [], isLoading: isLoadingLensStock } = useQuery({
@@ -342,7 +347,6 @@ export function ProductSelect({
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
-    // Reset all filters and states when opening the dialog
     if (newOpen) {
       setSearchQuery("");
       setLensTypeFilter("");
@@ -353,8 +357,7 @@ export function ProductSelect({
       setCustomProductName("");
       setCustomProductCategory("Others");
       setActiveTab("products");
-      // Refetch products when opening the dialog
-      refetch();
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     }
   };
 
