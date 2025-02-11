@@ -30,8 +30,24 @@ interface JobOrderTableRowProps {
   };
 }
 
+interface InvoiceItem {
+  id: string;
+  right_eye_mpd: string | null;
+  left_eye_mpd: string | null;
+  right_eye_sph: string | null;
+  right_eye_cyl: string | null;
+  left_eye_sph: string | null;
+  left_eye_cyl: string | null;
+  products?: {
+    id: string;
+    name: string;
+    brand: string;
+    category: string;
+  };
+}
+
 export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<InvoiceItem[]>([]);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

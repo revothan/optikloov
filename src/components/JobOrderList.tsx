@@ -19,6 +19,42 @@ import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;
 
+interface JobOrderViewRow {
+  invoice_id: string;
+  invoice_number: string;
+  sale_date: string;
+  customer_name: string;
+  customer_phone: string | null;
+  branch: string;
+  branch_prefix: string;
+  item_id: string;
+  right_eye_mpd: string | null;
+  left_eye_mpd: string | null;
+  right_eye_sph: string | null;
+  right_eye_cyl: string | null;
+  left_eye_sph: string | null;
+  left_eye_cyl: string | null;
+}
+
+interface GroupedJobOrder {
+  id: string;
+  invoice_number: string;
+  sale_date: string;
+  customer_name: string;
+  customer_phone?: string;
+  branch: string;
+  branch_prefix: string;
+  invoice_items: Array<{
+    id: string;
+    right_eye_mpd: string | null;
+    left_eye_mpd: string | null;
+    right_eye_sph: string | null;
+    right_eye_cyl: string | null;
+    left_eye_sph: string | null;
+    left_eye_cyl: string | null;
+  }>;
+}
+
 export function JobOrderList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,7 +69,6 @@ export function JobOrderList() {
       }
 
       try {
-        // Get user's profile to check role
         const { data: userProfile, error: profileError } = await supabase
           .from("profiles")
           .select("role")
@@ -50,23 +85,19 @@ export function JobOrderList() {
           throw new Error("User profile not found");
         }
 
-        // Query the job_orders_view
         let query = supabase
           .from("job_orders_view")
           .select("*", { count: "exact" });
 
-        // Apply search filter if exists
         if (searchQuery) {
           query = query.ilike("invoice_number", `%${searchQuery}%`);
         }
 
-        // Apply branch filter based on role
         if (userProfile.role === "gadingserpongbranch") {
           query = query.eq("branch", "Gading Serpong");
         } else if (userProfile.role === "kelapaduabranch") {
           query = query.eq("branch", "Kelapa Dua");
         }
-        // Admin sees all branches
 
         const { data, error, count } = await query
           .order("sale_date", { ascending: false })
@@ -80,16 +111,14 @@ export function JobOrderList() {
           throw error;
         }
 
-        // Group by invoice_id to combine multiple items from same invoice
-        const groupedData = (data || []).reduce((acc: any, item: any) => {
+        const groupedData = (data as JobOrderViewRow[] || []).reduce((acc: Record<string, GroupedJobOrder>, item) => {
           if (!acc[item.invoice_id]) {
             acc[item.invoice_id] = {
               id: item.invoice_id,
               invoice_number: item.invoice_number,
               sale_date: item.sale_date,
               customer_name: item.customer_name,
-              customer_phone: item.customer_phone,
-              notes: item.notes,
+              customer_phone: item.customer_phone || undefined,
               branch: item.branch,
               branch_prefix: item.branch_prefix,
               invoice_items: [],
@@ -117,6 +146,7 @@ export function JobOrderList() {
       }
     },
     enabled: !!session?.user?.id,
+    gcTime: 5000,
   });
 
   const totalPages = Math.ceil(result.total / ITEMS_PER_PAGE);
