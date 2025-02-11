@@ -29,31 +29,43 @@ export function CustomerTable() {
   const { data: result = { data: [], total: 0 }, isLoading } = useQuery({
     queryKey: ["customers", currentPage, searchQuery],
     queryFn: async () => {
-      let query = supabase.from("customers").select("*", { count: "exact" });
+      try {
+        let query = supabase.from("customers").select("*", { count: "exact" });
 
-      if (searchQuery) {
-        query = query.ilike("phone", `%${searchQuery}%`);
+        if (searchQuery) {
+          query = query.ilike("phone", `%${searchQuery}%`);
+        }
+
+        const { data, error, count } = await query
+          .order("created_at", { ascending: false })
+          .range(
+            (currentPage - 1) * ITEMS_PER_PAGE,
+            currentPage * ITEMS_PER_PAGE - 1,
+          );
+
+        if (error) throw error;
+        return { data: data || [], total: count || 0 };
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+        throw error;
       }
-
-      const { data, error, count } = await query
-        .order("created_at", { ascending: false })
-        .range(
-          (currentPage - 1) * ITEMS_PER_PAGE,
-          currentPage * ITEMS_PER_PAGE - 1,
-        );
-
-      if (error) throw error;
-      return { data, total: count || 0 };
     },
+    gcTime: 5000,
+    retry: 1,
   });
 
   const totalPages = Math.ceil(result.total / ITEMS_PER_PAGE);
 
   const handleSearchChange = (value: string) => {
-    // Wrap the state update in startTransition
     startTransition(() => {
       setSearchQuery(value);
       setCurrentPage(1); // Reset to first page on search
+    });
+  };
+
+  const handlePageChange = (page: number) => {
+    startTransition(() => {
+      setCurrentPage(page);
     });
   };
 
@@ -179,7 +191,7 @@ export function CustomerTable() {
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={setCurrentPage}
+              onPageChange={handlePageChange}
             />
           </div>
         )}
