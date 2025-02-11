@@ -18,6 +18,7 @@ import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
 import { MessageTemplateDialog } from "@/components/admin/MessageTemplateDialog";
 import { SearchInput } from "./common/SearchInput";
 import { Pagination } from "@/components/ui/pagination";
+import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -30,12 +31,17 @@ interface Customer {
   created_at: string;
 }
 
+interface QueryResult {
+  data: Customer[];
+  total: number;
+}
+
 export function CustomerTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const { data: result = { data: [], total: 0 }, isLoading } = useQuery({
+  const { data: result = { data: [], total: 0 }, isLoading } = useQuery<QueryResult, Error>({
     queryKey: ["customers", currentPage, searchQuery],
     queryFn: async () => {
       try {
@@ -52,16 +58,27 @@ export function CustomerTable() {
             currentPage * ITEMS_PER_PAGE - 1,
           );
 
-        if (error) throw error;
-        return { data: data as Customer[], total: count || 0 };
+        if (error) {
+          console.error("Error fetching customers:", error);
+          toast.error("Failed to fetch customers");
+          throw error;
+        }
+
+        // Ensure we convert any number IDs to strings to match our Customer type
+        const formattedData = (data || []).map(customer => ({
+          ...customer,
+          id: customer.id.toString()
+        }));
+
+        return { data: formattedData, total: count || 0 };
       } catch (error) {
-        console.error("Error fetching customers:", error);
+        console.error("Error in customer query:", error);
+        toast.error("Failed to load customers");
         throw error;
       }
     },
-    gcTime: 5000,
+    staleTime: 30000, // Cache data for 30 seconds
     retry: 1,
-    suspense: false,
   });
 
   const totalPages = Math.ceil(result.total / ITEMS_PER_PAGE);
