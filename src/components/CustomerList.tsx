@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -23,6 +24,7 @@ const ITEMS_PER_PAGE = 10;
 export function CustomerTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
 
   const { data: result = { data: [], total: 0 }, isLoading } = useQuery({
     queryKey: ["customers", currentPage, searchQuery],
@@ -47,6 +49,14 @@ export function CustomerTable() {
 
   const totalPages = Math.ceil(result.total / ITEMS_PER_PAGE);
 
+  const handleSearchChange = (value: string) => {
+    // Wrap the state update in startTransition
+    startTransition(() => {
+      setSearchQuery(value);
+      setCurrentPage(1); // Reset to first page on search
+    });
+  };
+
   const isBirthdayToday = (birthDate: string | null) => {
     if (!birthDate) return false;
     try {
@@ -59,6 +69,7 @@ export function CustomerTable() {
       return false;
     }
   };
+
   const formatDate = (dateString: string | null, formatStr: string) => {
     if (!dateString) return "-";
     try {
@@ -67,6 +78,7 @@ export function CustomerTable() {
       return "-";
     }
   };
+
   // Count birthdays today
   const birthdaysToday = result.data.filter((customer) =>
     isBirthdayToday(customer.birth_date),
@@ -99,65 +111,68 @@ export function CustomerTable() {
           <div className="w-72">
             <SearchInput
               value={searchQuery}
-              onChange={setSearchQuery}
+              onChange={handleSearchChange}
               placeholder="Search phone number..."
             />
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Birthday</TableHead>
-              <TableHead>Member Since</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {result.data.map((customer) => (
-              <TableRow
-                key={customer.id}
-                className={cn(
-                  isBirthdayToday(customer.birth_date) &&
-                    "bg-pink-50 hover:bg-pink-100",
-                  "transition-colors",
-                )}
-              >
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    {customer.name}
-                    {isBirthdayToday(customer.birth_date) && (
-                      <Cake className="h-4 w-4 text-pink-500" />
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>{customer.email}</TableCell>
-                <TableCell>{customer.phone}</TableCell>
-
-                <TableCell>
-                  {formatDate(customer.birth_date, "dd MMM")}
-                </TableCell>
-
-                <TableCell>
-                  {formatDate(customer.created_at, "dd MMM yyyy")}
-                </TableCell>
-
-                <TableCell className="text-right">
-                  {customer.phone && (
-                    <WhatsAppButton
-                      phone={customer.phone}
-                      name={customer.name}
-                    />
-                  )}
-                </TableCell>
+        {isPending ? (
+          <div className="flex items-center justify-center h-12">
+            <Loader2 className="h-4 w-4 animate-spin" />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Birthday</TableHead>
+                <TableHead>Member Since</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {result.data.map((customer) => (
+                <TableRow
+                  key={customer.id}
+                  className={cn(
+                    isBirthdayToday(customer.birth_date) &&
+                      "bg-pink-50 hover:bg-pink-100",
+                    "transition-colors",
+                  )}
+                >
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {customer.name}
+                      {isBirthdayToday(customer.birth_date) && (
+                        <Cake className="h-4 w-4 text-pink-500" />
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>{customer.email}</TableCell>
+                  <TableCell>{customer.phone}</TableCell>
+                  <TableCell>
+                    {formatDate(customer.birth_date, "dd MMM")}
+                  </TableCell>
+                  <TableCell>
+                    {formatDate(customer.created_at, "dd MMM yyyy")}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {customer.phone && (
+                      <WhatsAppButton
+                        phone={customer.phone}
+                        name={customer.name}
+                      />
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
 
         {totalPages > 1 && (
           <div className="flex justify-center mt-4">
