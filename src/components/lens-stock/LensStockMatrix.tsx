@@ -37,9 +37,9 @@ export const LensStockMatrix = () => {
   const [selectedBranch, setSelectedBranch] = React.useState<string>("Gading Serpong");
   const userProfile = React.useContext(UserProfileContext);
   
-  // SPH range (vertical, -6.00 to +3.00)
-  const minusSphRange = Array.from({ length: 25 }, (_, i) => -(i * 0.25)); // 0 to -6.00
-  const plusSphRange = Array.from({ length: 13 }, (_, i) => (i * 0.25)); // 0 to +3.00
+  // SPH range (vertical, -8.00 to +4.00)
+  const minusSphRange = Array.from({ length: 33 }, (_, i) => -(i * 0.25)); // 0 to -8.00
+  const plusSphRange = Array.from({ length: 17 }, (_, i) => (i * 0.25)); // 0 to +4.00
   const verticalSphRange = [...minusSphRange.reverse(), ...plusSphRange.slice(1)];
   
   // CYL range (horizontal, 0 to -2.00)
@@ -119,8 +119,19 @@ export const LensStockMatrix = () => {
               </thead>
               <tbody>
                 {verticalSphRange.map((sph) => (
-                  <tr key={sph}>
-                    <td className="p-2 border font-medium">{formatNumber(sph)}</td>
+                  <tr 
+                    key={sph} 
+                    className={sph === 0 ? "bg-gray-100" : undefined}
+                  >
+                    <td className={`p-2 border font-medium ${
+                      sph === 0 
+                        ? "text-gray-600" 
+                        : sph > 0 
+                          ? "text-blue-600" 
+                          : "text-purple-600"
+                    }`}>
+                      {formatNumber(sph)}
+                    </td>
                     {cylRange.map((cyl) => {
                       const stockItem = stockData?.find(
                         (item) => item.sph === sph && item.cyl === cyl
