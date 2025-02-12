@@ -1,14 +1,41 @@
+
 import React from 'react';
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StockCell } from "./StockCell";
 import { StockUpdateDialog } from "./StockUpdateDialog";
 import { LensTypeSelect } from "./LensTypeSelect";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { UserProfileContext } from "@/contexts/UserProfileContext";
+
+interface LensStock {
+  id: string;
+  lens_type_id: string;
+  sph: number;
+  cyl: number;
+  quantity: number;
+  minimum_stock: number;
+  reorder_point: number;
+  branch: string;
+  lens_type: {
+    id: string;
+    name: string;
+    material: string;
+    index: number;
+  };
+}
 
 export const LensStockMatrix = () => {
   const [selectedLensType, setSelectedLensType] = React.useState<string | null>(null);
+  const [selectedBranch, setSelectedBranch] = React.useState<string>("Gading Serpong");
+  const userProfile = React.useContext(UserProfileContext);
   
   // SPH range (vertical, -6.00 to +3.00)
   const minusSphRange = Array.from({ length: 25 }, (_, i) => -(i * 0.25)); // 0 to -6.00
@@ -18,18 +45,26 @@ export const LensStockMatrix = () => {
   // CYL range (horizontal, 0 to -2.00)
   const cylRange = Array.from({ length: 9 }, (_, i) => -(i * 0.25)).sort((a, b) => b - a);
   
+  // Set initial branch based on user's branch
+  React.useEffect(() => {
+    if (userProfile?.branch) {
+      setSelectedBranch(userProfile.branch);
+    }
+  }, [userProfile?.branch]);
+
   const { data: stockData, isLoading } = useQuery({
-    queryKey: ['lens-stock', selectedLensType],
+    queryKey: ['lens-stock', selectedLensType, selectedBranch],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('lens_stock')
         .select('*, lens_type:lens_types(*)')
-        .eq('lens_type_id', selectedLensType);
+        .eq('lens_type_id', selectedLensType)
+        .eq('branch', selectedBranch);
       
       if (error) throw error;
-      return data;
+      return data as LensStock[];
     },
-    enabled: !!selectedLensType
+    enabled: !!selectedLensType && !!selectedBranch
   });
 
   const formatNumber = (num: number) => {
@@ -44,8 +79,22 @@ export const LensStockMatrix = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <LensTypeSelect value={selectedLensType} onChange={setSelectedLensType} />
-        <StockUpdateDialog lensTypeId={selectedLensType} />
+        <div className="flex gap-4">
+          <LensTypeSelect value={selectedLensType} onChange={setSelectedLensType} />
+          <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select branch" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Gading Serpong">Gading Serpong</SelectItem>
+              <SelectItem value="Kelapa Dua">Kelapa Dua</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <StockUpdateDialog 
+          lensTypeId={selectedLensType} 
+          branch={selectedBranch}
+        />
       </div>
 
       {selectedLensType && (
@@ -77,6 +126,7 @@ export const LensStockMatrix = () => {
                           sph={sph}
                           cyl={cyl}
                           lensTypeId={selectedLensType}
+                          branch={selectedBranch}
                         />
                       );
                     })}
