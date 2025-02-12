@@ -32,16 +32,16 @@ interface LensStock {
   };
 }
 
-// Helper to normalize branch names
+// Helper to normalize branch names both ways
+const branchMap: Record<string, string> = {
+  "GS": "Gading Serpong",
+  "KD": "Kelapa Dua",
+  "Gading Serpong": "Gading Serpong",
+  "Kelapa Dua": "Kelapa Dua"
+};
+
 const normalizeBranchName = (branch: string | undefined) => {
   if (!branch) return "Gading Serpong";
-  
-  // Convert short forms to full names
-  const branchMap: Record<string, string> = {
-    "GS": "Gading Serpong",
-    "KD": "Kelapa Dua"
-  };
-  
   return branchMap[branch] || branch;
 };
 
@@ -76,11 +76,14 @@ export const LensStockMatrix = () => {
         userBranch: normalizeBranchName(userProfile?.branch)
       });
 
+      // Ensure we're using the normalized branch name for the query
+      const normalizedBranch = normalizeBranchName(selectedBranch);
+      
       const { data, error } = await supabase
         .from('lens_stock')
         .select('*, lens_type:lens_types(*)')
         .eq('lens_type_id', selectedLensType)
-        .eq('branch', selectedBranch);
+        .eq('branch', normalizedBranch);
       
       if (error) {
         console.error('Error fetching stock data:', error);
@@ -112,7 +115,6 @@ export const LensStockMatrix = () => {
             <Select 
               value={selectedBranch} 
               onValueChange={setSelectedBranch}
-              defaultValue="Gading Serpong"
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select branch" />
