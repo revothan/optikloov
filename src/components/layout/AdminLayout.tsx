@@ -39,7 +39,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               <div className={cn("px-4 py-4", !isCollapsed && "min-h-[160px]")}>
                 {!isCollapsed && (
                   <>
-                    <h1 className="text-xl font-bold mb-4">Admin</h1>
+                    <h1 className="text-xl font-bold mb-4">Admin Optik LOOV</h1>
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600 italic">
                         Halo Tim {userProfile?.branch}!
