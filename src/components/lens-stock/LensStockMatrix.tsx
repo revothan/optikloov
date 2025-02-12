@@ -47,10 +47,10 @@ export const LensStockMatrix = () => {
   
   // Set initial branch based on user's branch
   React.useEffect(() => {
-    if (userProfile?.branch) {
+    if (userProfile?.branch && userProfile.role !== 'admin') {
       setSelectedBranch(userProfile.branch);
     }
-  }, [userProfile?.branch]);
+  }, [userProfile?.branch, userProfile?.role]);
 
   const { data: stockData, isLoading } = useQuery({
     queryKey: ['lens-stock', selectedLensType, selectedBranch],
@@ -81,15 +81,21 @@ export const LensStockMatrix = () => {
       <div className="flex justify-between items-center">
         <div className="flex gap-4">
           <LensTypeSelect value={selectedLensType} onChange={setSelectedLensType} />
-          <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select branch" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Gading Serpong">Gading Serpong</SelectItem>
-              <SelectItem value="Kelapa Dua">Kelapa Dua</SelectItem>
-            </SelectContent>
-          </Select>
+          {userProfile?.role === 'admin' ? (
+            <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select branch" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Gading Serpong">Gading Serpong</SelectItem>
+                <SelectItem value="Kelapa Dua">Kelapa Dua</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="px-4 py-2 border rounded-md bg-gray-50">
+              {userProfile?.branch}
+            </div>
+          )}
         </div>
         <StockUpdateDialog 
           lensTypeId={selectedLensType} 
