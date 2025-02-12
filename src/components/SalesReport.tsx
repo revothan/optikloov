@@ -9,8 +9,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useUser } from "@/hooks/useUser";
-
 import {
   Select,
   SelectContent,
@@ -40,8 +38,15 @@ import {
 } from "date-fns";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { getFullBranchName } from "@/lib/invoice-utils";
+import { useUser } from "@/hooks/useUser";
 
-export function SalesReport() {
+interface SalesReportProps {
+  userBranch?: string;
+  isAdmin?: boolean;
+}
+
+export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
   const [dateRange, setDateRange] = useState<{
     from: Date;
     to: Date;
@@ -49,23 +54,6 @@ export function SalesReport() {
     from: startOfToday(),
     to: startOfToday(),
   });
-
-  // Get user's profile to determine their branch
-  const { data: userProfile, isLoading: isLoadingProfile } = useUser();
-
-  const getBranchFromRole = (role: string | undefined) => {
-    switch (role) {
-      case "gadingserpongbranch":
-        return "Gading Serpong";
-      case "kelapaduabranch":
-        return "Kelapa Dua";
-      default:
-        return null;
-    }
-  };
-
-  const userBranch = getBranchFromRole(userProfile?.role);
-  const isAdmin = userProfile?.role === "admin";
 
   const { data: salesData, isLoading } = useQuery({
     queryKey: ["sales-report", dateRange, userBranch],
@@ -93,15 +81,22 @@ export function SalesReport() {
 
       // Apply branch filter if user is not admin
       if (!isAdmin && userBranch) {
-        query = query.eq("branch", userBranch);
+        const fullBranchName = getFullBranchName(userBranch);
+        console.log("Filtering payments for branch:", fullBranchName);
+        query = query.eq("branch", fullBranchName);
       }
 
       const { data: payments, error: paymentsError } = await query;
 
-      if (paymentsError) throw paymentsError;
+      if (paymentsError) {
+        console.error("Error fetching payments:", paymentsError);
+        throw paymentsError;
+      }
+
+      console.log("Fetched payments:", payments);
       return payments;
     },
-    enabled: !!userProfile, // Only run query when user profile is loaded
+    enabled: true,
   });
 
   // Calculate summary statistics
@@ -154,20 +149,16 @@ export function SalesReport() {
     }
   };
 
-  if (isLoadingProfile) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Branch indicator for admin */}
-      {isAdmin && (
+      {isAdmin ? (
         <div className="text-sm text-muted-foreground">
           Showing sales data for all branches
+        </div>
+      ) : userBranch && (
+        <div className="text-sm text-muted-foreground">
+          Showing sales data for {getFullBranchName(userBranch)}
         </div>
       )}
 
