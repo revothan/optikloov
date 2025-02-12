@@ -37,18 +37,18 @@ interface LensStock {
 const branchMap: Record<string, string> = {
   "GS": "Gading Serpong",
   "KD": "Kelapa Dua",
-  "Gading Serpong": "Gading Serpong",
-  "Kelapa Dua": "Kelapa Dua"
+  "Gading Serpong": "GS",
+  "Kelapa Dua": "KD"
 };
 
 const normalizeBranchName = (branch: string | undefined) => {
-  if (!branch) return "Gading Serpong";
+  if (!branch) return "GS";
   return branchMap[branch] || branch;
 };
 
 export const LensStockMatrix = () => {
   const [selectedLensType, setSelectedLensType] = React.useState<string | null>(null);
-  const [selectedBranch, setSelectedBranch] = React.useState<string>("Gading Serpong");
+  const [selectedBranch, setSelectedBranch] = React.useState<string>("GS");
   const userProfile = React.useContext(UserProfileContext);
   
   // SPH range (vertical, -8.00 to +4.00)
@@ -77,14 +77,11 @@ export const LensStockMatrix = () => {
         userBranch: normalizeBranchName(userProfile?.branch)
       });
 
-      // Ensure we're using the normalized branch name for the query
-      const normalizedBranch = normalizeBranchName(selectedBranch);
-      
       const { data, error } = await supabase
         .from('lens_stock')
         .select('*, lens_type:lens_types(*)')
         .eq('lens_type_id', selectedLensType)
-        .eq('branch', normalizedBranch);
+        .eq('branch', selectedBranch);
       
       if (error) {
         console.error('Error fetching stock data:', error);
@@ -121,13 +118,13 @@ export const LensStockMatrix = () => {
                 <SelectValue placeholder="Select branch" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Gading Serpong">GS</SelectItem>
-                <SelectItem value="Kelapa Dua">KD</SelectItem>
+                <SelectItem value="GS">GS</SelectItem>
+                <SelectItem value="KD">KD</SelectItem>
               </SelectContent>
             </Select>
           ) : (
             <div className="px-4 py-2 border rounded-md bg-gray-50">
-              {getBranchPrefix(selectedBranch)}
+              {selectedBranch}
             </div>
           )}
         </div>
