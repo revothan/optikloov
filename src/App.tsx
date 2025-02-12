@@ -1,3 +1,4 @@
+
 import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -31,7 +32,6 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      suspense: false, // Disable React Query's suspense mode
     },
   },
 });
@@ -41,6 +41,7 @@ const AdminRoutes = () => (
     <AdminLayout>
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
+          <Route path="sales" element={<SalesPage />} />
           <Route path="invoices" element={<InvoicesPage />} />
           <Route
             path="products"
@@ -58,7 +59,6 @@ const AdminRoutes = () => (
           />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="job-orders" element={<JobOrdersPage />} />
-          <Route path="sales" element={<SalesPage />} />
           <Route
             path="lens-stock"
             element={
@@ -73,7 +73,7 @@ const AdminRoutes = () => (
               </ProtectedRoute>
             }
           />
-          <Route index element={<Navigate to="/admin/invoices" replace />} />
+          <Route index element={<Navigate to="/admin/sales" replace />} />
         </Routes>
       </Suspense>
     </AdminLayout>

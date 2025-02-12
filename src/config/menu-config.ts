@@ -12,6 +12,13 @@ export interface MenuItem {
 
 export const MENU_ITEMS: MenuItem[] = [
   {
+    id: "sales",
+    label: "Sales",
+    path: "/admin/sales",
+    icon: TrendingUp,
+    allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
+  },
+  {
     id: "invoices",
     label: "Invoices",
     path: "/admin/invoices",
@@ -37,13 +44,6 @@ export const MENU_ITEMS: MenuItem[] = [
     label: "Job Orders",
     path: "/admin/job-orders",
     icon: ClipboardList,
-    allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
-  },
-  {
-    id: "sales",
-    label: "Sales",
-    path: "/admin/sales",
-    icon: TrendingUp,
     allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
   },
   {
