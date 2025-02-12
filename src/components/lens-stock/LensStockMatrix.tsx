@@ -32,6 +32,19 @@ interface LensStock {
   };
 }
 
+// Helper to normalize branch names
+const normalizeBranchName = (branch: string | undefined) => {
+  if (!branch) return "Gading Serpong";
+  
+  // Convert short forms to full names
+  const branchMap: Record<string, string> = {
+    "GS": "Gading Serpong",
+    "KD": "Kelapa Dua"
+  };
+  
+  return branchMap[branch] || branch;
+};
+
 export const LensStockMatrix = () => {
   const [selectedLensType, setSelectedLensType] = React.useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = React.useState<string>("Gading Serpong");
@@ -48,19 +61,19 @@ export const LensStockMatrix = () => {
   // Set initial branch based on user's branch
   React.useEffect(() => {
     if (userProfile?.branch) {
-      setSelectedBranch(userProfile.branch);
+      const normalizedBranch = normalizeBranchName(userProfile.branch);
+      setSelectedBranch(normalizedBranch);
     }
   }, [userProfile?.branch]);
 
   const { data: stockData, isLoading } = useQuery({
     queryKey: ['lens-stock', selectedLensType, selectedBranch],
     queryFn: async () => {
-      // Log the query parameters for debugging
       console.log('Fetching stock data with:', {
         lensTypeId: selectedLensType,
         branch: selectedBranch,
         userRole: userProfile?.role,
-        userBranch: userProfile?.branch
+        userBranch: normalizeBranchName(userProfile?.branch)
       });
 
       const { data, error } = await supabase
@@ -74,7 +87,6 @@ export const LensStockMatrix = () => {
         throw error;
       }
 
-      // Log the retrieved data for debugging
       console.log('Retrieved stock data:', data);
       
       return data as LensStock[];
@@ -108,7 +120,7 @@ export const LensStockMatrix = () => {
             </Select>
           ) : (
             <div className="px-4 py-2 border rounded-md bg-gray-50">
-              {userProfile?.branch}
+              {selectedBranch}
             </div>
           )}
         </div>
