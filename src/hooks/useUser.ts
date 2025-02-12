@@ -7,6 +7,7 @@ export function useUser() {
     queryKey: ["user-profile"],
     queryFn: async () => {
       try {
+        console.log("Fetching user session...");
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
         if (userError) {
@@ -19,6 +20,7 @@ export function useUser() {
           return null;
         }
 
+        console.log("Fetching user profile...");
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("role, branch")
@@ -30,16 +32,10 @@ export function useUser() {
           throw profileError;
         }
 
-        if (!profile) {
-          console.log("No profile found for user:", user.id);
-          return null;
-        }
-
         const userData = {
           id: user.id,
           email: user.email,
-          role: profile.role,
-          branch: profile.branch
+          ...profile,
         };
         
         console.log("User data:", userData);
@@ -49,8 +45,9 @@ export function useUser() {
         throw error;
       }
     },
-    retry: 1,
-    staleTime: 30000, // 30 seconds
-    gcTime: 300000, // 5 minutes
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    gcTime: 5000,
+    staleTime: 30000,
   });
 }
