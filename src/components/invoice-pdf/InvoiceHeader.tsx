@@ -1,4 +1,3 @@
-
 import { Text, View, StyleSheet } from "@react-pdf/renderer";
 import { format } from "date-fns";
 
@@ -87,17 +86,17 @@ export function InvoiceHeader({
   const getBranchInfo = () => {
     if (branch === "Kelapa Dua") {
       return {
-        storeName: "OPTIK LOOV (Kelapa Dua)",
+        storeName: "OPTIK LOOV Kelapa Dua",
         address: [
           "Ruko Sentra Niaga, Jl. Danau Klp. Dua Raya No. 11,",
           "Klp. Dua, Kec. Klp. Dua, Kabupaten Tangerang, Banten 15810",
         ],
-        phone: "0812 9063 5568",
+        phone: "0851 2111 5668",
       };
     }
     // Default to Gading Serpong
     return {
-      storeName: "OPTIK LOOV",
+      storeName: "OPTIK LOOV Gading Serpong",
       address: [
         "Ruko Downtown Drive, Kecamatan No. 016 Blok DDBLV, Medang,",
         "Kec. Pagedangan, Kabupaten Tangerang, Banten 15334",
