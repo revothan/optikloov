@@ -54,10 +54,10 @@ export const LensStockMatrix = () => {
   const [selectedBranch, setSelectedBranch] = React.useState<string>("GS");
   const userProfile = React.useContext(UserProfileContext);
   
-  // SPH range (vertical, -8.00 to +4.00)
-  const minusSphRange = Array.from({ length: 33 }, (_, i) => -(i * 0.25)); // 0 to -8.00
-  const plusSphRange = Array.from({ length: 17 }, (_, i) => (i * 0.25)); // 0 to +4.00
-  const verticalSphRange = [...minusSphRange.reverse(), ...plusSphRange.slice(1)];
+  // SPH range (vertical, +4.00 to -8.00)
+  const plusSphRange = Array.from({ length: 17 }, (_, i) => (4 - i * 0.25)); // +4.00 to 0
+  const minusSphRange = Array.from({ length: 32 }, (_, i) => -(i * 0.25 + 0.25)); // -0.25 to -8.00
+  const verticalSphRange = [...plusSphRange, ...minusSphRange];
   
   // CYL range (horizontal, 0 to -2.00)
   const cylRange = Array.from({ length: 9 }, (_, i) => -(i * 0.25)).sort((a, b) => b - a);
