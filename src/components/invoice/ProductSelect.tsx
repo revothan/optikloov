@@ -1,8 +1,9 @@
+
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, Search, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUserBranch } from "@/hooks/useUserBranch.ts";
+import { useUserBranch } from "@/hooks/useUserBranch";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -13,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
-import { normalizedBranch } from "@/lib/branch-utils";
+import { normalizeBranchName } from "@/lib/branch-utils";
 import {
   Dialog,
   DialogContent,
@@ -345,25 +346,34 @@ export function ProductSelect({
           return;
         }
 
+        const fullBranchName = normalizeBranchName(effectiveBranch);
+        console.log("Creating custom product for branch:", fullBranchName);
+
         const { error: insertError } = await supabase.from("products").insert({
           id: customProductId,
           name: customProductName,
           store_price: 0,
           category: customProductCategory,
           user_id: userData.user.id,
-          branch: effectiveBranch, // Use effectiveBranch here
+          branch: fullBranchName,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error("Error creating custom product:", insertError);
+          throw insertError;
+        }
 
         const customProduct = {
           id: customProductId,
           name: customProductName,
           store_price: 0,
           category: customProductCategory,
+          branch: fullBranchName,
         };
 
-        await refetch();
+        await queryClient.invalidateQueries({ queryKey: ["products"] });
         handleProductSelect(customProduct);
         setCustomProductName("");
         setCustomProductCategory("Others");
