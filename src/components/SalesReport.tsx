@@ -45,30 +45,34 @@ interface SalesReportProps {
   dailyTarget: number;
 }
 
-function getBranchName(identifier?: string): string {
+function getBranchCode(identifier?: string): string {
   if (!identifier) return "";
 
-  // Normalize branch identifier to uppercase
+  // Normalize identifier to lowercase for case-insensitive comparison
   const normalizedIdentifier = identifier.toLowerCase().trim();
-
-  // Map of all possible branch identifiers to their full names
+  
+  // Map all possible identifiers to branch codes
   const branchMap: Record<string, string> = {
-    gs: "Gading Serpong",
-    kd: "Kelapa Dua",
-    gadingserpongbranch: "Gading Serpong",
-    kelapaduabranch: "Kelapa Dua",
-    "gading serpong": "Gading Serpong",
-    "kelapa dua": "Kelapa Dua",
+    gs: "GS",
+    kd: "KD",
+    gadingserpongbranch: "GS",
+    kelapaduabranch: "KD",
+    "gading serpong": "GS",
+    "kelapa dua": "KD"
   };
 
-  return branchMap[normalizedIdentifier] || "";
+  return branchMap[normalizedIdentifier] || identifier;
 }
 
-export function SalesReport({
-  userBranch,
-  isAdmin,
-  dailyTarget,
-}: SalesReportProps) {
+function getBranchDisplayName(code: string): string {
+  const displayNames: Record<string, string> = {
+    GS: "Gading Serpong",
+    KD: "Kelapa Dua"
+  };
+  return displayNames[code] || code;
+}
+
+export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportProps) {
   const [dateRange, setDateRange] = useState<{
     from: Date;
     to: Date;
@@ -86,11 +90,11 @@ export function SalesReport({
   const { data: salesData, isLoading } = useQuery({
     queryKey: ["sales-report", dateRange, userBranch],
     queryFn: async () => {
-      // Get the standardized branch name
-      const branchName = getBranchName(userBranch);
+      // Get the branch code for filtering
+      const branchCode = getBranchCode(userBranch);
       console.log("Processing branch filter:", {
         originalBranch: userBranch,
-        normalizedBranch: branchName,
+        normalizedBranch: branchCode,
         isAdmin,
       });
 
@@ -115,10 +119,10 @@ export function SalesReport({
         .lte("payment_date", endOfDay(dateRange.to).toISOString())
         .order("payment_date", { ascending: false });
 
-      // Apply branch filter if user is not admin and we have a valid branch name
-      if (!isAdmin && branchName) {
-        console.log("Applying branch filter:", branchName);
-        query = query.eq("branch", branchName);
+      // Apply branch filter if user is not admin and we have a valid branch code
+      if (!isAdmin && branchCode) {
+        console.log("Applying branch filter:", branchCode);
+        query = query.eq("branch", branchCode);
       }
 
       const { data: payments, error: paymentsError } = await query;
@@ -131,7 +135,7 @@ export function SalesReport({
       console.log("Query results:", {
         dateRange,
         userBranch,
-        branchName,
+        branchCode,
         isAdmin,
         resultCount: payments?.length,
         firstPayment: payments?.[0],
@@ -248,7 +252,7 @@ export function SalesReport({
       ) : (
         userBranch && (
           <div className="text-sm text-muted-foreground">
-            Showing sales data for {getBranchName(userBranch)}
+            Showing sales data for {getBranchDisplayName(getBranchCode(userBranch))}
           </div>
         )
       )}
