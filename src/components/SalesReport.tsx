@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -44,9 +43,10 @@ import { getFullBranchName, getBranchPrefix } from "@/lib/invoice-utils";
 interface SalesReportProps {
   userBranch?: string;
   isAdmin?: boolean;
+  dailyTarget: number;
 }
 
-export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
+export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportProps) {
   const [dateRange, setDateRange] = useState<{
     from: Date;
     to: Date;
@@ -118,6 +118,15 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
       ) || 0,
   };
 
+  // Calculate target achievement percentage for today
+  const todaysSales = salesData?.reduce((sum, payment) => {
+    const paymentDate = new Date(payment.payment_date);
+    const isToday = paymentDate.toDateString() === new Date().toDateString();
+    return isToday ? sum + (payment.amount || 0) : sum;
+  }, 0) || 0;
+
+  const achievementPercentage = Math.min((todaysSales / dailyTarget) * 100, 100);
+
   const handleRangeSelect = (range: string) => {
     const today = new Date();
     switch (range) {
@@ -151,6 +160,37 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
 
   return (
     <div className="space-y-6">
+      {/* Progress indicator for today's target */}
+      <Card className="mb-4">
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <div className="flex justify-between items-baseline">
+              <h3 className="text-lg font-medium">Today's Progress</h3>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-blue-600">
+                  {formatPrice(todaysSales)}
+                </span>
+                <span className="text-sm text-gray-500 ml-2">
+                  of {formatPrice(dailyTarget)}
+                </span>
+              </div>
+            </div>
+            <div className="relative h-4 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
+                style={{ width: `${achievementPercentage}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">{achievementPercentage.toFixed(1)}% achieved</span>
+              <span className="text-gray-600">
+                {formatPrice(Math.max(dailyTarget - todaysSales, 0))} to go
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Branch indicator for admin */}
       {isAdmin ? (
         <div className="text-sm text-muted-foreground">
