@@ -46,18 +46,29 @@ interface SalesReportProps {
 }
 
 function getBranchName(identifier?: string): string {
-  // Handle branch codes
-  if (identifier === "GS") return "Gading Serpong";
-  if (identifier === "KD") return "Kelapa Dua";
-  
-  // Handle role names
-  if (identifier === "gadingserpongbranch") return "Gading Serpong";
-  if (identifier === "kelapaduabranch") return "Kelapa Dua";
-  
-  return "";
+  if (!identifier) return "";
+
+  // Normalize branch identifier to uppercase
+  const normalizedIdentifier = identifier.toLowerCase().trim();
+
+  // Map of all possible branch identifiers to their full names
+  const branchMap: Record<string, string> = {
+    gs: "Gading Serpong",
+    kd: "Kelapa Dua",
+    gadingserpongbranch: "Gading Serpong",
+    kelapaduabranch: "Kelapa Dua",
+    "gading serpong": "Gading Serpong",
+    "kelapa dua": "Kelapa Dua",
+  };
+
+  return branchMap[normalizedIdentifier] || "";
 }
 
-export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportProps) {
+export function SalesReport({
+  userBranch,
+  isAdmin,
+  dailyTarget,
+}: SalesReportProps) {
   const [dateRange, setDateRange] = useState<{
     from: Date;
     to: Date;
@@ -66,9 +77,23 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
     to: startOfToday(),
   });
 
+  console.log("SalesReport received props:", {
+    userBranch,
+    isAdmin,
+    dailyTarget,
+  });
+
   const { data: salesData, isLoading } = useQuery({
     queryKey: ["sales-report", dateRange, userBranch],
     queryFn: async () => {
+      // Get the standardized branch name
+      const branchName = getBranchName(userBranch);
+      console.log("Processing branch filter:", {
+        originalBranch: userBranch,
+        normalizedBranch: branchName,
+        isAdmin,
+      });
+
       let query = supabase
         .from("payments")
         .select(
@@ -90,10 +115,9 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
         .lte("payment_date", endOfDay(dateRange.to).toISOString())
         .order("payment_date", { ascending: false });
 
-      // Apply branch filter if user is not admin
-      if (!isAdmin && userBranch) {
-        const branchName = getBranchName(userBranch);
-        console.log("Filtering payments for branch:", branchName);
+      // Apply branch filter if user is not admin and we have a valid branch name
+      if (!isAdmin && branchName) {
+        console.log("Applying branch filter:", branchName);
         query = query.eq("branch", branchName);
       }
 
@@ -104,8 +128,16 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
         throw paymentsError;
       }
 
-      console.log("Fetched payments:", payments);
-      return payments;
+      console.log("Query results:", {
+        dateRange,
+        userBranch,
+        branchName,
+        isAdmin,
+        resultCount: payments?.length,
+        firstPayment: payments?.[0],
+      });
+
+      return payments || [];
     },
     enabled: true,
   });
@@ -130,13 +162,17 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
   };
 
   // Calculate target achievement percentage for today
-  const todaysSales = salesData?.reduce((sum, payment) => {
-    const paymentDate = new Date(payment.payment_date);
-    const isToday = paymentDate.toDateString() === new Date().toDateString();
-    return isToday ? sum + (payment.amount || 0) : sum;
-  }, 0) || 0;
+  const todaysSales =
+    salesData?.reduce((sum, payment) => {
+      const paymentDate = new Date(payment.payment_date);
+      const isToday = paymentDate.toDateString() === new Date().toDateString();
+      return isToday ? sum + (payment.amount || 0) : sum;
+    }, 0) || 0;
 
-  const achievementPercentage = Math.min((todaysSales / dailyTarget) * 100, 100);
+  const achievementPercentage = Math.min(
+    (todaysSales / dailyTarget) * 100,
+    100,
+  );
 
   const handleRangeSelect = (range: string) => {
     const today = new Date();
@@ -193,7 +229,9 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
               />
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">{achievementPercentage.toFixed(1)}% achieved</span>
+              <span className="text-gray-600">
+                {achievementPercentage.toFixed(1)}% achieved
+              </span>
               <span className="text-gray-600">
                 {formatPrice(Math.max(dailyTarget - todaysSales, 0))} to go
               </span>
@@ -207,10 +245,12 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
         <div className="text-sm text-muted-foreground">
           Showing sales data for all branches
         </div>
-      ) : userBranch && (
-        <div className="text-sm text-muted-foreground">
-          Showing sales data for {getBranchName(userBranch)}
-        </div>
+      ) : (
+        userBranch && (
+          <div className="text-sm text-muted-foreground">
+            Showing sales data for {getBranchName(userBranch)}
+          </div>
+        )
       )}
 
       {/* Date Range Controls */}
@@ -288,7 +328,9 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
             <CardTitle className="text-sm font-medium">Transactions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summary.totalTransactions}</div>
+            <div className="text-2xl font-bold">
+              {summary.totalTransactions}
+            </div>
             <p className="text-xs text-muted-foreground">Total transactions</p>
           </CardContent>
         </Card>
@@ -305,13 +347,17 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Final Payments</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Final Payments
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {formatPrice(summary.finalPayments)}
             </div>
-            <p className="text-xs text-muted-foreground">Total final payments</p>
+            <p className="text-xs text-muted-foreground">
+              Total final payments
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -357,7 +403,10 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
             ))}
             {!salesData?.length && (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center py-4">
+                <TableCell
+                  colSpan={isAdmin ? 8 : 7}
+                  className="text-center py-4"
+                >
                   No transactions found for the selected period
                 </TableCell>
               </TableRow>
