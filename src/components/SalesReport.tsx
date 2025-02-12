@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -38,8 +39,7 @@ import {
 } from "date-fns";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { getFullBranchName } from "@/lib/invoice-utils";
-import { useUser } from "@/hooks/useUser";
+import { getFullBranchName, getBranchPrefix } from "@/lib/invoice-utils";
 
 interface SalesReportProps {
   userBranch?: string;
@@ -81,9 +81,9 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
 
       // Apply branch filter if user is not admin
       if (!isAdmin && userBranch) {
-        const fullBranchName = getFullBranchName(userBranch);
-        console.log("Filtering payments for branch:", fullBranchName);
-        query = query.eq("branch", fullBranchName);
+        const branchPrefix = getBranchPrefix(userBranch);
+        console.log("Filtering payments for branch prefix:", branchPrefix);
+        query = query.eq("branch", branchPrefix);
       }
 
       const { data: payments, error: paymentsError } = await query;
@@ -237,9 +237,7 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
             <CardTitle className="text-sm font-medium">Transactions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {summary.totalTransactions}
-            </div>
+            <div className="text-2xl font-bold">{summary.totalTransactions}</div>
             <p className="text-xs text-muted-foreground">Total transactions</p>
           </CardContent>
         </Card>
@@ -256,17 +254,13 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Final Payments
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Final Payments</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {formatPrice(summary.finalPayments)}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Total final payments
-            </p>
+            <p className="text-xs text-muted-foreground">Total final payments</p>
           </CardContent>
         </Card>
       </div>
@@ -312,10 +306,7 @@ export function SalesReport({ userBranch, isAdmin }: SalesReportProps) {
             ))}
             {!salesData?.length && (
               <TableRow>
-                <TableCell
-                  colSpan={isAdmin ? 8 : 7}
-                  className="text-center py-4"
-                >
+                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center py-4">
                   No transactions found for the selected period
                 </TableCell>
               </TableRow>
