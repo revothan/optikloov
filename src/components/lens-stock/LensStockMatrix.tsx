@@ -58,13 +58,13 @@ export const LensStockMatrix = () => {
   // CYL range (horizontal, 0 to -2.00)
   const cylRange = Array.from({ length: 9 }, (_, i) => -(i * 0.25)).sort((a, b) => b - a);
   
-  // Set initial branch based on user's branch
+  // Set initial branch based on user's branch only if not admin
   React.useEffect(() => {
-    if (userProfile?.branch) {
+    if (userProfile?.branch && userProfile.role !== 'admin') {
       const normalizedBranch = normalizeBranchName(userProfile.branch);
       setSelectedBranch(normalizedBranch);
     }
-  }, [userProfile?.branch]);
+  }, [userProfile?.branch, userProfile?.role]);
 
   const { data: stockData, isLoading } = useQuery({
     queryKey: ['lens-stock', selectedLensType, selectedBranch],
@@ -109,7 +109,11 @@ export const LensStockMatrix = () => {
         <div className="flex gap-4">
           <LensTypeSelect value={selectedLensType} onChange={setSelectedLensType} />
           {userProfile?.role === 'admin' ? (
-            <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+            <Select 
+              value={selectedBranch} 
+              onValueChange={setSelectedBranch}
+              defaultValue="Gading Serpong"
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select branch" />
               </SelectTrigger>
