@@ -46,6 +46,17 @@ interface SalesReportProps {
   dailyTarget: number;
 }
 
+function getBranchNameFromRole(role?: string): string {
+  switch (role) {
+    case "gadingserpongbranch":
+      return "Gading Serpong";
+    case "kelapaduabranch":
+      return "Kelapa Dua";
+    default:
+      return "";
+  }
+}
+
 export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportProps) {
   const [dateRange, setDateRange] = useState<{
     from: Date;
@@ -81,10 +92,9 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
 
       // Apply branch filter if user is not admin
       if (!isAdmin && userBranch) {
-        // Convert branch prefix to full name for filtering
-        let fullBranchName = userBranch === "GS" ? "Gading Serpong" : "Kelapa Dua";
-        console.log("Filtering payments for branch:", fullBranchName);
-        query = query.eq("branch", fullBranchName);
+        const branchName = getBranchNameFromRole(userBranch);
+        console.log("Filtering payments for branch:", branchName);
+        query = query.eq("branch", branchName);
       }
 
       const { data: payments, error: paymentsError } = await query;
