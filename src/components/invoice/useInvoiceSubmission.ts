@@ -3,6 +3,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getFullBranchName } from "@/lib/invoice-utils";
 import type { FormData } from "./invoiceFormSchema";
 
 interface Totals {
@@ -26,6 +27,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
   const checkStockAvailability = useCallback(
     async (items: FormData["items"], branch: string) => {
       const stockErrors: StockUpdateError[] = [];
+      const fullBranchName = getFullBranchName(branch);
 
       // Batch fetch all products
       const productIds = items
@@ -36,9 +38,11 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         .from("products")
         .select("id, name, stock_qty, track_inventory")
         .in("id", productIds)
-        .eq("branch", branch);
+        .eq("branch", fullBranchName);
 
       if (productsError) throw new Error(productsError.message);
+
+      console.log("Found products:", products, "for branch:", fullBranchName);
 
       const productMap = new Map(products.map((p) => [p.id, p]));
 
@@ -48,7 +52,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
         const product = productMap.get(item.product_id);
 
         if (!product) {
-          throw new Error(`Product ${item.product_id} not found in ${branch}`);
+          throw new Error(`Product ${item.product_id} not found in ${fullBranchName}`);
         }
 
         if (product.track_inventory && product.stock_qty < item.quantity) {
@@ -59,6 +63,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           stockErrors.push(error);
         }
       });
+
       // Check lens stock
       for (const item of items) {
         if (!item.lens_stock_id) continue;
@@ -99,17 +104,18 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
   const updateProductStock = useCallback(
     async (items: FormData["items"], branch: string) => {
-      console.log("User role:", await supabase.auth.getSession());
-      console.log("Starting stock update for branch:", branch);
+      const fullBranchName = getFullBranchName(branch);
+      console.log("Starting stock update for branch:", fullBranchName);
+
       for (const item of items) {
         if (!item.product_id) continue;
 
         // First fetch the current product with more fields for debugging
         const { data: product, error: fetchError } = await supabase
           .from("products")
-          .select("*") // Select all fields for debugging
+          .select("*")
           .eq("id", item.product_id)
-          .eq("branch", branch)
+          .eq("branch", fullBranchName)
           .single();
 
         console.log("Full product data:", product);
@@ -128,7 +134,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
             quantityToDeduct: item.quantity,
             newStock,
             productId: item.product_id,
-            branch,
+            branch: fullBranchName,
             user_id: product.user_id,
           });
 
@@ -140,13 +146,12 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
           console.log("Update payload:", updateData);
 
-          // Try update with returning
           const { data: updateResult, error: updateError } = await supabase
             .from("products")
             .update(updateData)
             .eq("id", item.product_id)
-            .eq("branch", branch)
-            .select(); // Add select to see what was updated
+            .eq("branch", fullBranchName)
+            .select();
 
           console.log("Update response:", { updateResult, updateError });
 
@@ -167,7 +172,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
             .from("products")
             .select("*")
             .eq("id", item.product_id)
-            .eq("branch", branch)
+            .eq("branch", fullBranchName)
             .single();
 
           console.log("Verification response:", verifiedProduct);
@@ -202,6 +207,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
     },
     [],
   );
+
   const updateLensStock = useCallback(
     async (items: FormData["items"], invoiceId: string, branch: string) => {
       const lensStockItems = items.filter((item) => item.lens_stock_id);
@@ -313,8 +319,10 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
   const submitInvoice = useCallback(
     async (values: FormData, totals: Totals) => {
       try {
+        const fullBranchName = getFullBranchName(values.branch);
+        
         // First check stock availability
-        await checkStockAvailability(values.items, values.branch);
+        await checkStockAvailability(values.items, fullBranchName);
         console.log("Stock availability check passed");
 
         // Create invoice
@@ -341,8 +349,8 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
             status: totals.remainingBalance === 0 ? "paid" : "partial",
             last_payment_date: new Date().toISOString(),
             notes: values.notes || null,
-            branch: values.branch,
-            branch_prefix: values.branch === "Gading Serpong" ? "GS" : "KD",
+            branch: fullBranchName,
+            branch_prefix: fullBranchName === "Gading Serpong" ? "GS" : "KD",
           })
           .select()
           .single();
@@ -352,12 +360,12 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
         // Update product stock
         console.log("Starting stock updates...");
-        await updateProductStock(values.items, values.branch);
+        await updateProductStock(values.items, fullBranchName);
         console.log("Product stock updated");
 
         // Update lens stock if needed
         if (invoice) {
-          await updateLensStock(values.items, invoice.id, values.branch);
+          await updateLensStock(values.items, invoice.id, fullBranchName);
           console.log("Lens stock updated");
         }
 
