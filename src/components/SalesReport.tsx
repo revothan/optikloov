@@ -81,9 +81,10 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
 
       // Apply branch filter if user is not admin
       if (!isAdmin && userBranch) {
-        const branchPrefix = getBranchPrefix(userBranch);
-        console.log("Filtering payments for branch prefix:", branchPrefix);
-        query = query.eq("branch", branchPrefix);
+        // Convert branch prefix to full name for filtering
+        let fullBranchName = userBranch === "GS" ? "Gading Serpong" : "Kelapa Dua";
+        console.log("Filtering payments for branch:", fullBranchName);
+        query = query.eq("branch", fullBranchName);
       }
 
       const { data: payments, error: paymentsError } = await query;
