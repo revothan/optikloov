@@ -1,3 +1,4 @@
+
 import * as z from "zod";
 
 const eyeSchema = z.object({
@@ -26,7 +27,7 @@ export const schema = z.object({
     .array(
       z.object({
         product_id: z.string().min(1, "Product is required"),
-        lens_stock_id: z.string().optional().nullable(), // Added lens_stock_id
+        lens_stock_id: z.string().optional().nullable(),
         quantity: z.number().min(1, "Quantity must be at least 1"),
         price: z.number().min(0, "Price cannot be negative"),
         discount: z.number().min(0, "Discount cannot be negative").optional(),
@@ -37,7 +38,7 @@ export const schema = z.object({
         dbl: z.number().nullable().optional(),
         left_eye: eyeSchema.nullable(),
         right_eye: eyeSchema.nullable(),
-      }),
+      })
     )
     .min(1, "At least one item is required"),
 });

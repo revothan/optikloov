@@ -1,0 +1,189 @@
+.
+├── App.css
+├── App.tsx
+├── components
+│   ├── BrandSection.tsx
+│   ├── CalendarBooking.tsx
+│   ├── CustomerList.tsx
+│   ├── ErrorBoundary.tsx
+│   ├── Footer.tsx
+│   ├── HeroCarousel.tsx
+│   ├── InvoiceDialog.tsx
+│   ├── InvoiceForm.tsx
+│   ├── InvoiceItemForm.tsx
+│   ├── InvoiceList.tsx
+│   ├── InvoicePDF.tsx
+│   ├── JobOrderList.tsx
+│   ├── LogoutButton.tsx
+│   ├── LuckyAngpauPage.tsx
+│   ├── Maps.tsx
+│   ├── Navbar.tsx
+│   ├── ProductCard.tsx
+│   ├── ProductDialog.tsx
+│   ├── ProductForm.tsx
+│   ├── ProductImageUpload.tsx
+│   ├── ProductPriceInventory.tsx
+│   ├── ProductSkeleton.tsx
+│   ├── RecentProducts.tsx
+│   ├── SalesReport.tsx
+│   ├── TestimonialSection.tsx
+│   ├── WhatsAppButton.tsx
+│   ├── admin
+│   │   ├── MessageTemplateDialog.tsx
+│   │   └── WhatsAppButton.tsx
+│   ├── common
+│   │   └── SearchInput.tsx
+│   ├── invoice
+│   │   ├── CommonFields.tsx
+│   │   ├── InvoiceTableHeader.tsx
+│   │   ├── InvoiceTableRow.tsx
+│   │   ├── ItemDetails.tsx
+│   │   ├── PaymentTypeDialog.tsx
+│   │   ├── PrescriptionFields.tsx
+│   │   ├── ProductSelect.tsx
+│   │   ├── invoiceFormSchema.ts
+│   │   ├── prescription
+│   │   │   └── EyeField.tsx
+│   │   └── useInvoiceSubmission.ts
+│   ├── invoice-form
+│   │   ├── BasicInvoiceInfo.tsx
+│   │   ├── BranchSelect.tsx
+│   │   ├── CustomerFields.tsx
+│   │   ├── PaymentSignature.tsx
+│   │   └── PaymentTypeSelect.tsx
+│   ├── invoice-pdf
+│   │   ├── CustomerDetails.tsx
+│   │   ├── InvoiceFooter.tsx
+│   │   ├── InvoiceHeader.tsx
+│   │   ├── ItemsTable.tsx
+│   │   ├── JobOrderPDF.tsx
+│   │   ├── PaymentDetails.tsx
+│   │   └── PrescriptionDetails.tsx
+│   ├── job-order
+│   │   └── JobOrderTableRow.tsx
+│   ├── lens-stock
+│   │   ├── LensStockMatrix.tsx
+│   │   ├── LensTypeSelect.tsx
+│   │   ├── StockCell.tsx
+│   │   └── StockUpdateDialog.tsx
+│   ├── product-form
+│   │   ├── BasicInfoTab.tsx
+│   │   ├── FormFields.tsx
+│   │   ├── InventoryTab.tsx
+│   │   ├── PricingTab.tsx
+│   │   ├── TabContent.tsx
+│   │   └── schema.ts
+│   ├── products
+│   │   ├── CategoryFilter.tsx
+│   │   ├── Pagination.tsx
+│   │   ├── ProductFilters.tsx
+│   │   ├── ProductGrid.tsx
+│   │   ├── SearchInput.tsx
+│   │   └── ViewToggle.tsx
+│   └── ui
+│       ├── accordion.tsx
+│       ├── alert-dialog.tsx
+│       ├── alert.tsx
+│       ├── aspect-ratio.tsx
+│       ├── avatar.tsx
+│       ├── badge.tsx
+│       ├── breadcrumb.tsx
+│       ├── button.tsx
+│       ├── calendar.tsx
+│       ├── card.tsx
+│       ├── carousel.tsx
+│       ├── chart.tsx
+│       ├── checkbox.tsx
+│       ├── collapsible.tsx
+│       ├── command.tsx
+│       ├── context-menu.tsx
+│       ├── dialog.tsx
+│       ├── drawer.tsx
+│       ├── dropdown-menu.tsx
+│       ├── form.tsx
+│       ├── hover-card.tsx
+│       ├── input-otp.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── menubar.tsx
+│       ├── navigation-menu.tsx
+│       ├── pagination.tsx
+│       ├── popover.tsx
+│       ├── progress.tsx
+│       ├── radio-group.tsx
+│       ├── resizable.tsx
+│       ├── scroll-area.tsx
+│       ├── select.tsx
+│       ├── separator.tsx
+│       ├── sheet.tsx
+│       ├── sidebar.tsx
+│       ├── skeleton.tsx
+│       ├── slider.tsx
+│       ├── sonner.tsx
+│       ├── switch.tsx
+│       ├── table.tsx
+│       ├── tabs.tsx
+│       ├── textarea.tsx
+│       ├── toast.tsx
+│       ├── toaster.tsx
+│       ├── toggle-group.tsx
+│       ├── toggle.tsx
+│       ├── tooltip.tsx
+│       └── use-toast.ts
+├── file.txt
+├── hooks
+│   ├── use-local-storage.ts
+│   ├── use-mobile.tsx
+│   ├── use-toast.ts
+│   └── useDebounce.ts
+├── index.css
+├── integrations
+│   └── supabase
+│       ├── client.ts
+│       └── types.ts
+├── lib
+│   ├── adminPermissions.ts
+│   ├── branch-utils.ts
+│   ├── invoice-utils.ts
+│   ├── meta-pixel.ts
+│   └── utils.ts
+├── main.tsx
+├── pages
+│   ├── Contact.tsx
+│   ├── Countdown.tsx
+│   ├── EyeCheck.tsx
+│   ├── Home.tsx
+│   ├── Index.tsx
+│   ├── Login.tsx
+│   ├── LuckyAngpau.tsx
+│   ├── Membership.tsx
+│   ├── ProductDetail.tsx
+│   ├── ProductDetailPage.tsx
+│   ├── Products.tsx
+│   └── admin
+│       ├── CustomersPage.tsx
+│       ├── InvoicesPage.tsx
+│       ├── JobOrdersPage.tsx
+│       ├── LensStockPage.tsx
+│       ├── ProductsPage.tsx
+│       └── SalesPage.tsx
+├── tests
+│   ├── e2e
+│   │   └── invoice-flow.spec.ts
+│   ├── setup
+│   │   ├── jest.setup.ts
+│   │   ├── pdf.mock.ts
+│   │   ├── supabase.mock.ts
+│   │   └── test-utils.tsx
+│   └── unit
+│       ├── components
+│       │   ├── CustomerList.test.tsx
+│       │   ├── InvoiceForm.test.ts
+│       │   └── ProductForm.test.tsx
+│       ├── hooks
+│       │   └── useInvoiceSubmission.test.tsx
+│       └── utils
+│           └── format-utils.test.tsx
+└── vite-env.d.ts
+
+26 directories, 161 files

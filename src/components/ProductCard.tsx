@@ -1,100 +1,67 @@
-import { Link } from "react-router-dom";
-import { formatPrice } from "@/lib/utils";
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { Edit, Trash2 } from "lucide-react";
-import { ProductDialog } from "./ProductDialog";
-import { Tables } from "@/integrations/supabase/types";
 
-type MinimalProduct = Pick<Tables<"products">, "id" | "name" | "brand" | "image_url" | "online_price" | "category">;
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { formatPrice } from "@/lib/utils";
+import { Tables } from "@/integrations/supabase/types";
+import { ProductDialog } from "./ProductDialog";
+import { Pencil } from "lucide-react";
 
 interface ProductCardProps {
-  product: MinimalProduct;
-  onDelete?: (id: string) => Promise<void>;
+  product: Tables<"products">;
+  onDelete?: (id: string) => void;
 }
 
-export function ProductCard({ product, onDelete }: ProductCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-
-  const translateCategory = (category: string) => {
-    const categories: { [key: string]: string } = {
-      'Frame': 'Frame',
-      'Lensa': 'Lensa',
-      'Soft Lens': 'Soft Lens',
-      'Sunglasses': 'Kacamata Hitam',
-      'Others': 'Lainnya',
-    };
-    return categories[category] || category;
-  };
-
+export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) => {
   return (
-    <div className="group relative bg-white rounded-lg overflow-hidden border hover:shadow-lg transition-all duration-300">
-      <Link
-        to={`/products/${product.id}`}
-        className="block"
-      >
-        {/* Container Gambar */}
-        <div className="aspect-square overflow-hidden bg-gray-50 relative">
-          {!imageLoaded && (
-            <div className="absolute inset-0 bg-gray-100 animate-pulse" />
-          )}
-          <img
-            src={product.image_url || ''}
-            alt={product.name}
-            loading="lazy"
-            onLoad={() => setImageLoaded(true)}
-            className={`w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 ${
-              imageLoaded ? "opacity-100" : "opacity-0"
-            }`}
-          />
-        </div>
-
-        {/* Konten */}
-        <div className="p-3">
-          {/* Merek */}
-          <p className="text-xs text-gray-500 mb-0.5">{product.brand}</p>
-
-          {/* Nama Produk */}
-          <h3 className="text-sm font-medium text-gray-900 mb-1 line-clamp-2">
-            {product.name}
-          </h3>
-
-          {/* Label Kategori */}
-          <span className="inline-block px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full mb-1">
-            {translateCategory(product.category)}
-          </span>
-
-          {/* Harga */}
-          <p className="text-base font-semibold text-gray-900">
-            {formatPrice(product.online_price || 0)}
-          </p>
-        </div>
-      </Link>
-      {(onDelete || product.id) && (
-        <div className="p-3 border-t flex gap-2">
-          <ProductDialog 
-            mode="edit" 
-            product={product as Tables<"products">}
-            trigger={
-              <Button variant="outline" size="sm" className="flex-1 text-xs">
-                <Edit className="h-3 w-3 mr-1" />
-                Edit
-              </Button>
-            }
-          />
-          {onDelete && (
-            <Button
-              variant="destructive"
-              size="sm"
-              className="flex-1 text-xs"
-              onClick={() => onDelete(product.id)}
-            >
-              <Trash2 className="h-3 w-3 mr-1" />
-              Delete
-            </Button>
+    <Card className="overflow-hidden">
+      <CardContent className="p-4">
+        <div className="aspect-square overflow-hidden rounded-lg bg-gray-100 mb-4">
+          {product.image_url ? (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center bg-gray-100">
+              <span className="text-gray-400">No image</span>
+            </div>
           )}
         </div>
-      )}
-    </div>
+
+        <div className="space-y-2">
+          <h3 className="font-medium">{product.name}</h3>
+          <p className="text-sm text-gray-500">{product.brand}</p>
+          <div className="flex items-center justify-between">
+            <p className="font-medium text-gray-900">
+              {formatPrice(product.online_price)}
+            </p>
+            <div className="flex gap-2">
+              <ProductDialog 
+                mode="edit" 
+                product={product}
+                trigger={
+                  <Button variant="outline" size="sm">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                }
+              />
+              {onDelete && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onDelete(product.id)}
+                >
+                  Delete
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
-}
+};
+
+export default ProductCard;

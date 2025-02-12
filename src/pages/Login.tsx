@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Auth } from "@supabase/auth-ui-react";
@@ -24,20 +25,27 @@ const Login = () => {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session);
       
       if (event === "SIGNED_IN") {
-        toast.success("Successfully signed in!");
+        // Ensure we have a valid session before redirecting
+        if (session?.access_token) {
+          toast.success("Successfully signed in!");
+          navigate(location.state?.from || "/");
+        }
       } else if (event === "SIGNED_OUT") {
         toast.info("Signed out");
+        navigate("/login");
+      } else if (event === "TOKEN_REFRESHED") {
+        console.log("Token refreshed successfully");
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate, location]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

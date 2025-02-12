@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,19 +15,26 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { LensTypeSelect } from "./LensTypeSelect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserProfileContext } from "@/contexts/UserProfileContext";
 
 interface StockUpdateDialogProps {
   lensTypeId: string | null;
+  branch: string;
 }
 
 export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({
   lensTypeId,
+  branch,
 }) => {
   const [open, setOpen] = React.useState(false);
   const [selectedLensType, setSelectedLensType] = React.useState<string | null>(
     lensTypeId,
   );
   const queryClient = useQueryClient();
+  const userProfile = React.useContext(UserProfileContext);
+
+  // Ensure the user can only update stock for their assigned branch
+  const effectiveBranch = userProfile?.role === 'admin' ? branch : userProfile?.branch || branch;
 
   const handleStockUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,7 +52,8 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({
         .select("*")
         .eq("lens_type_id", selectedLensType)
         .eq("sph", parseFloat(formData.get("sph") as string))
-        .eq("cyl", parseFloat(formData.get("cyl") as string));
+        .eq("cyl", parseFloat(formData.get("cyl") as string))
+        .eq("branch", effectiveBranch);
 
       if (checkError) throw checkError;
 
@@ -60,7 +69,8 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({
           })
           .eq("lens_type_id", selectedLensType)
           .eq("sph", parseFloat(formData.get("sph") as string))
-          .eq("cyl", parseFloat(formData.get("cyl") as string));
+          .eq("cyl", parseFloat(formData.get("cyl") as string))
+          .eq("branch", effectiveBranch);
 
         if (updateError) throw updateError;
         toast.success("Stock updated successfully");
@@ -75,6 +85,7 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({
             quantity: parseInt(formData.get("quantity") as string),
             minimum_stock: parseInt(formData.get("minimum_stock") as string),
             reorder_point: parseInt(formData.get("reorder_point") as string),
+            branch: effectiveBranch,
           });
 
         if (insertError) throw insertError;
@@ -266,4 +277,3 @@ export const StockUpdateDialog: React.FC<StockUpdateDialogProps> = ({
     </Dialog>
   );
 };
-

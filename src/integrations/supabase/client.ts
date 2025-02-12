@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
@@ -9,13 +10,17 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storage: window.localStorage
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    flowType: 'pkce'
   },
   global: {
     headers: {
       'Content-Type': 'application/json',
     },
   },
+  db: {
+    schema: 'public'
+  }
 });
 
 // Add a helper to check connection
@@ -30,5 +35,29 @@ export const checkSupabaseConnection = async () => {
   } catch (err) {
     console.error('Failed to connect to Supabase:', err);
     return false;
+  }
+};
+
+// Add a helper to get user role and branch
+export const getUserProfile = async () => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('role, branch')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching user profile:', error);
+      throw error;
+    }
+
+    return profile;
+  } catch (err) {
+    console.error('Failed to get user profile:', err);
+    throw err;
   }
 };

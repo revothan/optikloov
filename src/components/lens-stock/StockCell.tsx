@@ -1,20 +1,30 @@
+
 import React from 'react';
-import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getBranchPrefix } from "@/lib/branch-utils";
+
+interface LensStock {
+  id: string;
+  quantity: number;
+  minimum_stock: number;
+  reorder_point: number;
+  branch: string;
+}
 
 interface StockCellProps {
-  stock: any;
+  stock: LensStock | null | undefined;
   sph: number;
   cyl: number;
   lensTypeId: string;
+  branch: string;
 }
 
-export const StockCell: React.FC<StockCellProps> = ({ stock, sph, cyl, lensTypeId }) => {
+export const StockCell: React.FC<StockCellProps> = ({ stock, sph, cyl, lensTypeId, branch }) => {
   const quantity = stock?.quantity || 0;
   const minimumStock = stock?.minimum_stock || 2;
   const reorderPoint = stock?.reorder_point || 5;
@@ -39,6 +49,7 @@ export const StockCell: React.FC<StockCellProps> = ({ stock, sph, cyl, lensTypeI
               <p>Current Stock: {quantity}</p>
               <p>Minimum Stock: {minimumStock}</p>
               <p>Reorder Point: {reorderPoint}</p>
+              <p>Branch: {getBranchPrefix(branch)}</p>
             </div>
           </TooltipContent>
         </Tooltip>

@@ -36,7 +36,23 @@ const styles = StyleSheet.create({
 });
 
 interface InvoicePDFProps {
-  invoice: any;
+  invoice: {
+    invoice_number: string;
+    sale_date: string;
+    acknowledged_by?: string;
+    customer_name: string;
+    customer_email?: string;
+    customer_address?: string;
+    customer_phone?: string;
+    payment_type?: string;
+    notes?: string;
+    total_amount: number;
+    discount_amount: number;
+    grand_total: number;
+    down_payment?: number;
+    remaining_balance?: number;
+    branch: string; // Make sure branch is included in the type
+  };
   items: any[];
 }
 
@@ -50,8 +66,8 @@ export function InvoicePDF({ invoice, items }: InvoicePDFProps) {
           invoiceNumber={invoice.invoice_number}
           saleDate={invoice.sale_date}
           acknowledgedBy={invoice.acknowledged_by}
+          branch={invoice.branch} // Pass the branch information
         />
-
         <CustomerDetails
           name={invoice.customer_name}
           email={invoice.customer_email}
@@ -59,9 +75,7 @@ export function InvoicePDF({ invoice, items }: InvoicePDFProps) {
           phone={invoice.customer_phone}
           paymentType={invoice.payment_type}
         />
-
         <ItemsTable items={items} />
-
         <View style={styles.bottomSection}>
           <View style={styles.notesSection}>
             <View style={styles.notesContainer}>
@@ -69,7 +83,6 @@ export function InvoicePDF({ invoice, items }: InvoicePDFProps) {
               <Text style={styles.notesText}>{notesText}</Text>
             </View>
           </View>
-
           <View style={styles.paymentSection}>
             <PaymentDetails
               totalAmount={invoice.total_amount}
@@ -80,9 +93,9 @@ export function InvoicePDF({ invoice, items }: InvoicePDFProps) {
             />
           </View>
         </View>
-
         <InvoiceFooter />
       </Page>
     </Document>
   );
 }
+

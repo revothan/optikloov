@@ -1,7 +1,9 @@
-import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+
+import { useState, useMemo, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, Search, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUserBranch } from "@/hooks/useUserBranch";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -12,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
+import { normalizeBranchName } from "@/lib/branch-utils";
 import {
   Dialog,
   DialogContent,
@@ -55,6 +58,7 @@ interface ProductSelectProps {
   value: string;
   onChange: (value: string) => void;
   onProductSelect: (product: Product) => void;
+  branch: string;
 }
 
 const CATEGORIES = ["Frame", "Lensa", "Soft Lens", "Sunglasses", "Others"];
@@ -68,6 +72,7 @@ export function ProductSelect({
   value,
   onChange,
   onProductSelect,
+  branch: initialBranch,
 }: ProductSelectProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -78,24 +83,69 @@ export function ProductSelect({
   const [isCustomProduct, setIsCustomProduct] = useState(false);
   const [customProductName, setCustomProductName] = useState("");
   const [customProductCategory, setCustomProductCategory] = useState("Others");
-  const [selectedCustomName, setSelectedCustomName] = useState("");
   const [activeTab, setActiveTab] = useState("products");
+
+  const queryClient = useQueryClient();
+
+  const normalizedBranch = useMemo(() => {
+    if (!initialBranch) return "";
+    try {
+      return normalizeBranchName(initialBranch);
+    } catch (error) {
+      console.error("Error normalizing branch:", error);
+      return "";
+    }
+  }, [initialBranch]);
+
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("branch")
+        .eq("id", user.id)
+        .single();
+
+      return profile;
+    },
+  });
+
+  const { data: userBranch, isLoading: isLoadingBranch } = useUserBranch();
+
+  const effectiveBranch = useMemo(() => {
+    return initialBranch || userBranch || "";
+  }, [initialBranch, userBranch]);
 
   const {
     data: products = [],
     isLoading: isLoadingProducts,
-    isError: isProductsError,
-    refetch,
+    refetch: refetchProducts,
+    error: productsError, // Add error handling
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", effectiveBranch],
     queryFn: async () => {
+      if (!effectiveBranch) {
+        console.log("No branch available");
+        return [];
+      }
+
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, store_price, category");
+        .select("id, name, store_price, category, stock_qty, track_inventory")
+        .eq("branch", effectiveBranch);
 
       if (error) throw error;
+      console.log(
+        `Fetched ${data?.length || 0} products for branch ${effectiveBranch}`,
+      );
       return data || [];
     },
+    enabled: !!effectiveBranch && open,
   });
 
   const { data: lensStock = [], isLoading: isLoadingLensStock } = useQuery({
@@ -123,7 +173,6 @@ export function ProductSelect({
       return data || [];
     },
   });
-
   const generateUUID = () => {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
       /[xy]/g,
@@ -136,8 +185,6 @@ export function ProductSelect({
   };
 
   const filteredProducts = useMemo(() => {
-    if (!Array.isArray(products)) return [];
-
     return products.filter((product) =>
       product.name?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
@@ -164,28 +211,34 @@ export function ProductSelect({
     });
   }, [lensStock, lensTypeFilter, materialFilter, sphFilter, cylFilter]);
 
-  const selectedProduct = useMemo(() => {
-    if (!Array.isArray(products)) return undefined;
-    return products.find((product) => product.id === value);
-  }, [products, value]);
+  const selectedProduct = useMemo(
+    () => products.find((product) => product.id === value),
+    [products, value],
+  );
 
-  const handleProductSelect = (product: Product) => {
-    console.log("ProductSelect - Selected Product:", product);
-    onChange(product.id);
+  const handleProductSelect = async (product: Product) => {
+    console.log("Selecting product for branch:", effectiveBranch);
 
-    const productToSelect = {
-      ...product,
-      lens_stock_id: product.lens_stock_id,
-    };
-
-    console.log("ProductSelect - Product to Select:", productToSelect);
-    onProductSelect(productToSelect);
-
-    setOpen(false);
-    setSearchQuery("");
-    if (product.id.includes("-")) {
-      setSelectedCustomName(product.name);
+    // Verify branch access before selection
+    if (!effectiveBranch) {
+      toast.error("No branch context available");
+      return;
     }
+
+    // Update selection
+    onChange(product.id);
+    onProductSelect(product);
+
+    // Close dialog
+    setOpen(false);
+
+    // Invalidate queries
+    await queryClient.invalidateQueries({ queryKey: ["products"] });
+
+    // Force refresh products
+    setTimeout(() => {
+      refetchProducts();
+    }, 100);
   };
 
   const handleLensStockSelect = async (stock: LensStock) => {
@@ -198,7 +251,6 @@ export function ProductSelect({
         return;
       }
 
-      // Get current user session
       const {
         data: { session },
         error: sessionError,
@@ -208,7 +260,6 @@ export function ProductSelect({
         return;
       }
 
-      // Get the lens type details
       const { data: lensType, error: lensTypeError } = await supabase
         .from("lens_types")
         .select("*")
@@ -223,7 +274,6 @@ export function ProductSelect({
 
       console.log("2. Found lens type:", lensType);
 
-      // Check if we already have a product for this specific lens combination
       const { data: existingProduct, error: queryError } = await supabase
         .from("products")
         .select("*")
@@ -239,7 +289,6 @@ export function ProductSelect({
         console.log("3. Found existing product:", existingProduct);
         productId = existingProduct.id;
       } else {
-        // Create a new product entry for this lens combination
         const { data: newProduct, error: insertError } = await supabase
           .from("products")
           .insert({
@@ -249,10 +298,10 @@ export function ProductSelect({
             lens_type_id: stock.lens_type_id,
             lens_sph: stock.sph,
             lens_cyl: stock.cyl,
-            brand: lensType.material, // Use material as brand for better organization
-            user_id: session.user.id, // Important: Set the user_id
-            published: true, // Optional: Set if needed
-            track_inventory: false, // Since we track through lens_stock
+            brand: lensType.material,
+            user_id: session.user.id,
+            published: true,
+            track_inventory: false,
           })
           .select()
           .single();
@@ -265,7 +314,6 @@ export function ProductSelect({
         productId = newProduct.id;
       }
 
-      // Create the final product object
       const product = {
         id: productId,
         name: productName,
@@ -298,29 +346,38 @@ export function ProductSelect({
           return;
         }
 
+        const fullBranchName = normalizeBranchName(effectiveBranch);
+        console.log("Creating custom product for branch:", fullBranchName);
+
         const { error: insertError } = await supabase.from("products").insert({
           id: customProductId,
           name: customProductName,
           store_price: 0,
           category: customProductCategory,
           user_id: userData.user.id,
+          branch: fullBranchName,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error("Error creating custom product:", insertError);
+          throw insertError;
+        }
 
         const customProduct = {
           id: customProductId,
           name: customProductName,
           store_price: 0,
           category: customProductCategory,
+          branch: fullBranchName,
         };
 
-        await refetch();
+        await queryClient.invalidateQueries({ queryKey: ["products"] });
         handleProductSelect(customProduct);
         setCustomProductName("");
         setCustomProductCategory("Others");
         setIsCustomProduct(false);
-        setOpen(false);
         toast.success("Custom product created successfully");
       } catch (error) {
         console.error("Error creating custom product:", error);
@@ -329,13 +386,30 @@ export function ProductSelect({
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (newOpen) {
+      setSearchQuery("");
+      setLensTypeFilter("");
+      setMaterialFilter("");
+      setSphFilter("");
+      setCylFilter("");
+      setIsCustomProduct(false);
+      setCustomProductName("");
+      setCustomProductCategory("Others");
+      setActiveTab("products");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    }
+  };
+
   const getDisplayName = () => {
-    if (isLoadingProducts) return "Loading...";
-    if (value?.includes("-")) return selectedCustomName;
+    if (isLoadingBranch) return "Loading branch...";
+    if (isLoadingProducts) return "Loading products...";
+    if (!effectiveBranch) return "No branch selected";
     return selectedProduct?.name || "Select product...";
   };
 
-  if (isProductsError) {
+  if (productsError) {
     return (
       <FormItem className="flex flex-col">
         <FormLabel>Product</FormLabel>
@@ -346,7 +420,11 @@ export function ProductSelect({
         >
           Error loading products
         </Button>
-        <FormMessage />
+        <FormMessage>
+          {productsError instanceof Error
+            ? productsError.message
+            : "Failed to load products"}
+        </FormMessage>
       </FormItem>
     );
   }
@@ -354,7 +432,7 @@ export function ProductSelect({
   return (
     <FormItem className="flex flex-col">
       <FormLabel>Product</FormLabel>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
           <FormControl>
             <Button

@@ -182,9 +182,24 @@ export function InvoiceTableRow({
 
     try {
       setIsPrinting(true);
-      await loadInvoiceItems();
+      const { data: fullInvoice, error } = await supabase
+        .from("invoices")
+        .select(
+          `
+          *,
+          invoice_items (
+            *,
+            products (*)
+          )
+        `,
+        )
+        .eq("id", invoice.id)
+        .single();
+
+      if (error) throw error;
+
       const blob = await pdf(
-        <InvoicePDF invoice={invoice} items={items} />,
+        <InvoicePDF invoice={fullInvoice} items={fullInvoice.invoice_items} />,
       ).toBlob();
       const url = URL.createObjectURL(blob);
       const printWindow = window.open(url);

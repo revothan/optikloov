@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -13,54 +14,157 @@ import { JobOrderTableRow } from "./job-order/JobOrderTableRow";
 import { Loader2 } from "lucide-react";
 import { SearchInput } from "./common/SearchInput";
 import { Pagination } from "@/components/ui/pagination";
+import { useSession } from "@supabase/auth-helpers-react";
+import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;
+
+interface JobOrderViewRow {
+  invoice_id: string;
+  invoice_number: string;
+  sale_date: string;
+  customer_name: string;
+  customer_phone: string | null;
+  branch: string;
+  branch_prefix: string;
+  item_id: string;
+  right_eye_mpd: number | null;
+  left_eye_mpd: number | null;
+  right_eye_sph: number | null;
+  right_eye_cyl: number | null;
+  left_eye_sph: number | null;
+  left_eye_cyl: number | null;
+}
+
+interface GroupedJobOrder {
+  id: string;
+  invoice_number: string;
+  sale_date: string;
+  customer_name: string;
+  customer_phone?: string;
+  branch: string;
+  branch_prefix: string;
+  invoice_items: Array<{
+    id: string;
+    right_eye_mpd: string | null;
+    left_eye_mpd: string | null;
+    right_eye_sph: string | null;
+    right_eye_cyl: string | null;
+    left_eye_sph: string | null;
+    left_eye_cyl: string | null;
+  }>;
+}
 
 export function JobOrderList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const session = useSession();
 
   const { data: result = { data: [], total: 0 }, isLoading } = useQuery({
     queryKey: ["job-orders", currentPage, searchQuery],
     queryFn: async () => {
-      let query = supabase
-        .from("invoices")
-        .select(`
-          *,
-          invoice_items (
-            *,
-            products (*)
-          )
-        `, { count: "exact" });
-
-      if (searchQuery) {
-        query = query.ilike("invoice_number", `%${searchQuery}%`);
+      if (!session?.user?.id) {
+        throw new Error("No authenticated user");
       }
 
-      const { data, error, count } = await query
-        .not('invoice_items', 'is', null)
-        .order("created_at", { ascending: false })
-        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
+      try {
+        const { data: userProfile, error: profileError } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.user.id)
+          .maybeSingle();
 
-      if (error) throw error;
+        if (profileError) {
+          toast.error("Error fetching user profile");
+          throw profileError;
+        }
 
-      // Filter invoices that have items with MPD values
-      const filteredData = data.filter(invoice => 
-        invoice.invoice_items.some(item => 
-          item.right_eye_mpd !== null || item.left_eye_mpd !== null
-        )
-      );
+        if (!userProfile) {
+          toast.error("User profile not found");
+          throw new Error("User profile not found");
+        }
 
-      return {
-        data: filteredData,
-        total: count || 0
-      };
+        let query = supabase
+          .from("job_orders_view")
+          .select("*", { count: "exact" });
+
+        if (searchQuery) {
+          query = query.ilike("invoice_number", `%${searchQuery}%`);
+        }
+
+        if (userProfile.role === "gadingserpongbranch") {
+          query = query.eq("branch", "Gading Serpong");
+        } else if (userProfile.role === "kelapaduabranch") {
+          query = query.eq("branch", "Kelapa Dua");
+        }
+
+        const { data, error, count } = await query
+          .order("sale_date", { ascending: false })
+          .range(
+            (currentPage - 1) * ITEMS_PER_PAGE,
+            currentPage * ITEMS_PER_PAGE - 1,
+          );
+
+        if (error) {
+          toast.error("Error fetching job orders");
+          throw error;
+        }
+
+        const groupedData = (data as JobOrderViewRow[]).reduce((acc: Record<string, GroupedJobOrder>, item) => {
+          if (!acc[item.invoice_id]) {
+            acc[item.invoice_id] = {
+              id: item.invoice_id,
+              invoice_number: item.invoice_number,
+              sale_date: item.sale_date,
+              customer_name: item.customer_name,
+              customer_phone: item.customer_phone || undefined,
+              branch: item.branch,
+              branch_prefix: item.branch_prefix,
+              invoice_items: [],
+            };
+          }
+          acc[item.invoice_id].invoice_items.push({
+            id: item.item_id,
+            right_eye_mpd: item.right_eye_mpd?.toString() || null,
+            left_eye_mpd: item.left_eye_mpd?.toString() || null,
+            right_eye_sph: item.right_eye_sph?.toString() || null,
+            right_eye_cyl: item.right_eye_cyl?.toString() || null,
+            left_eye_sph: item.left_eye_sph?.toString() || null,
+            left_eye_cyl: item.left_eye_cyl?.toString() || null,
+          });
+          return acc;
+        }, {});
+
+        return {
+          data: Object.values(groupedData),
+          total: count || 0,
+        };
+      } catch (error) {
+        console.error("Error fetching job orders:", error);
+        return { data: [], total: 0 };
+      }
     },
+    enabled: !!session?.user?.id,
+    gcTime: 5000,
   });
 
   const totalPages = Math.ceil(result.total / ITEMS_PER_PAGE);
 
-  if (isLoading) {
+  const handleSearch = (value: string) => {
+    startTransition(() => {
+      setSearchQuery(value);
+      setCurrentPage(1);
+    });
+  };
+
+  const handlePageChange = (page: number) => {
+    startTransition(() => {
+      setCurrentPage(page);
+    });
+  };
+
+  if (isLoading || isPending) {
     return (
       <div className="flex items-center justify-center h-48">
         <Loader2 className="h-6 w-6 animate-spin" />
@@ -74,7 +178,7 @@ export function JobOrderList() {
         <div className="w-72">
           <SearchInput
             value={searchQuery}
-            onChange={setSearchQuery}
+            onChange={handleSearch}
             placeholder="Search job order number..."
           />
         </div>
@@ -103,7 +207,7 @@ export function JobOrderList() {
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            onPageChange={handlePageChange}
           />
         </div>
       )}

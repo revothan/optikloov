@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { JobOrderPDF } from "@/components/invoice-pdf/JobOrderPDF";
+import JobOrderPDF from "@/components/invoice-pdf/JobOrderPDF";
 import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
 import {
   DropdownMenu,
@@ -11,7 +12,6 @@ import {
 import {
   Download,
   Printer,
-  MessageCircle,
   MoreHorizontal,
   Loader2,
 } from "lucide-react";
@@ -19,8 +19,36 @@ import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
 import { supabase } from "@/integrations/supabase/client";
 
-export function JobOrderTableRow({ invoice }: { invoice: any }) {
-  const [items, setItems] = useState<any[]>([]);
+interface JobOrderTableRowProps {
+  invoice: {
+    id: string;
+    invoice_number: string;
+    sale_date: string;
+    customer_name: string;
+    customer_phone?: string;
+    branch: string;
+    branch_prefix: string;
+  };
+}
+
+interface InvoiceItem {
+  id: string;
+  right_eye_mpd: string | null;
+  left_eye_mpd: string | null;
+  right_eye_sph: string | null;
+  right_eye_cyl: string | null;
+  left_eye_sph: string | null;
+  left_eye_cyl: string | null;
+  products?: {
+    id: string;
+    name: string;
+    brand: string;
+    category: string;
+  };
+}
+
+export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
+  const [items, setItems] = useState<InvoiceItem[]>([]);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -44,7 +72,19 @@ export function JobOrderTableRow({ invoice }: { invoice: any }) {
           .eq("invoice_id", invoice.id);
 
         if (error) throw error;
-        setItems(invoiceItems || []);
+        
+        const formattedItems: InvoiceItem[] = (invoiceItems || []).map(item => ({
+          id: item.id,
+          right_eye_mpd: item.right_eye_mpd?.toString() || null,
+          left_eye_mpd: item.left_eye_mpd?.toString() || null,
+          right_eye_sph: item.right_eye_sph?.toString() || null,
+          right_eye_cyl: item.right_eye_cyl?.toString() || null,
+          left_eye_sph: item.left_eye_sph?.toString() || null,
+          left_eye_cyl: item.left_eye_cyl?.toString() || null,
+          products: item.products,
+        }));
+        
+        setItems(formattedItems);
       } catch (error) {
         console.error("Error loading invoice items:", error);
         toast.error("Failed to load invoice items");
@@ -61,7 +101,25 @@ export function JobOrderTableRow({ invoice }: { invoice: any }) {
 
     try {
       setIsPrinting(true);
-      const blob = await pdf(<JobOrderPDF invoice={invoice} items={items} />).toBlob();
+      const { data: fullInvoice, error } = await supabase
+        .from("invoices")
+        .select(
+          `
+          *,
+          invoice_items (
+            *,
+            products (*)
+          )
+        `,
+        )
+        .eq("id", invoice.id)
+        .single();
+
+      if (error) throw error;
+
+      const blob = await pdf(
+        <JobOrderPDF invoice={fullInvoice} items={fullInvoice.invoice_items} />,
+      ).toBlob();
       const url = URL.createObjectURL(blob);
       const printWindow = window.open(url);
       printWindow?.print();
@@ -79,7 +137,7 @@ export function JobOrderTableRow({ invoice }: { invoice: any }) {
       <td className="py-4 px-4">
         <div className="flex items-center">
           <PDFDownloadLink
-            document={<JobOrderPDF invoice={invoice} items={items} />}
+            document={<JobOrderPDF invoice={{ ...invoice, branch: invoice.branch }} items={items} />}
             fileName={`job-order-${invoice.invoice_number}.pdf`}
           >
             {invoice.invoice_number}
@@ -111,7 +169,7 @@ export function JobOrderTableRow({ invoice }: { invoice: any }) {
                 <div className="flex items-center">
                   <Download className="mr-2 h-4 w-4" />
                   <PDFDownloadLink
-                    document={<JobOrderPDF invoice={invoice} items={items} />}
+                    document={<JobOrderPDF invoice={{ ...invoice, branch: invoice.branch }} items={items} />}
                     fileName={`job-order-${invoice.invoice_number}.pdf`}
                   >
                     Download PDF

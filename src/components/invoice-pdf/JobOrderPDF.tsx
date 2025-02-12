@@ -40,14 +40,14 @@ interface JobOrderPDFProps {
   items: any[];
 }
 
-export function JobOrderPDF({ invoice, items }: JobOrderPDFProps) {
+const JobOrderPDF = ({ invoice, items }: JobOrderPDFProps) => {
   const notesText = invoice.notes || "-";
 
   return (
     <Document>
       <Page size="A5" orientation="landscape" style={styles.page}>
         <Text style={styles.title}>JOB ORDER</Text>
-        
+
         <InvoiceHeader
           invoiceNumber={invoice.invoice_number}
           saleDate={invoice.sale_date}
@@ -74,4 +74,7 @@ export function JobOrderPDF({ invoice, items }: JobOrderPDFProps) {
       </Page>
     </Document>
   );
-}
+};
+
+export default JobOrderPDF;
+

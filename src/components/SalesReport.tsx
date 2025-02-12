@@ -1,4 +1,3 @@
-// SalesReport.tsx
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -40,7 +39,36 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-export function SalesReport() {
+interface SalesReportProps {
+  userBranch?: string;
+  isAdmin?: boolean;
+  dailyTarget: number;
+}
+
+function getBranchName(identifier?: string): string {
+  if (!identifier) return "";
+
+  // Normalize branch identifier to uppercase
+  const normalizedIdentifier = identifier.toLowerCase().trim();
+
+  // Map of all possible branch identifiers to their full names
+  const branchMap: Record<string, string> = {
+    gs: "Gading Serpong",
+    kd: "Kelapa Dua",
+    gadingserpongbranch: "Gading Serpong",
+    kelapaduabranch: "Kelapa Dua",
+    "gading serpong": "Gading Serpong",
+    "kelapa dua": "Kelapa Dua",
+  };
+
+  return branchMap[normalizedIdentifier] || "";
+}
+
+export function SalesReport({
+  userBranch,
+  isAdmin,
+  dailyTarget,
+}: SalesReportProps) {
   const [dateRange, setDateRange] = useState<{
     from: Date;
     to: Date;
@@ -49,10 +77,24 @@ export function SalesReport() {
     to: startOfToday(),
   });
 
+  console.log("SalesReport received props:", {
+    userBranch,
+    isAdmin,
+    dailyTarget,
+  });
+
   const { data: salesData, isLoading } = useQuery({
-    queryKey: ["sales-report", dateRange],
+    queryKey: ["sales-report", dateRange, userBranch],
     queryFn: async () => {
-      const { data: payments, error: paymentsError } = await supabase
+      // Get the standardized branch name
+      const branchName = getBranchName(userBranch);
+      console.log("Processing branch filter:", {
+        originalBranch: userBranch,
+        normalizedBranch: branchName,
+        isAdmin,
+      });
+
+      let query = supabase
         .from("payments")
         .select(
           `
@@ -73,9 +115,31 @@ export function SalesReport() {
         .lte("payment_date", endOfDay(dateRange.to).toISOString())
         .order("payment_date", { ascending: false });
 
-      if (paymentsError) throw paymentsError;
-      return payments;
+      // Apply branch filter if user is not admin and we have a valid branch name
+      if (!isAdmin && branchName) {
+        console.log("Applying branch filter:", branchName);
+        query = query.eq("branch", branchName);
+      }
+
+      const { data: payments, error: paymentsError } = await query;
+
+      if (paymentsError) {
+        console.error("Error fetching payments:", paymentsError);
+        throw paymentsError;
+      }
+
+      console.log("Query results:", {
+        dateRange,
+        userBranch,
+        branchName,
+        isAdmin,
+        resultCount: payments?.length,
+        firstPayment: payments?.[0],
+      });
+
+      return payments || [];
     },
+    enabled: true,
   });
 
   // Calculate summary statistics
@@ -96,6 +160,19 @@ export function SalesReport() {
         0,
       ) || 0,
   };
+
+  // Calculate target achievement percentage for today
+  const todaysSales =
+    salesData?.reduce((sum, payment) => {
+      const paymentDate = new Date(payment.payment_date);
+      const isToday = paymentDate.toDateString() === new Date().toDateString();
+      return isToday ? sum + (payment.amount || 0) : sum;
+    }, 0) || 0;
+
+  const achievementPercentage = Math.min(
+    (todaysSales / dailyTarget) * 100,
+    100,
+  );
 
   const handleRangeSelect = (range: string) => {
     const today = new Date();
@@ -128,16 +205,54 @@ export function SalesReport() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
+      {/* Progress indicator for today's target */}
+      <Card className="mb-4">
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <div className="flex justify-between items-baseline">
+              <h3 className="text-lg font-medium">Today's Progress</h3>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-blue-600">
+                  {formatPrice(todaysSales)}
+                </span>
+                <span className="text-sm text-gray-500 ml-2">
+                  of {formatPrice(dailyTarget)}
+                </span>
+              </div>
+            </div>
+            <div className="relative h-4 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
+                style={{ width: `${achievementPercentage}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">
+                {achievementPercentage.toFixed(1)}% achieved
+              </span>
+              <span className="text-gray-600">
+                {formatPrice(Math.max(dailyTarget - todaysSales, 0))} to go
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Branch indicator for admin */}
+      {isAdmin ? (
+        <div className="text-sm text-muted-foreground">
+          Showing sales data for all branches
+        </div>
+      ) : (
+        userBranch && (
+          <div className="text-sm text-muted-foreground">
+            Showing sales data for {getBranchName(userBranch)}
+          </div>
+        )
+      )}
+
       {/* Date Range Controls */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex gap-2">
@@ -259,6 +374,7 @@ export function SalesReport() {
               <TableHead>Payment Type</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Payment Category</TableHead>
+              {isAdmin && <TableHead>Branch</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -282,11 +398,15 @@ export function SalesReport() {
                 <TableCell>
                   {payment.is_down_payment ? "Down Payment" : "Final Payment"}
                 </TableCell>
+                {isAdmin && <TableCell>{payment.branch}</TableCell>}
               </TableRow>
             ))}
             {!salesData?.length && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4">
+                <TableCell
+                  colSpan={isAdmin ? 8 : 7}
+                  className="text-center py-4"
+                >
                   No transactions found for the selected period
                 </TableCell>
               </TableRow>
@@ -297,4 +417,3 @@ export function SalesReport() {
     </div>
   );
 }
-
