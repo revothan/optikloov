@@ -1,10 +1,21 @@
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState, useEffect } from "react";
 
 export function PaymentSignature({ form, totals }) {
-  const examiners = ["Mira", "Dzaky", "Wulan", "Danny"];
+  const examiners = ["Mira", "Dzaky", "Wulan", "Danny", "Restu", "Ilham"];
   const [paymentOption, setPaymentOption] = useState("custom");
 
   // Update down payment when payment option changes
@@ -68,7 +79,7 @@ export function PaymentSignature({ form, totals }) {
                       type="number"
                       disabled={paymentOption === "full"}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/^0+/, '');
+                        const value = e.target.value.replace(/^0+/, "");
                         field.onChange(value || "0");
                       }}
                     />
@@ -83,25 +94,51 @@ export function PaymentSignature({ form, totals }) {
       <div className="space-y-2">
         <div className="flex justify-between">
           <span>Total Amount:</span>
-          <span>{totals.totalAmount.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</span>
+          <span>
+            {totals.totalAmount.toLocaleString("id-ID", {
+              style: "currency",
+              currency: "IDR",
+            })}
+          </span>
         </div>
         <div className="flex justify-between">
           <span>Discount Amount:</span>
-          <span>{totals.discountAmount.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</span>
+          <span>
+            {totals.discountAmount.toLocaleString("id-ID", {
+              style: "currency",
+              currency: "IDR",
+            })}
+          </span>
         </div>
         <div className="flex justify-between font-bold">
           <span>Grand Total:</span>
-          <span>{totals.grandTotal.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</span>
+          <span>
+            {totals.grandTotal.toLocaleString("id-ID", {
+              style: "currency",
+              currency: "IDR",
+            })}
+          </span>
         </div>
         <div className="flex justify-between">
           <span>Down Payment:</span>
-          <span>{totals.downPayment.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</span>
+          <span>
+            {totals.downPayment.toLocaleString("id-ID", {
+              style: "currency",
+              currency: "IDR",
+            })}
+          </span>
         </div>
         <div className="flex justify-between font-bold">
           <span>Remaining Balance:</span>
-          <span>{totals.remainingBalance.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</span>
+          <span>
+            {totals.remainingBalance.toLocaleString("id-ID", {
+              style: "currency",
+              currency: "IDR",
+            })}
+          </span>
         </div>
       </div>
     </div>
   );
 }
+
