@@ -47,21 +47,36 @@ export const LensStockMatrix = () => {
   
   // Set initial branch based on user's branch
   React.useEffect(() => {
-    if (userProfile?.branch && userProfile.role !== 'admin') {
+    if (userProfile?.branch) {
       setSelectedBranch(userProfile.branch);
     }
-  }, [userProfile?.branch, userProfile?.role]);
+  }, [userProfile?.branch]);
 
   const { data: stockData, isLoading } = useQuery({
     queryKey: ['lens-stock', selectedLensType, selectedBranch],
     queryFn: async () => {
+      // Log the query parameters for debugging
+      console.log('Fetching stock data with:', {
+        lensTypeId: selectedLensType,
+        branch: selectedBranch,
+        userRole: userProfile?.role,
+        userBranch: userProfile?.branch
+      });
+
       const { data, error } = await supabase
         .from('lens_stock')
         .select('*, lens_type:lens_types(*)')
         .eq('lens_type_id', selectedLensType)
         .eq('branch', selectedBranch);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching stock data:', error);
+        throw error;
+      }
+
+      // Log the retrieved data for debugging
+      console.log('Retrieved stock data:', data);
+      
       return data as LensStock[];
     },
     enabled: !!selectedLensType && !!selectedBranch
