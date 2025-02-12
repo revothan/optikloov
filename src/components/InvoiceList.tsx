@@ -1,4 +1,3 @@
-
 import { useState, useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -161,7 +160,7 @@ export default function InvoiceList() {
         </div>
       </div>
 
-      {(isLoading || isPending) ? (
+      {isLoading || isPending ? (
         <div className="flex items-center justify-center h-48">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
@@ -180,7 +179,10 @@ export default function InvoiceList() {
                 ))}
                 {invoices?.data.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-4 text-center text-muted-foreground">
+                    <td
+                      colSpan={5}
+                      className="py-4 text-center text-muted-foreground"
+                    >
                       No invoices found
                     </td>
                   </tr>

@@ -1,7 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, Search, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUserBranch } from "@/hooks/useUserBranch.ts";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -12,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
+import { normalizedBranch } from "@/lib/branch-utils";
 import {
   Dialog,
   DialogContent,
@@ -55,6 +57,7 @@ interface ProductSelectProps {
   value: string;
   onChange: (value: string) => void;
   onProductSelect: (product: Product) => void;
+  branch: string;
 }
 
 const CATEGORIES = ["Frame", "Lensa", "Soft Lens", "Sunglasses", "Others"];
@@ -68,24 +71,8 @@ export function ProductSelect({
   value,
   onChange,
   onProductSelect,
+  branch: initialBranch,
 }: ProductSelectProps) {
-  const { data: userProfile } = useQuery({
-    queryKey: ["userProfile"],
-    queryFn: async () => {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.user?.id) throw new Error("No user session");
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.session.user.id)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [lensTypeFilter, setLensTypeFilter] = useState("");
@@ -95,38 +82,69 @@ export function ProductSelect({
   const [isCustomProduct, setIsCustomProduct] = useState(false);
   const [customProductName, setCustomProductName] = useState("");
   const [customProductCategory, setCustomProductCategory] = useState("Others");
-  const [selectedCustomName, setSelectedCustomName] = useState("");
   const [activeTab, setActiveTab] = useState("products");
 
   const queryClient = useQueryClient();
 
+  const normalizedBranch = useMemo(() => {
+    if (!initialBranch) return "";
+    try {
+      return normalizeBranchName(initialBranch);
+    } catch (error) {
+      console.error("Error normalizing branch:", error);
+      return "";
+    }
+  }, [initialBranch]);
+
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("branch")
+        .eq("id", user.id)
+        .single();
+
+      return profile;
+    },
+  });
+
+  const { data: userBranch, isLoading: isLoadingBranch } = useUserBranch();
+
+  const effectiveBranch = useMemo(() => {
+    return initialBranch || userBranch || "";
+  }, [initialBranch, userBranch]);
+
   const {
     data: products = [],
     isLoading: isLoadingProducts,
-    isError: isProductsError,
+    refetch: refetchProducts,
+    error: productsError, // Add error handling
   } = useQuery({
-    queryKey: ["products", userProfile?.branch, open],
+    queryKey: ["products", effectiveBranch],
     queryFn: async () => {
-      try {
-        console.log("Fetching products for branch:", userProfile?.branch);
-        const { data, error } = await supabase
-          .from("products")
-          .select("id, name, store_price, category, stock_qty, track_inventory")
-          .eq("branch", userProfile?.branch);
-
-        if (error) {
-          console.error("Error fetching products:", error);
-          throw error;
-        }
-        console.log("Fetched products:", data);
-        return data || [];
-      } catch (error) {
-        console.error("Products fetch error:", error);
+      if (!effectiveBranch) {
+        console.log("No branch available");
         return [];
       }
+
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, store_price, category, stock_qty, track_inventory")
+        .eq("branch", effectiveBranch);
+
+      if (error) throw error;
+      console.log(
+        `Fetched ${data?.length || 0} products for branch ${effectiveBranch}`,
+      );
+      return data || [];
     },
-    enabled: !!userProfile?.branch && open,
-    staleTime: 1000,
+    enabled: !!effectiveBranch && open,
   });
 
   const { data: lensStock = [], isLoading: isLoadingLensStock } = useQuery({
@@ -154,7 +172,6 @@ export function ProductSelect({
       return data || [];
     },
   });
-
   const generateUUID = () => {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
       /[xy]/g,
@@ -167,7 +184,6 @@ export function ProductSelect({
   };
 
   const filteredProducts = useMemo(() => {
-    if (!Array.isArray(products)) return [];
     return products.filter((product) =>
       product.name?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
@@ -194,23 +210,34 @@ export function ProductSelect({
     });
   }, [lensStock, lensTypeFilter, materialFilter, sphFilter, cylFilter]);
 
-  const selectedProduct = useMemo(() => {
-    if (!Array.isArray(products)) return undefined;
-    return products.find((product) => product.id === value);
-  }, [products, value]);
+  const selectedProduct = useMemo(
+    () => products.find((product) => product.id === value),
+    [products, value],
+  );
 
-  const handleProductSelect = (product: Product) => {
-    console.log("ProductSelect - Selected Product:", product);
+  const handleProductSelect = async (product: Product) => {
+    console.log("Selecting product for branch:", effectiveBranch);
+
+    // Verify branch access before selection
+    if (!effectiveBranch) {
+      toast.error("No branch context available");
+      return;
+    }
+
+    // Update selection
     onChange(product.id);
+    onProductSelect(product);
 
-    const productToSelect = {
-      ...product,
-      lens_stock_id: product.lens_stock_id,
-    };
-
-    console.log("ProductSelect - Product to Select:", productToSelect);
-    onProductSelect(productToSelect);
+    // Close dialog
     setOpen(false);
+
+    // Invalidate queries
+    await queryClient.invalidateQueries({ queryKey: ["products"] });
+
+    // Force refresh products
+    setTimeout(() => {
+      refetchProducts();
+    }, 100);
   };
 
   const handleLensStockSelect = async (stock: LensStock) => {
@@ -318,15 +345,13 @@ export function ProductSelect({
           return;
         }
 
-        const userBranch = userProfile?.branch || "Gading Serpong";
-
         const { error: insertError } = await supabase.from("products").insert({
           id: customProductId,
           name: customProductName,
           store_price: 0,
           category: customProductCategory,
           user_id: userData.user.id,
-          branch: userBranch,
+          branch: effectiveBranch, // Use effectiveBranch here
         });
 
         if (insertError) throw insertError;
@@ -368,19 +393,13 @@ export function ProductSelect({
   };
 
   const getDisplayName = () => {
-    if (isLoadingProducts) return "Loading...";
-    if (isProductsError) return "Error loading products";
-    
-    const selectedProduct = Array.isArray(products) 
-      ? products.find((product) => product.id === value)
-      : null;
-      
-    console.log("Selected product for display:", selectedProduct);
-    
+    if (isLoadingBranch) return "Loading branch...";
+    if (isLoadingProducts) return "Loading products...";
+    if (!effectiveBranch) return "No branch selected";
     return selectedProduct?.name || "Select product...";
   };
 
-  if (isProductsError) {
+  if (productsError) {
     return (
       <FormItem className="flex flex-col">
         <FormLabel>Product</FormLabel>
@@ -391,7 +410,11 @@ export function ProductSelect({
         >
           Error loading products
         </Button>
-        <FormMessage />
+        <FormMessage>
+          {productsError instanceof Error
+            ? productsError.message
+            : "Failed to load products"}
+        </FormMessage>
       </FormItem>
     );
   }

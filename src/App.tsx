@@ -1,10 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
@@ -47,24 +42,36 @@ const AdminRoutes = () => (
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route path="invoices" element={<InvoicesPage />} />
-          <Route 
-            path="products" 
+          <Route
+            path="products"
             element={
-              <ProtectedRoute allowedRoles={["admin", "gadingserpongbranch", "kelapaduabranch"]}>
+              <ProtectedRoute
+                allowedRoles={[
+                  "admin",
+                  "gadingserpongbranch",
+                  "kelapaduabranch",
+                ]}
+              >
                 <ProductsPage />
               </ProtectedRoute>
-            } 
+            }
           />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="job-orders" element={<JobOrdersPage />} />
           <Route path="sales" element={<SalesPage />} />
-          <Route 
-            path="lens-stock" 
+          <Route
+            path="lens-stock"
             element={
-              <ProtectedRoute allowedRoles={["admin", "gadingserpongbranch", "kelapaduabranch"]}>
+              <ProtectedRoute
+                allowedRoles={[
+                  "admin",
+                  "gadingserpongbranch",
+                  "kelapaduabranch",
+                ]}
+              >
                 <LensStockPage />
               </ProtectedRoute>
-            } 
+            }
           />
           <Route index element={<Navigate to="/admin/invoices" replace />} />
         </Routes>
