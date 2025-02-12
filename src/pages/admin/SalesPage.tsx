@@ -19,7 +19,7 @@ export default function SalesPage() {
     <div className="p-8">
       {/* Daily Target Card */}
       <Card className="mb-8 bg-gradient-to-r from-purple-50 to-blue-50 border-2">
-        <CardContent className="pt-6">
+        <CardContent>
           <div className="flex items-center justify-between">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
