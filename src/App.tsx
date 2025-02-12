@@ -1,3 +1,4 @@
+
 import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -31,7 +32,8 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      suspense: false, // Disable React Query's suspense mode
+      staleTime: 5000,
+      gcTime: 300000, // 5 minutes
     },
   },
 });
@@ -84,7 +86,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <SessionContextProvider supabaseClient={supabase} initialSession={null}>
+        <SessionContextProvider supabaseClient={supabase}>
           <TooltipProvider>
             <Toaster />
             <BrowserRouter>
