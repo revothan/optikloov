@@ -38,7 +38,6 @@ import {
 } from "date-fns";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { getFullBranchName, getBranchPrefix } from "@/lib/invoice-utils";
 
 interface SalesReportProps {
   userBranch?: string;
@@ -46,15 +45,16 @@ interface SalesReportProps {
   dailyTarget: number;
 }
 
-function getBranchNameFromRole(role?: string): string {
-  switch (role) {
-    case "gadingserpongbranch":
-      return "Gading Serpong";
-    case "kelapaduabranch":
-      return "Kelapa Dua";
-    default:
-      return "";
-  }
+function getBranchName(identifier?: string): string {
+  // Handle branch codes
+  if (identifier === "GS") return "Gading Serpong";
+  if (identifier === "KD") return "Kelapa Dua";
+  
+  // Handle role names
+  if (identifier === "gadingserpongbranch") return "Gading Serpong";
+  if (identifier === "kelapaduabranch") return "Kelapa Dua";
+  
+  return "";
 }
 
 export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportProps) {
@@ -92,7 +92,7 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
 
       // Apply branch filter if user is not admin
       if (!isAdmin && userBranch) {
-        const branchName = getBranchNameFromRole(userBranch);
+        const branchName = getBranchName(userBranch);
         console.log("Filtering payments for branch:", branchName);
         query = query.eq("branch", branchName);
       }
@@ -209,7 +209,7 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
         </div>
       ) : userBranch && (
         <div className="text-sm text-muted-foreground">
-          Showing sales data for {getFullBranchName(userBranch)}
+          Showing sales data for {getBranchName(userBranch)}
         </div>
       )}
 
