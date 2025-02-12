@@ -6,6 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getBranchPrefix } from "@/lib/branch-utils";
 
 interface LensStock {
   id: string;
@@ -48,7 +49,7 @@ export const StockCell: React.FC<StockCellProps> = ({ stock, sph, cyl, lensTypeI
               <p>Current Stock: {quantity}</p>
               <p>Minimum Stock: {minimumStock}</p>
               <p>Reorder Point: {reorderPoint}</p>
-              <p>Branch: {branch}</p>
+              <p>Branch: {getBranchPrefix(branch)}</p>
             </div>
           </TooltipContent>
         </Tooltip>

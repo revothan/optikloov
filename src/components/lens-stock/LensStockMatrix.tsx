@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StockCell } from "./StockCell";
 import { StockUpdateDialog } from "./StockUpdateDialog";
 import { LensTypeSelect } from "./LensTypeSelect";
+import { getBranchPrefix } from "@/lib/branch-utils";
 import { 
   Select,
   SelectContent,
@@ -120,13 +121,13 @@ export const LensStockMatrix = () => {
                 <SelectValue placeholder="Select branch" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Gading Serpong">Gading Serpong</SelectItem>
-                <SelectItem value="Kelapa Dua">Kelapa Dua</SelectItem>
+                <SelectItem value="Gading Serpong">GS</SelectItem>
+                <SelectItem value="Kelapa Dua">KD</SelectItem>
               </SelectContent>
             </Select>
           ) : (
             <div className="px-4 py-2 border rounded-md bg-gray-50">
-              {selectedBranch}
+              {getBranchPrefix(selectedBranch)}
             </div>
           )}
         </div>
