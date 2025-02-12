@@ -286,6 +286,7 @@ export type Database = {
       }
       lens_stock: {
         Row: {
+          branch: string
           created_at: string
           cyl: number
           id: string
@@ -297,6 +298,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          branch?: string
           created_at?: string
           cyl: number
           id?: string
@@ -308,6 +310,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          branch?: string
           created_at?: string
           cyl?: number
           id?: string
@@ -369,6 +372,50 @@ export type Database = {
           },
           {
             foreignKeyName: "lens_stock_movements_lens_stock_id_fkey"
+            columns: ["lens_stock_id"]
+            isOneToOne: false
+            referencedRelation: "lens_stock"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lens_stock_transfers: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          destination_branch: string
+          id: string
+          lens_stock_id: string | null
+          notes: string | null
+          quantity: number
+          source_branch: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          destination_branch: string
+          id?: string
+          lens_stock_id?: string | null
+          notes?: string | null
+          quantity: number
+          source_branch: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          destination_branch?: string
+          id?: string
+          lens_stock_id?: string | null
+          notes?: string | null
+          quantity?: number
+          source_branch?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lens_stock_transfers_lens_stock_id_fkey"
             columns: ["lens_stock_id"]
             isOneToOne: false
             referencedRelation: "lens_stock"
@@ -1388,7 +1435,12 @@ export type Database = {
           }
     }
     Enums: {
-      [_ in never]: never
+      movement_type:
+        | "sale"
+        | "restock"
+        | "adjustment"
+        | "transfer_in"
+        | "transfer_out"
     }
     CompositeTypes: {
       [_ in never]: never
