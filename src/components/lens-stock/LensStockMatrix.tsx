@@ -35,15 +35,18 @@ interface LensStock {
 
 // Helper to normalize branch names both ways
 const branchMap: Record<string, string> = {
-  "GS": "Gading Serpong",
-  "KD": "Kelapa Dua",
+  "GS": "GS",
+  "KD": "KD",
   "Gading Serpong": "GS",
-  "Kelapa Dua": "KD"
+  "Kelapa Dua": "KD",
+  "gadingserpongbranch": "GS",
+  "kelapaduabranch": "KD"
 };
 
 const normalizeBranchName = (branch: string | undefined) => {
   if (!branch) return "GS";
-  return branchMap[branch] || branch;
+  const normalized = branchMap[branch];
+  return normalized || "GS";
 };
 
 export const LensStockMatrix = () => {
