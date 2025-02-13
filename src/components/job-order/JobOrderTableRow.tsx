@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import JobOrderPDF from "@/components/invoice-pdf/JobOrderPDF";
@@ -40,6 +39,7 @@ import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface JobOrderTableRowProps {
   invoice: {
@@ -107,6 +107,7 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InvoiceItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const form = useForm<JobOrderFormData>({
     defaultValues: {
@@ -234,7 +235,7 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
     if (!selectedItem) return;
 
     try {
-      // Update prescription details
+      // First update the invoice_items table with prescription details
       const { error: updateError } = await supabase
         .from("invoice_items")
         .update({
@@ -253,7 +254,7 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
 
       if (updateError) throw updateError;
 
-      // Create tracking record
+      // Then create the tracking record
       const { error: trackingError } = await supabase
         .from("job_order_tracking")
         .insert({
@@ -263,6 +264,9 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
         });
 
       if (trackingError) throw trackingError;
+
+      // Invalidate the job orders query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["job-orders"] });
 
       toast.success("Job order updated successfully");
       setIsDialogOpen(false);
