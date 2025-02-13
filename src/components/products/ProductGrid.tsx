@@ -1,10 +1,34 @@
+
 import { cn } from "@/lib/utils";
 import { ProductCard } from "@/components/ProductCard";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tables } from "@/integrations/supabase/types";
 
-type MinimalProduct = Pick<Tables<"products">, "id" | "name" | "brand" | "image_url" | "online_price" | "category">;
+type MinimalProduct = {
+  id: string;
+  name: string;
+  brand: string;
+  image_url: string | null;
+  online_price: number | null;
+  category: string;
+  // Add missing required fields with default values
+  alternative_name: string | null;
+  alternative_variant_names: string | null;
+  barcode: string | null;
+  branch: string;
+  buy_price: number | null;
+  classification_id: number | null;
+  collections: string | null;
+  // Add other required fields with defaults
+  created_at: string;
+  updated_at: string;
+  track_inventory: boolean;
+  has_variants: boolean;
+  user_id: string;
+  stock_qty: number | null;
+  weight_kg: number | null;
+  [key: string]: any; // Allow other properties
+};
 
 interface ProductGridProps {
   products: MinimalProduct[];

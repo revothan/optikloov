@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -5,12 +6,14 @@ interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  disabled?: boolean; // Add disabled prop
 }
 
 export function Pagination({
   currentPage,
   totalPages,
   onPageChange,
+  disabled = false, // Add default value
 }: PaginationProps) {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
   const showStart = Math.max(0, currentPage - 2);
@@ -23,7 +26,7 @@ export function Pagination({
         variant="outline"
         size="icon"
         onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
+        disabled={currentPage === 1 || disabled}
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -34,6 +37,7 @@ export function Pagination({
             variant="outline"
             size="sm"
             onClick={() => onPageChange(1)}
+            disabled={disabled}
           >
             1
           </Button>
@@ -47,6 +51,7 @@ export function Pagination({
           variant={currentPage === page ? "default" : "outline"}
           size="sm"
           onClick={() => onPageChange(page)}
+          disabled={disabled}
         >
           {page}
         </Button>
@@ -61,6 +66,7 @@ export function Pagination({
             variant="outline"
             size="sm"
             onClick={() => onPageChange(totalPages)}
+            disabled={disabled}
           >
             {totalPages}
           </Button>
@@ -71,7 +77,7 @@ export function Pagination({
         variant="outline"
         size="icon"
         onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
+        disabled={currentPage === totalPages || disabled}
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
