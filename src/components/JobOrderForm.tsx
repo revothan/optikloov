@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,8 +45,6 @@ export function JobOrderForm({
   onClose,
 }: JobOrderFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Get current status from tracking table
   const [status, setStatus] = useState<string>("pending");
 
   useEffect(() => {
@@ -69,7 +68,7 @@ export function JobOrderForm({
 
   const form = useForm<FormData>({
     defaultValues: {
-      status: "pending", // Default to pending, will be updated by useEffect
+      status: "pending",
       right_eye: {
         sph: null,
         cyl: null,
@@ -89,21 +88,22 @@ export function JobOrderForm({
 
   useEffect(() => {
     if (selectedItem) {
+      console.log("Setting form values with selected item:", selectedItem);
       form.reset({
         status: status as "pending" | "ordered" | "completed",
         right_eye: {
-          sph: parseFloat(selectedItem.right_eye?.sph) || null,
-          cyl: parseFloat(selectedItem.right_eye?.cyl) || null,
-          axis: parseFloat(selectedItem.right_eye?.axis) || null,
-          add_power: parseFloat(selectedItem.right_eye?.add_power) || null,
-          mpd: parseFloat(selectedItem.right_eye?.mpd) || null,
+          sph: selectedItem.right_eye_sph !== null ? parseFloat(selectedItem.right_eye_sph) : null,
+          cyl: selectedItem.right_eye_cyl !== null ? parseFloat(selectedItem.right_eye_cyl) : null,
+          axis: selectedItem.right_eye_axis !== null ? parseFloat(selectedItem.right_eye_axis) : null,
+          add_power: selectedItem.right_eye_add_power !== null ? parseFloat(selectedItem.right_eye_add_power) : null,
+          mpd: selectedItem.right_eye_mpd !== null ? parseFloat(selectedItem.right_eye_mpd) : null,
         },
         left_eye: {
-          sph: parseFloat(selectedItem.left_eye?.sph) || null,
-          cyl: parseFloat(selectedItem.left_eye?.cyl) || null,
-          axis: parseFloat(selectedItem.left_eye?.axis) || null,
-          add_power: parseFloat(selectedItem.left_eye?.add_power) || null,
-          mpd: parseFloat(selectedItem.left_eye?.mpd) || null,
+          sph: selectedItem.left_eye_sph !== null ? parseFloat(selectedItem.left_eye_sph) : null,
+          cyl: selectedItem.left_eye_cyl !== null ? parseFloat(selectedItem.left_eye_cyl) : null,
+          axis: selectedItem.left_eye_axis !== null ? parseFloat(selectedItem.left_eye_axis) : null,
+          add_power: selectedItem.left_eye_add_power !== null ? parseFloat(selectedItem.left_eye_add_power) : null,
+          mpd: selectedItem.left_eye_mpd !== null ? parseFloat(selectedItem.left_eye_mpd) : null,
         },
       });
     }
@@ -116,7 +116,7 @@ export function JobOrderForm({
     try {
       console.log("Submitting update with data:", data);
 
-      // Update invoice_items table
+      // Update invoice_items table with prescription data
       const { error: updateError } = await supabase
         .from("invoice_items")
         .update({
@@ -136,7 +136,7 @@ export function JobOrderForm({
 
       if (updateError) throw updateError;
 
-      // Create tracking record
+      // Create tracking record for status update
       const { error: trackingError } = await supabase
         .from("job_order_tracking")
         .insert({
