@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +19,7 @@ import ProductDetail from "./pages/ProductDetail";
 import EyeCheckPage from "./pages/EyeCheck";
 import { WhatsAppButton } from "./components/WhatsAppButton";
 import LuckyAngpau from "./pages/LuckyAngpau";
+import KelapaDua from "./pages/KelpaDua";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -34,7 +36,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
 
   if (!session) {
-    // Redirect them to the /login page if not authenticated
     window.location.href = "/login";
     return null;
   }
@@ -80,6 +81,7 @@ const App = () => {
                   <Route path="/membership" element={<Membership />} />
                   <Route path="/luckyangpao" element={<LuckyAngpau />} />
                   <Route path="/visiontest" element={<EyeCheckPage />} />
+                  <Route path="/kelapadua" element={<KelapaDua />} />
                 </>
               )}
             </Routes>
