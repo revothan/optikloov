@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -402,7 +403,7 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
                 <TableCell>
                   {payment.is_down_payment ? "Down Payment" : "Final Payment"}
                 </TableCell>
-                {isAdmin && <TableCell>{payment.branch}</TableCell>}
+                {isAdmin && <TableCell>{getBranchDisplayName(payment.branch)}</TableCell>}
               </TableRow>
             ))}
             {!salesData?.length && (

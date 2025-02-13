@@ -539,6 +539,21 @@ export type Database = {
           },
         ]
       }
+      payments_branch_backup: {
+        Row: {
+          branch: string | null
+          id: string | null
+        }
+        Insert: {
+          branch?: string | null
+          id?: string | null
+        }
+        Update: {
+          branch?: string | null
+          id?: string | null
+        }
+        Relationships: []
+      }
       product_variants: {
         Row: {
           created_at: string
