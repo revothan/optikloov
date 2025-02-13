@@ -14,6 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PrescriptionFields } from "@/components/invoice/PrescriptionFields";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface JobOrderFormProps {
   selectedItem: any;
@@ -37,6 +39,11 @@ interface FormData {
     add_power: number | null;
     mpd: number | null;
   };
+  pv: number | null;
+  v_frame: string | null;
+  f_size: string | null;
+  prism: number | null;
+  dbl: number | null;
 }
 
 export function JobOrderForm({
@@ -83,6 +90,11 @@ export function JobOrderForm({
         add_power: null,
         mpd: null,
       },
+      pv: null,
+      v_frame: null,
+      f_size: null,
+      prism: null,
+      dbl: null,
     },
   });
 
@@ -105,6 +117,11 @@ export function JobOrderForm({
           add_power: selectedItem.left_eye_add_power !== null ? parseFloat(selectedItem.left_eye_add_power) : null,
           mpd: selectedItem.left_eye_mpd !== null ? parseFloat(selectedItem.left_eye_mpd) : null,
         },
+        pv: selectedItem.pv !== null ? parseFloat(selectedItem.pv) : null,
+        v_frame: selectedItem.v_frame,
+        f_size: selectedItem.f_size,
+        prism: selectedItem.prism !== null ? parseFloat(selectedItem.prism) : null,
+        dbl: selectedItem.dbl !== null ? parseFloat(selectedItem.dbl) : null,
       });
     }
   }, [selectedItem, status, form]);
@@ -130,6 +147,11 @@ export function JobOrderForm({
           left_eye_axis: data.left_eye.axis,
           left_eye_add_power: data.left_eye.add_power,
           left_eye_mpd: data.left_eye.mpd,
+          pv: data.pv,
+          v_frame: data.v_frame,
+          f_size: data.f_size,
+          prism: data.prism,
+          dbl: data.dbl,
           updated_at: new Date().toISOString(),
         })
         .eq("id", selectedItem.id);
@@ -184,6 +206,47 @@ export function JobOrderForm({
           <div className="space-y-6">
             <PrescriptionFields form={form} index={0} side="right" />
             <PrescriptionFields form={form} index={0} side="left" />
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>PV</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    {...form.register("pv", { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Prism</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    {...form.register("prism", { valueAsNumber: true })}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>V Frame</Label>
+                  <Input {...form.register("v_frame")} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Frame Size</Label>
+                  <Input {...form.register("f_size")} />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>DBL</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  {...form.register("dbl", { valueAsNumber: true })}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
