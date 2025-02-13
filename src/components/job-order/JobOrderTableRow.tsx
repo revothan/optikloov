@@ -6,7 +6,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -166,6 +165,25 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
         }));
 
         setItems(formattedItems);
+
+        // If we have items, set the first one as selected and pre-fill the form
+        if (formattedItems.length > 0) {
+          const firstItem = invoiceItems[0];
+          setSelectedItem(formattedItems[0]);
+          
+          // Pre-fill the form with existing values
+          form.setValue("right_eye.sph", firstItem.right_eye_sph || null);
+          form.setValue("right_eye.cyl", firstItem.right_eye_cyl || null);
+          form.setValue("right_eye.axis", firstItem.right_eye_axis || null);
+          form.setValue("right_eye.add_power", firstItem.right_eye_add_power || null);
+          form.setValue("right_eye.mpd", firstItem.right_eye_mpd || null);
+          
+          form.setValue("left_eye.sph", firstItem.left_eye_sph || null);
+          form.setValue("left_eye.cyl", firstItem.left_eye_cyl || null);
+          form.setValue("left_eye.axis", firstItem.left_eye_axis || null);
+          form.setValue("left_eye.add_power", firstItem.left_eye_add_power || null);
+          form.setValue("left_eye.mpd", firstItem.left_eye_mpd || null);
+        }
 
         // Load the latest status for the first item
         if (formattedItems.length > 0) {
