@@ -178,6 +178,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "job_orders_view"
+            referencedColumns: ["invoice_id"]
+          },
+          {
             foreignKeyName: "invoice_items_lens_stock_id_fkey"
             columns: ["lens_stock_id"]
             isOneToOne: false
@@ -284,6 +291,48 @@ export type Database = {
         }
         Relationships: []
       }
+      job_order_tracking: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          item_id: string
+          notes: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          item_id: string
+          notes?: string | null
+          status: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          item_id?: string
+          notes?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_order_tracking_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_order_tracking_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "job_orders_view"
+            referencedColumns: ["item_id"]
+          },
+        ]
+      }
       lens_stock: {
         Row: {
           branch: string
@@ -369,6 +418,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "invoices"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lens_stock_movements_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "job_orders_view"
+            referencedColumns: ["invoice_id"]
           },
           {
             foreignKeyName: "lens_stock_movements_lens_stock_id_fkey"
@@ -536,6 +592,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "invoices"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "job_orders_view"
+            referencedColumns: ["invoice_id"]
           },
         ]
       }
@@ -1306,16 +1369,10 @@ export type Database = {
           right_eye_mpd: number | null
           right_eye_sph: number | null
           sale_date: string | null
+          status: string | null
           total: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "invoice_items_invoice_id_fkey"
-            columns: ["invoice_id"]
-            isOneToOne: false
-            referencedRelation: "invoices"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "invoice_items_product_id_fkey"
             columns: ["product_id"]
