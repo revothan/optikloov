@@ -50,29 +50,36 @@ function getBranchCode(identifier?: string): string {
 
   // Normalize identifier to lowercase for case-insensitive comparison
   const normalizedIdentifier = identifier.toLowerCase().trim();
-  
-  // Map all possible identifiers to branch codes
+
+  // Map all possible identifiers to full branch names
   const branchMap: Record<string, string> = {
-    gs: "GS",
-    kd: "KD",
-    gadingserpongbranch: "GS",
-    kelapaduabranch: "KD",
-    "gading serpong": "GS",
-    "kelapa dua": "KD"
+    gs: "Gading Serpong",
+    kd: "Kelapa Dua",
+    gadingserpongbranch: "Gading Serpong",
+    kelapaduabranch: "Kelapa Dua",
+    "gading serpong": "Gading Serpong",
+    "kelapa dua": "Kelapa Dua",
   };
 
   return branchMap[normalizedIdentifier] || identifier;
 }
 
 function getBranchDisplayName(code: string): string {
+  // Since we're now using full names in the database, we can simplify this
   const displayNames: Record<string, string> = {
+    "Gading Serpong": "Gading Serpong",
+    "Kelapa Dua": "Kelapa Dua",
+    // Keep the code mappings for backward compatibility
     GS: "Gading Serpong",
-    KD: "Kelapa Dua"
+    KD: "Kelapa Dua",
   };
   return displayNames[code] || code;
 }
-
-export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportProps) {
+export function SalesReport({
+  userBranch,
+  isAdmin,
+  dailyTarget,
+}: SalesReportProps) {
   const [dateRange, setDateRange] = useState<{
     from: Date;
     to: Date;
@@ -399,7 +406,10 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
               salesData.map((payment) => (
                 <TableRow key={payment.id}>
                   <TableCell>
-                    {format(new Date(payment.payment_date), "dd MMM yyyy HH:mm")}
+                    {format(
+                      new Date(payment.payment_date),
+                      "dd MMM yyyy HH:mm",
+                    )}
                   </TableCell>
                   <TableCell>{payment.invoices?.invoice_number}</TableCell>
                   <TableCell>{payment.invoices?.customer_name}</TableCell>
