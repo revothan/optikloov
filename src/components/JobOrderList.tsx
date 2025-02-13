@@ -14,7 +14,7 @@ import { JobOrderTableRow } from "./job-order/JobOrderTableRow";
 import { Loader2 } from "lucide-react";
 import { SearchInput } from "./common/SearchInput";
 import { Pagination } from "@/components/ui/pagination";
-import { useSession } from "@supabase/auth-helpers-react";
+import { useUser } from "@/hooks/useUser";
 import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;
@@ -34,6 +34,7 @@ interface JobOrderViewRow {
   right_eye_cyl: number | null;
   left_eye_sph: number | null;
   left_eye_cyl: number | null;
+  status: string | null;
 }
 
 interface GroupedJobOrder {
@@ -44,6 +45,7 @@ interface GroupedJobOrder {
   customer_phone?: string;
   branch: string;
   branch_prefix: string;
+  status?: string;
   invoice_items: Array<{
     id: string;
     right_eye_mpd: string | null;
@@ -59,32 +61,16 @@ export function JobOrderList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [isPending, startTransition] = useTransition();
-  const session = useSession();
+  const { data: userData, isLoading: isUserLoading } = useUser();
 
   const { data: result = { data: [], total: 0 }, isLoading } = useQuery({
     queryKey: ["job-orders", currentPage, searchQuery],
     queryFn: async () => {
-      if (!session?.user?.id) {
+      if (!userData?.id) {
         throw new Error("No authenticated user");
       }
 
       try {
-        const { data: userProfile, error: profileError } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", session.user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          toast.error("Error fetching user profile");
-          throw profileError;
-        }
-
-        if (!userProfile) {
-          toast.error("User profile not found");
-          throw new Error("User profile not found");
-        }
-
         let query = supabase
           .from("job_orders_view")
           .select("*", { count: "exact" });
@@ -93,9 +79,9 @@ export function JobOrderList() {
           query = query.ilike("invoice_number", `%${searchQuery}%`);
         }
 
-        if (userProfile.role === "gadingserpongbranch") {
+        if (userData.role === "gadingserpongbranch") {
           query = query.eq("branch", "Gading Serpong");
-        } else if (userProfile.role === "kelapaduabranch") {
+        } else if (userData.role === "kelapaduabranch") {
           query = query.eq("branch", "Kelapa Dua");
         }
 
@@ -121,6 +107,7 @@ export function JobOrderList() {
               customer_phone: item.customer_phone || undefined,
               branch: item.branch,
               branch_prefix: item.branch_prefix,
+              status: item.status || undefined,
               invoice_items: [],
             };
           }
@@ -145,7 +132,7 @@ export function JobOrderList() {
         return { data: [], total: 0 };
       }
     },
-    enabled: !!session?.user?.id,
+    enabled: !isUserLoading && !!userData?.id,
     gcTime: 5000,
   });
 
@@ -164,7 +151,7 @@ export function JobOrderList() {
     });
   };
 
-  if (isLoading || isPending) {
+  if (isLoading || isPending || isUserLoading) {
     return (
       <div className="flex items-center justify-center h-48">
         <Loader2 className="h-6 w-6 animate-spin" />
@@ -191,6 +178,7 @@ export function JobOrderList() {
               <TableHead>Job Order #</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Customer</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
