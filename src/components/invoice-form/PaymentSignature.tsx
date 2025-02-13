@@ -15,7 +15,15 @@ import {
 import { useState, useEffect } from "react";
 
 export function PaymentSignature({ form, totals }) {
-  const examiners = ["Mira", "Dzaky", "Wulan", "Danny", "Restu", "Ilham"];
+  const examiners = [
+    "Mira",
+    "Dzaky",
+    "Wulan",
+    "Danny",
+    "Restu",
+    "Ilham",
+    "Tian",
+  ];
   const [paymentOption, setPaymentOption] = useState("custom");
 
   // Update down payment when payment option changes
@@ -141,4 +149,3 @@ export function PaymentSignature({ form, totals }) {
     </div>
   );
 }
-

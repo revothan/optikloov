@@ -1,3 +1,4 @@
+
 import { useMemo, useCallback } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -210,6 +211,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
 
   const updateLensStock = useCallback(
     async (items: FormData["items"], invoiceId: string, branch: string) => {
+      const fullBranchName = getFullBranchName(branch);
       const lensStockItems = items.filter((item) => item.lens_stock_id);
       if (lensStockItems.length === 0) return;
 
@@ -249,8 +251,8 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
             movement_type: "sale",
             quantity: -item.quantity,
             invoice_id: invoiceId,
-            notes: `Sale through invoice ${invoiceId} (${branch})`,
-            branch: branch,
+            notes: `Sale through invoice ${invoiceId} (${fullBranchName})`,
+            branch: fullBranchName,
           });
 
         if (movementError) {
@@ -393,7 +395,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
           right_eye_axis: item.right_eye?.axis || null,
           right_eye_add_power: item.right_eye?.add_power || null,
           right_eye_mpd: item.right_eye?.mpd || null,
-          branch: invoice.branch,
+          branch: fullBranchName,
         }));
 
         console.log("Creating invoice items...");
@@ -415,7 +417,7 @@ export const useInvoiceSubmission = (onSuccess?: () => void) => {
               payment_type: values.payment_type,
               payment_date: new Date().toISOString(),
               is_down_payment: totals.downPayment < totals.grandTotal,
-              branch: values.branch,
+              branch: fullBranchName,
             });
 
           if (paymentError) throw paymentError;
