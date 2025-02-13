@@ -38,31 +38,29 @@ const styles = StyleSheet.create({
 interface JobOrderPDFProps {
   invoice: any;
   items: any[];
+  branch: string; // Add branch to props
 }
 
-const JobOrderPDF = ({ invoice, items }: JobOrderPDFProps) => {
+const JobOrderPDF = ({ invoice, items, branch }: JobOrderPDFProps) => {
   const notesText = invoice.notes || "-";
 
   return (
     <Document>
       <Page size="A5" orientation="landscape" style={styles.page}>
         <Text style={styles.title}>JOB ORDER</Text>
-
         <InvoiceHeader
           invoiceNumber={invoice.invoice_number}
           saleDate={invoice.sale_date}
           acknowledgedBy={invoice.acknowledged_by}
+          branch={branch} // Pass the branch prop
         />
-
         <CustomerDetails
           name={invoice.customer_name}
           email={invoice.customer_email}
           address={invoice.customer_address}
           phone={invoice.customer_phone}
         />
-
         <PrescriptionDetails items={items} />
-
         <View style={styles.bottomSection}>
           <View style={styles.notesSection}>
             <View style={styles.notesContainer}>
@@ -77,4 +75,3 @@ const JobOrderPDF = ({ invoice, items }: JobOrderPDFProps) => {
 };
 
 export default JobOrderPDF;
-

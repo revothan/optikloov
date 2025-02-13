@@ -50,29 +50,36 @@ function getBranchCode(identifier?: string): string {
 
   // Normalize identifier to lowercase for case-insensitive comparison
   const normalizedIdentifier = identifier.toLowerCase().trim();
-  
-  // Map all possible identifiers to branch codes
+
+  // Map all possible identifiers to full branch names
   const branchMap: Record<string, string> = {
-    gs: "GS",
-    kd: "KD",
-    gadingserpongbranch: "GS",
-    kelapaduabranch: "KD",
-    "gading serpong": "GS",
-    "kelapa dua": "KD"
+    gs: "Gading Serpong",
+    kd: "Kelapa Dua",
+    gadingserpongbranch: "Gading Serpong",
+    kelapaduabranch: "Kelapa Dua",
+    "gading serpong": "Gading Serpong",
+    "kelapa dua": "Kelapa Dua",
   };
 
   return branchMap[normalizedIdentifier] || identifier;
 }
 
 function getBranchDisplayName(code: string): string {
+  // Since we're now using full names in the database, we can simplify this
   const displayNames: Record<string, string> = {
+    "Gading Serpong": "Gading Serpong",
+    "Kelapa Dua": "Kelapa Dua",
+    // Keep the code mappings for backward compatibility
     GS: "Gading Serpong",
-    KD: "Kelapa Dua"
+    KD: "Kelapa Dua",
   };
   return displayNames[code] || code;
 }
-
-export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportProps) {
+export function SalesReport({
+  userBranch,
+  isAdmin,
+  dailyTarget,
+}: SalesReportProps) {
   const [dateRange, setDateRange] = useState<{
     from: Date;
     to: Date;
@@ -143,7 +150,9 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
 
       return payments || [];
     },
-    enabled: true,
+    enabled: isAdmin || Boolean(userBranch), // Only run query when we have branch data or user is admin
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: true,
   });
 
   // Calculate summary statistics
@@ -252,7 +261,7 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
       ) : (
         userBranch && (
           <div className="text-sm text-muted-foreground">
-            Showing sales data for {getBranchDisplayName(getBranchCode(userBranch))}
+            Showing sales data for {getBranchDisplayName(userBranch)}
           </div>
         )
       )}
@@ -382,30 +391,45 @@ export function SalesReport({ userBranch, isAdmin, dailyTarget }: SalesReportPro
             </TableRow>
           </TableHeader>
           <TableBody>
-            {salesData?.map((payment) => (
-              <TableRow key={payment.id}>
-                <TableCell>
-                  {format(new Date(payment.payment_date), "dd MMM yyyy HH:mm")}
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={isAdmin ? 8 : 7}
+                  className="text-center py-4"
+                >
+                  <div className="flex justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
                 </TableCell>
-                <TableCell>{payment.invoices?.invoice_number}</TableCell>
-                <TableCell>{payment.invoices?.customer_name}</TableCell>
-                <TableCell>
-                  {payment.invoices?.invoice_items
-                    ?.map((item) => item.products?.name)
-                    .filter(Boolean)
-                    .join(", ")}
-                </TableCell>
-                <TableCell>{payment.payment_type}</TableCell>
-                <TableCell className="text-right">
-                  {formatPrice(payment.amount)}
-                </TableCell>
-                <TableCell>
-                  {payment.is_down_payment ? "Down Payment" : "Final Payment"}
-                </TableCell>
-                {isAdmin && <TableCell>{payment.branch}</TableCell>}
               </TableRow>
-            ))}
-            {!salesData?.length && (
+            ) : salesData?.length ? (
+              salesData.map((payment) => (
+                <TableRow key={payment.id}>
+                  <TableCell>
+                    {format(
+                      new Date(payment.payment_date),
+                      "dd MMM yyyy HH:mm",
+                    )}
+                  </TableCell>
+                  <TableCell>{payment.invoices?.invoice_number}</TableCell>
+                  <TableCell>{payment.invoices?.customer_name}</TableCell>
+                  <TableCell>
+                    {payment.invoices?.invoice_items
+                      ?.map((item) => item.products?.name)
+                      .filter(Boolean)
+                      .join(", ")}
+                  </TableCell>
+                  <TableCell>{payment.payment_type}</TableCell>
+                  <TableCell className="text-right">
+                    {formatPrice(payment.amount)}
+                  </TableCell>
+                  <TableCell>
+                    {payment.is_down_payment ? "Down Payment" : "Final Payment"}
+                  </TableCell>
+                  {isAdmin && <TableCell>{payment.branch}</TableCell>}
+                </TableRow>
+              ))
+            ) : (
               <TableRow>
                 <TableCell
                   colSpan={isAdmin ? 8 : 7}
