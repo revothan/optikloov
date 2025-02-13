@@ -15,31 +15,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { PrescriptionFields } from "../invoice/PrescriptionFields";
 import { Download, Printer, MoreHorizontal, Loader2, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
 import { supabase } from "@/integrations/supabase/client";
-import { useForm } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import { useQueryClient } from "@tanstack/react-query";
+import { JobOrderForm } from "@/components/JobOrderForm"; // We'll create this component separately
 
 interface JobOrderTableRowProps {
   invoice: {
@@ -50,40 +33,7 @@ interface JobOrderTableRowProps {
     customer_phone?: string;
     branch: string;
     branch_prefix: string;
-  };
-}
-
-interface InvoiceItem {
-  id: string;
-  right_eye_mpd: string | null;
-  left_eye_mpd: string | null;
-  right_eye_sph: string | null;
-  right_eye_cyl: string | null;
-  left_eye_sph: string | null;
-  left_eye_cyl: string | null;
-  products?: {
-    id: string;
-    name: string;
-    brand: string;
-    category: string;
-  };
-}
-
-interface JobOrderFormData {
-  status: "pending" | "ordered" | "completed";
-  right_eye: {
-    sph: number | null;
-    cyl: number | null;
-    axis: number | null;
-    add_power: number | null;
-    mpd: number | null;
-  };
-  left_eye: {
-    sph: number | null;
-    cyl: number | null;
-    axis: number | null;
-    add_power: number | null;
-    mpd: number | null;
+    status?: string;
   };
 }
 
@@ -101,33 +51,16 @@ const getStatusColor = (status: string) => {
 };
 
 export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
-  const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [items, setItems] = useState([]);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<InvoiceItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(
+    invoice.status || "pending",
+  );
   const queryClient = useQueryClient();
-
-  const form = useForm<JobOrderFormData>({
-    defaultValues: {
-      status: "pending",
-      right_eye: {
-        sph: null,
-        cyl: null,
-        axis: null,
-        add_power: null,
-        mpd: null,
-      },
-      left_eye: {
-        sph: null,
-        cyl: null,
-        axis: null,
-        add_power: null,
-        mpd: null,
-      },
-    },
-  });
 
   // Function to get the full branch name
   const getBranchFullName = (branchId: string) => {
@@ -154,50 +87,28 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
 
         if (error) throw error;
 
-        const formattedItems = (invoiceItems || []).map((item) => ({
-          id: item.id,
-          right_eye_mpd: item.right_eye_mpd?.toString() || null,
-          left_eye_mpd: item.left_eye_mpd?.toString() || null,
-          right_eye_sph: item.right_eye_sph?.toString() || null,
-          right_eye_cyl: item.right_eye_cyl?.toString() || null,
-          left_eye_sph: item.left_eye_sph?.toString() || null,
-          left_eye_cyl: item.left_eye_cyl?.toString() || null,
-          products: item.products,
-        }));
+        setItems(invoiceItems || []);
 
-        setItems(formattedItems);
-
-        // If we have items, set the first one as selected and pre-fill the form
-        if (formattedItems.length > 0) {
-          const firstItem = invoiceItems[0];
-          setSelectedItem(formattedItems[0]);
-          
-          // Pre-fill the form with existing values
-          form.setValue("right_eye.sph", firstItem.right_eye_sph || null);
-          form.setValue("right_eye.cyl", firstItem.right_eye_cyl || null);
-          form.setValue("right_eye.axis", firstItem.right_eye_axis || null);
-          form.setValue("right_eye.add_power", firstItem.right_eye_add_power || null);
-          form.setValue("right_eye.mpd", firstItem.right_eye_mpd || null);
-          
-          form.setValue("left_eye.sph", firstItem.left_eye_sph || null);
-          form.setValue("left_eye.cyl", firstItem.left_eye_cyl || null);
-          form.setValue("left_eye.axis", firstItem.left_eye_axis || null);
-          form.setValue("left_eye.add_power", firstItem.left_eye_add_power || null);
-          form.setValue("left_eye.mpd", firstItem.left_eye_mpd || null);
-        }
-
-        // Load the latest status for the first item
-        if (formattedItems.length > 0) {
+        // Load the latest status
+        if (invoiceItems?.[0]) {
           const { data: tracking } = await supabase
             .from("job_order_tracking")
             .select("*")
-            .eq("item_id", formattedItems[0].id)
+            .eq("item_id", invoiceItems[0].id)
             .order("created_at", { ascending: false })
             .limit(1);
 
-          if (tracking && tracking[0]) {
-            form.setValue("status", tracking[0].status as "pending" | "ordered" | "completed");
+          if (tracking?.[0]) {
+            setCurrentStatus(tracking[0].status);
           }
+        }
+
+        // Set the first item as selected by default
+        if (invoiceItems?.[0]) {
+          setSelectedItem(invoiceItems[0]);
+        }
+        if (invoiceItems?.[0]) {
+          console.log("Loaded invoice item:", invoiceItems[0]);
         }
       } catch (error) {
         console.error("Error loading invoice items:", error);
@@ -208,7 +119,7 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
     };
 
     loadInvoiceItems();
-  }, [invoice.id, form]);
+  }, [invoice.id]);
 
   const handlePrint = async () => {
     if (isPrinting) return;
@@ -250,49 +161,10 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
     }
   };
 
-  const onSubmit = async (data: JobOrderFormData) => {
-    if (!selectedItem) return;
-
-    try {
-      // First update the invoice_items table with prescription details
-      const { error: updateError } = await supabase
-        .from("invoice_items")
-        .update({
-          right_eye_sph: data.right_eye.sph,
-          right_eye_cyl: data.right_eye.cyl,
-          right_eye_axis: data.right_eye.axis,
-          right_eye_add_power: data.right_eye.add_power,
-          right_eye_mpd: data.right_eye.mpd,
-          left_eye_sph: data.left_eye.sph,
-          left_eye_cyl: data.left_eye.cyl,
-          left_eye_axis: data.left_eye.axis,
-          left_eye_add_power: data.left_eye.add_power,
-          left_eye_mpd: data.left_eye.mpd,
-        })
-        .eq("id", selectedItem.id);
-
-      if (updateError) throw updateError;
-
-      // Then create the tracking record
-      const { error: trackingError } = await supabase
-        .from("job_order_tracking")
-        .insert({
-          item_id: selectedItem.id,
-          status: data.status,
-          created_by: (await supabase.auth.getUser()).data.user?.id,
-        });
-
-      if (trackingError) throw trackingError;
-
-      // Invalidate the job orders query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ["job-orders"] });
-
-      toast.success("Job order updated successfully");
-      setIsDialogOpen(false);
-    } catch (error) {
-      console.error("Error updating job order:", error);
-      toast.error("Failed to update job order");
-    }
+  const handleUpdateSuccess = (newStatus: string) => {
+    setCurrentStatus(newStatus);
+    setIsDialogOpen(false);
+    queryClient.invalidateQueries({ queryKey: ["job-orders"] });
   };
 
   return (
@@ -318,9 +190,7 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
       </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>
       <td className="py-4 px-4">
-        <Badge className={getStatusColor(form.watch("status"))}>
-          {form.watch("status")}
-        </Badge>
+        <Badge className={getStatusColor(currentStatus)}>{currentStatus}</Badge>
       </td>
       <td className="py-4 px-4">
         <div className="flex items-center gap-2 justify-end">
@@ -333,10 +203,11 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
             <DropdownMenuContent align="end" className="bg-white">
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <DropdownMenuItem onSelect={(e) => {
-                    e.preventDefault();
-                    setSelectedItem(items[0]);
-                  }}>
+                  <DropdownMenuItem
+                    onSelect={(e) => {
+                      e.preventDefault();
+                    }}
+                  >
                     <Edit className="mr-2 h-4 w-4" />
                     Edit Details
                   </DropdownMenuItem>
@@ -345,49 +216,12 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
                   <DialogHeader>
                     <DialogTitle>Update Job Order</DialogTitle>
                   </DialogHeader>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Status</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="pending">Pending</SelectItem>
-                                <SelectItem value="ordered">Ordered</SelectItem>
-                                <SelectItem value="completed">Completed</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="space-y-4">
-                        <PrescriptionFields form={form} index={0} side="right" />
-                        <PrescriptionFields form={form} index={0} side="left" />
-                      </div>
-
-                      <div className="flex justify-end gap-2">
-                        <DialogClose asChild>
-                          <Button type="button" variant="outline">
-                            Cancel
-                          </Button>
-                        </DialogClose>
-                        <Button type="submit">Save Changes</Button>
-                      </div>
-                    </form>
-                  </Form>
+                  <JobOrderForm
+                    selectedItem={selectedItem}
+                    currentStatus={currentStatus}
+                    onSuccess={handleUpdateSuccess}
+                    onClose={() => setIsDialogOpen(false)}
+                  />
                 </DialogContent>
               </Dialog>
               <DropdownMenuSeparator />

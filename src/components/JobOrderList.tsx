@@ -1,4 +1,3 @@
-
 import { useState, useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -97,31 +96,34 @@ export function JobOrderList() {
           throw error;
         }
 
-        const groupedData = (data as JobOrderViewRow[]).reduce((acc: Record<string, GroupedJobOrder>, item) => {
-          if (!acc[item.invoice_id]) {
-            acc[item.invoice_id] = {
-              id: item.invoice_id,
-              invoice_number: item.invoice_number,
-              sale_date: item.sale_date,
-              customer_name: item.customer_name,
-              customer_phone: item.customer_phone || undefined,
-              branch: item.branch,
-              branch_prefix: item.branch_prefix,
-              status: item.status || undefined,
-              invoice_items: [],
-            };
-          }
-          acc[item.invoice_id].invoice_items.push({
-            id: item.item_id,
-            right_eye_mpd: item.right_eye_mpd?.toString() || null,
-            left_eye_mpd: item.left_eye_mpd?.toString() || null,
-            right_eye_sph: item.right_eye_sph?.toString() || null,
-            right_eye_cyl: item.right_eye_cyl?.toString() || null,
-            left_eye_sph: item.left_eye_sph?.toString() || null,
-            left_eye_cyl: item.left_eye_cyl?.toString() || null,
-          });
-          return acc;
-        }, {});
+        const groupedData = (data as JobOrderViewRow[]).reduce(
+          (acc: Record<string, GroupedJobOrder>, item) => {
+            if (!acc[item.invoice_id]) {
+              acc[item.invoice_id] = {
+                id: item.invoice_id,
+                invoice_number: item.invoice_number,
+                sale_date: item.sale_date,
+                customer_name: item.customer_name,
+                customer_phone: item.customer_phone || undefined,
+                branch: item.branch,
+                branch_prefix: item.branch_prefix,
+                status: item.status || undefined,
+                invoice_items: [],
+              };
+            }
+            acc[item.invoice_id].invoice_items.push({
+              id: item.item_id,
+              right_eye_mpd: item.right_eye_mpd?.toString() || null,
+              left_eye_mpd: item.left_eye_mpd?.toString() || null,
+              right_eye_sph: item.right_eye_sph?.toString() || null,
+              right_eye_cyl: item.right_eye_cyl?.toString() || null,
+              left_eye_sph: item.left_eye_sph?.toString() || null,
+              left_eye_cyl: item.left_eye_cyl?.toString() || null,
+            });
+            return acc;
+          },
+          {},
+        );
 
         return {
           data: Object.values(groupedData),
