@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { MapPin, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -91,16 +90,16 @@ const KelapaDua = () => {
       <Card className="bg-black/40 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl w-full max-w-2xl mb-12 animate-fade-in">
         <div className="space-y-6">
           <div className="text-center">
-            <h2 className="text-sm uppercase tracking-[0.2em] text-gray-400 mb-4">
+            <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-4">
               Grand Opening Promo
             </h2>
-            <p className="text-3xl font-light mb-4">
+            <p className="text-3xl font-light mb-4 text-white">
               Free 200 Frames
             </p>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-white">
               Terms & Conditions Apply
             </p>
-            <div className="mt-4 text-sm text-gray-400">
+            <div className="mt-4 text-white">
               Valid until February 28, 2025
             </div>
           </div>
@@ -111,10 +110,10 @@ const KelapaDua = () => {
       <Card className="bg-black/40 backdrop-blur-2xl border border-white/10 p-8 rounded-2xl w-full max-w-2xl mb-12 animate-fade-in">
         <div className="space-y-6">
           <div className="text-center">
-            <h2 className="text-sm uppercase tracking-[0.2em] text-gray-400 mb-4">
+            <h2 className="text-sm uppercase tracking-[0.2em] text-white mb-4">
               Location
             </h2>
-            <p className="text-lg leading-relaxed text-gray-200">
+            <p className="text-lg leading-relaxed text-white">
               Ruko Sentra Niaga
               <br />
               Jl. Danau Klp. Dua Raya No.11,

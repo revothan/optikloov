@@ -2308,6 +2308,11 @@ hyphen@^1.6.4:
   resolved "https://registry.npmjs.org/hyphen/-/hyphen-1.10.6.tgz"
   integrity sha512-fXHXcGFTXOvZTSkPJuGOQf5Lv5T/R2itiiCVPg9LxAje5D00O0pP83yJShFq5V89Ly//Gt6acj7z8pbBr34stw==
 
+i@^0.3.7:
+  version "0.3.7"
+  resolved "https://registry.npmjs.org/i/-/i-0.3.7.tgz"
+  integrity sha512-FYz4wlXgkQwIPqhzC5TdNMLSE5+GS1IIDJZY/1ZiEPCT2S3COUVZeT5OW4BmW4r5LHLQuOosSwsvnroG9GR59Q==
+
 ignore@^5.2.0, ignore@^5.3.1:
   version "5.3.2"
   resolved "https://registry.npmjs.org/ignore/-/ignore-5.3.2.tgz"
