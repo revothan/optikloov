@@ -4,7 +4,6 @@ import { Plus, Trash2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ProductSelect } from "./invoice/ProductSelect";
 import { ItemDetails } from "./invoice/ItemDetails";
-import { useState } from "react";
 
 interface InvoiceItemFormProps {
   form: UseFormReturn<any>;
@@ -80,6 +79,7 @@ export function InvoiceItemForm({ form, itemFields }: InvoiceItemFormProps) {
               form.setValue(`items.${index}.product_id`, value)
             }
             onProductSelect={(product) => handleProductSelect(product, index)}
+            branch={form.watch("branch")}
           />
 
           <ItemDetails

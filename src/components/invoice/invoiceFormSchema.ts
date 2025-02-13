@@ -31,16 +31,17 @@ export const schema = z.object({
         quantity: z.number().min(1, "Quantity must be at least 1"),
         price: z.number().min(0, "Price cannot be negative"),
         discount: z.number().min(0, "Discount cannot be negative").optional(),
-        pv: z.number().nullable(),
-        v_frame: z.string().nullable(),
-        f_size: z.string().nullable(),
-        prism: z.number().nullable(),
+        pv: z.number().nullable().optional(),
+        v_frame: z.string().nullable().optional(),
+        f_size: z.string().nullable().optional(),
+        prism: z.number().nullable().optional(),
         dbl: z.number().nullable().optional(),
-        left_eye: eyeSchema.nullable(),
-        right_eye: eyeSchema.nullable(),
+        left_eye: eyeSchema.nullable().optional(),
+        right_eye: eyeSchema.nullable().optional(),
       })
     )
     .min(1, "At least one item is required"),
 });
 
 export type FormData = z.infer<typeof schema>;
+export type InvoiceFormValues = z.infer<typeof schema>;
