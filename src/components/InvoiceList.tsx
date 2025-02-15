@@ -102,24 +102,29 @@ export default function InvoiceList() {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error: stockMovementsError } = await supabase
-        .from("lens_stock_movements")
-        .delete()
-        .eq("invoice_id", id);
+      console.log("Starting deletion process for invoice:", id);
 
-      if (stockMovementsError) throw stockMovementsError;
-
+      // With CASCADE delete, we only need to delete the invoice
       const { error: deleteError } = await supabase
         .from("invoices")
         .delete()
         .eq("id", id);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error("Error deleting invoice:", deleteError);
+        throw deleteError;
+      }
 
+      console.log("Invoice deleted successfully");
       toast.success("Invoice deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["invoices"] });
     } catch (error) {
-      console.error("Error deleting invoice:", error);
-      toast.error("Failed to delete invoice");
+      console.error("Error in deletion process:", error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to delete invoice");
+      }
     }
   };
 

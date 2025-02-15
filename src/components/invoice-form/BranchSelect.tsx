@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSession } from "@supabase/auth-helpers-react";
 import { UseFormReturn } from "react-hook-form";
 import {
   FormField,
@@ -22,9 +21,12 @@ interface BranchSelectProps {
   form: UseFormReturn<any>;
 }
 
-export function BranchSelect({ form }: BranchSelectProps) {
-  const session = useSession();
+const BRANCH_OPTIONS = [
+  { value: "Gading Serpong", label: "Gading Serpong" },
+  { value: "Kelapa Dua", label: "Kelapa Dua" },
+] as const;
 
+export function BranchSelect({ form }: BranchSelectProps) {
   const { data: userProfile } = useQuery({
     queryKey: ["userProfile"],
     queryFn: async () => {
@@ -39,31 +41,27 @@ export function BranchSelect({ form }: BranchSelectProps) {
         .single();
 
       if (error) {
-        console.error("Profile Fetch Error:", {
-          message: error.message,
-          details: error.details,
-          code: error.code,
-        });
+        console.error("Profile Fetch Error:", error);
         throw error;
       }
 
-      // Get branch from profile data
-      const branchData = data?.branch || data?.role;
-      if (!branchData) {
-        throw new Error("Cannot determine user's branch");
+      // Convert branch code to full name
+      let branchName = data?.branch;
+      if (
+        branchName === "GS" ||
+        branchName?.toLowerCase() === "gadingserpongbranch"
+      ) {
+        branchName = "Gading Serpong";
+      } else if (
+        branchName === "KD" ||
+        branchName?.toLowerCase() === "kelapaduabranch"
+      ) {
+        branchName = "Kelapa Dua";
       }
-
-      // Convert branch code to full name if needed
-      const fullBranchName =
-        branchData === "GS" || branchData === "gs"
-          ? "Gading Serpong"
-          : branchData === "KD" || branchData === "kd"
-            ? "Kelapa Dua"
-            : branchData;
 
       return {
         ...data,
-        branch: fullBranchName,
+        branch: branchName,
       };
     },
     refetchOnWindowFocus: false,
@@ -72,6 +70,7 @@ export function BranchSelect({ form }: BranchSelectProps) {
   // Set branch value whenever userProfile changes
   useEffect(() => {
     if (userProfile?.branch) {
+      console.log("Setting branch value to:", userProfile.branch);
       form.setValue("branch", userProfile.branch);
     }
   }, [userProfile, form]);
@@ -82,10 +81,13 @@ export function BranchSelect({ form }: BranchSelectProps) {
       name="branch"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Cabang</FormLabel>
+          <FormLabel>Branch</FormLabel>
           <Select
-            onValueChange={field.onChange}
-            value={userProfile?.branch || field.value}
+            value={field.value}
+            onValueChange={(value) => {
+              console.log("Branch selected:", value);
+              field.onChange(value);
+            }}
             disabled={true}
           >
             <FormControl>
@@ -94,8 +96,11 @@ export function BranchSelect({ form }: BranchSelectProps) {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="Gading Serpong">Gading Serpong</SelectItem>
-              <SelectItem value="Kelapa Dua">Kelapa Dua</SelectItem>
+              {BRANCH_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <FormMessage />
@@ -104,4 +109,3 @@ export function BranchSelect({ form }: BranchSelectProps) {
     />
   );
 }
-

@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -54,25 +53,7 @@ export function JobOrderForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<string>("pending");
 
-  useEffect(() => {
-    const fetchStatus = async () => {
-      if (selectedItem?.id) {
-        const { data: tracking } = await supabase
-          .from("job_order_tracking")
-          .select("status")
-          .eq("item_id", selectedItem.id)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (tracking?.[0]?.status) {
-          setStatus(tracking[0].status);
-        }
-      }
-    };
-
-    fetchStatus();
-  }, [selectedItem]);
-
+  // Initialize form with default values
   const form = useForm<FormData>({
     defaultValues: {
       status: "pending",
@@ -98,33 +79,55 @@ export function JobOrderForm({
     },
   });
 
+  // Fetch current status when component mounts
+  useEffect(() => {
+    const fetchStatus = async () => {
+      if (selectedItem?.id) {
+        const { data: tracking } = await supabase
+          .from("job_order_tracking")
+          .select("status")
+          .eq("item_id", selectedItem.id)
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        if (tracking?.[0]?.status) {
+          setStatus(tracking[0].status);
+        }
+      }
+    };
+
+    fetchStatus();
+  }, [selectedItem]);
+
   useEffect(() => {
     if (selectedItem) {
-      console.log("Setting form values with selected item:", selectedItem);
-      form.reset({
+      const resetData = {
         status: status as "pending" | "ordered" | "completed",
         right_eye: {
-          sph: selectedItem.right_eye_sph !== null ? parseFloat(selectedItem.right_eye_sph) : null,
-          cyl: selectedItem.right_eye_cyl !== null ? parseFloat(selectedItem.right_eye_cyl) : null,
-          axis: selectedItem.right_eye_axis !== null ? parseFloat(selectedItem.right_eye_axis) : null,
-          add_power: selectedItem.right_eye_add_power !== null ? parseFloat(selectedItem.right_eye_add_power) : null,
-          mpd: selectedItem.right_eye_mpd !== null ? parseFloat(selectedItem.right_eye_mpd) : null,
+          sph: selectedItem.right_eye_sph,
+          cyl: selectedItem.right_eye_cyl,
+          axis: selectedItem.right_eye_axis,
+          add_power: selectedItem.right_eye_add_power,
+          mpd: selectedItem.right_eye_mpd,
         },
         left_eye: {
-          sph: selectedItem.left_eye_sph !== null ? parseFloat(selectedItem.left_eye_sph) : null,
-          cyl: selectedItem.left_eye_cyl !== null ? parseFloat(selectedItem.left_eye_cyl) : null,
-          axis: selectedItem.left_eye_axis !== null ? parseFloat(selectedItem.left_eye_axis) : null,
-          add_power: selectedItem.left_eye_add_power !== null ? parseFloat(selectedItem.left_eye_add_power) : null,
-          mpd: selectedItem.left_eye_mpd !== null ? parseFloat(selectedItem.left_eye_mpd) : null,
+          sph: selectedItem.left_eye_sph,
+          cyl: selectedItem.left_eye_cyl,
+          axis: selectedItem.left_eye_axis,
+          add_power: selectedItem.left_eye_add_power,
+          mpd: selectedItem.left_eye_mpd,
         },
-        pv: selectedItem.pv !== null ? parseFloat(selectedItem.pv) : null,
+        pv: selectedItem.pv,
         v_frame: selectedItem.v_frame,
         f_size: selectedItem.f_size,
-        prism: selectedItem.prism !== null ? parseFloat(selectedItem.prism) : null,
-        dbl: selectedItem.dbl !== null ? parseFloat(selectedItem.dbl) : null,
-      });
+        prism: selectedItem.prism,
+        dbl: selectedItem.dbl,
+      };
+
+      console.log("Resetting form with actual data:", resetData);
+      form.reset(resetData);
     }
-  }, [selectedItem, status, form]);
+  }, [selectedItem]); // Remove status and form from dependencies
 
   const onSubmit = async (data: FormData) => {
     if (!selectedItem?.id) return;
@@ -206,7 +209,7 @@ export function JobOrderForm({
           <div className="space-y-6">
             <PrescriptionFields form={form} index={0} side="right" />
             <PrescriptionFields form={form} index={0} side="left" />
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -226,7 +229,7 @@ export function JobOrderForm({
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>V Frame</Label>
@@ -237,7 +240,7 @@ export function JobOrderForm({
                   <Input {...form.register("f_size")} />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label>DBL</Label>
                 <Input

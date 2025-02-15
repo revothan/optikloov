@@ -161,9 +161,21 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
     }
   };
 
-  const handleUpdateSuccess = (newStatus: string) => {
+  const handleUpdateSuccess = async (newStatus: string) => {
     setCurrentStatus(newStatus);
     setIsDialogOpen(false);
+
+    // Re-fetch invoice items to get updated data
+    const { data: updatedItems } = await supabase
+      .from("invoice_items")
+      .select("*")
+      .eq("invoice_id", invoice.id);
+
+    if (updatedItems) {
+      setItems(updatedItems);
+      setSelectedItem(updatedItems[0]); // Update selectedItem with latest data
+    }
+
     queryClient.invalidateQueries({ queryKey: ["job-orders"] });
   };
 
@@ -216,12 +228,17 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
                   <DialogHeader>
                     <DialogTitle>Update Job Order</DialogTitle>
                   </DialogHeader>
-                  <JobOrderForm
-                    selectedItem={selectedItem}
-                    currentStatus={currentStatus}
-                    onSuccess={handleUpdateSuccess}
-                    onClose={() => setIsDialogOpen(false)}
-                  />
+                  {selectedItem ? (
+                    <JobOrderForm
+                      selectedItem={selectedItem}
+                      onSuccess={handleUpdateSuccess}
+                      onClose={() => setIsDialogOpen(false)}
+                    />
+                  ) : (
+                    <div className="flex justify-center p-4">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  )}
                 </DialogContent>
               </Dialog>
               <DropdownMenuSeparator />
