@@ -1,4 +1,3 @@
-
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { InvoiceForm } from '@/components/InvoiceForm';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
@@ -9,6 +8,18 @@ describe('InvoiceForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDateNow('2025-02-10T12:00:00Z');
+
+    // Update mock implementation
+    vi.spyOn(mockSupabase, 'from').mockImplementation(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      range: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+    }));
   });
 
   it('renders all required fields', () => {

@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@supabase/auth-helpers-react";
 
 interface BranchSelectProps {
   form: UseFormReturn<any>;
@@ -27,6 +28,8 @@ const BRANCH_OPTIONS = [
 ] as const;
 
 export function BranchSelect({ form }: BranchSelectProps) {
+  const session = useSession();
+
   const { data: userProfile } = useQuery({
     queryKey: ["userProfile"],
     queryFn: async () => {
@@ -64,6 +67,7 @@ export function BranchSelect({ form }: BranchSelectProps) {
         branch: branchName,
       };
     },
+    enabled: !!session?.user?.id,
     refetchOnWindowFocus: false,
   });
 

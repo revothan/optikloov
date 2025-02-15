@@ -1,5 +1,5 @@
 import { useState, useTransition } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
@@ -18,6 +18,7 @@ export default function InvoiceList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isPending, startTransition] = useTransition();
   const session = useSession();
+  const queryClient = useQueryClient();
 
   const {
     data: invoices,
