@@ -92,27 +92,32 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
 
         setItems(invoiceItems || []);
 
-        // Load the latest status
-        if (invoiceItems?.[0]) {
+        // Find the lens item specifically
+        const lensItem = invoiceItems?.find(
+          (item) => item.products?.category === "Lensa"
+        );
+
+        // If no lens item is found, fall back to the first item
+        const itemToUse = lensItem || invoiceItems?.[0];
+
+        if (itemToUse) {
+          // Load the latest status
           const { data: tracking } = await supabase
             .from("job_order_tracking")
             .select("*")
-            .eq("item_id", invoiceItems[0].id)
+            .eq("item_id", itemToUse.id)
             .order("created_at", { ascending: false })
             .limit(1);
 
           if (tracking?.[0]) {
             setCurrentStatus(tracking[0].status);
           }
+
+          // Set the selected item
+          setSelectedItem(itemToUse);
+          console.log("Selected lens item:", itemToUse);
         }
 
-        // Set the first item as selected by default
-        if (invoiceItems?.[0]) {
-          setSelectedItem(invoiceItems[0]);
-        }
-        if (invoiceItems?.[0]) {
-          console.log("Loaded invoice item:", invoiceItems[0]);
-        }
       } catch (error) {
         console.error("Error loading invoice items:", error);
         toast.error("Failed to load invoice items");
@@ -227,36 +232,38 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-white">
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <DropdownMenuItem
-                    onSelect={(e) => {
-                      e.preventDefault();
-                    }}
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Prescription
-                  </DropdownMenuItem>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Update Prescription Details</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    {selectedItem ? (
-                      <JobOrderForm
-                        selectedItem={selectedItem}
-                        onSuccess={handleUpdateSuccess}
-                        onClose={() => setIsDialogOpen(false)}
-                      />
-                    ) : (
-                      <div className="flex justify-center p-4">
-                        <Loader2 className="h-6 w-4 animate-spin" />
-                      </div>
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
+              {selectedItem?.products?.category === "Lensa" && (
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault();
+                      }}
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit Prescription
+                    </DropdownMenuItem>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Update Prescription Details</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      {selectedItem ? (
+                        <JobOrderForm
+                          selectedItem={selectedItem}
+                          onSuccess={handleUpdateSuccess}
+                          onClose={() => setIsDialogOpen(false)}
+                        />
+                      ) : (
+                        <div className="flex justify-center p-4">
+                          <Loader2 className="h-6 w-4 animate-spin" />
+                        </div>
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handlePrint} disabled={isPrinting}>
                 {isPrinting ? (
