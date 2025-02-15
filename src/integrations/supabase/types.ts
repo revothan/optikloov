@@ -17,6 +17,7 @@ export type Database = {
           code: string | null
           country: string | null
           created_at: string | null
+          created_by: string | null
           credit_limit: number | null
           deposit: number | null
           email: string | null
@@ -33,6 +34,7 @@ export type Database = {
           state: string | null
           subdistrict: string | null
           updated_at: string | null
+          updated_by: string | null
         }
         Insert: {
           address?: string | null
@@ -41,6 +43,7 @@ export type Database = {
           code?: string | null
           country?: string | null
           created_at?: string | null
+          created_by?: string | null
           credit_limit?: number | null
           deposit?: number | null
           email?: string | null
@@ -57,6 +60,7 @@ export type Database = {
           state?: string | null
           subdistrict?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Update: {
           address?: string | null
@@ -65,6 +69,7 @@ export type Database = {
           code?: string | null
           country?: string | null
           created_at?: string | null
+          created_by?: string | null
           credit_limit?: number | null
           deposit?: number | null
           email?: string | null
@@ -81,6 +86,7 @@ export type Database = {
           state?: string | null
           subdistrict?: string | null
           updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: []
       }

@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,13 +6,6 @@ import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { PrescriptionFields } from "@/components/invoice/PrescriptionFields";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +17,6 @@ interface JobOrderFormProps {
 }
 
 interface FormData {
-  status: "pending" | "ordered" | "completed";
   right_eye: {
     sph: number | null;
     cyl: number | null;
@@ -51,12 +44,9 @@ export function JobOrderForm({
   onClose,
 }: JobOrderFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [status, setStatus] = useState<string>("pending");
 
-  // Initialize form with default values
   const form = useForm<FormData>({
     defaultValues: {
-      status: "pending",
       right_eye: {
         sph: null,
         cyl: null,
@@ -79,55 +69,32 @@ export function JobOrderForm({
     },
   });
 
-  // Fetch current status when component mounts
-  useEffect(() => {
-    const fetchStatus = async () => {
-      if (selectedItem?.id) {
-        const { data: tracking } = await supabase
-          .from("job_order_tracking")
-          .select("status")
-          .eq("item_id", selectedItem.id)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (tracking?.[0]?.status) {
-          setStatus(tracking[0].status);
-        }
-      }
-    };
-
-    fetchStatus();
-  }, [selectedItem]);
-
   useEffect(() => {
     if (selectedItem) {
-      const resetData = {
-        status: status as "pending" | "ordered" | "completed",
+      console.log("Setting form values with selected item:", selectedItem);
+      form.reset({
         right_eye: {
-          sph: selectedItem.right_eye_sph,
-          cyl: selectedItem.right_eye_cyl,
-          axis: selectedItem.right_eye_axis,
-          add_power: selectedItem.right_eye_add_power,
-          mpd: selectedItem.right_eye_mpd,
+          sph: selectedItem.right_eye_sph !== null ? parseFloat(selectedItem.right_eye_sph) : null,
+          cyl: selectedItem.right_eye_cyl !== null ? parseFloat(selectedItem.right_eye_cyl) : null,
+          axis: selectedItem.right_eye_axis !== null ? parseInt(selectedItem.right_eye_axis) : null,
+          add_power: selectedItem.right_eye_add_power !== null ? parseFloat(selectedItem.right_eye_add_power) : null,
+          mpd: selectedItem.right_eye_mpd !== null ? parseFloat(selectedItem.right_eye_mpd) : null,
         },
         left_eye: {
-          sph: selectedItem.left_eye_sph,
-          cyl: selectedItem.left_eye_cyl,
-          axis: selectedItem.left_eye_axis,
-          add_power: selectedItem.left_eye_add_power,
-          mpd: selectedItem.left_eye_mpd,
+          sph: selectedItem.left_eye_sph !== null ? parseFloat(selectedItem.left_eye_sph) : null,
+          cyl: selectedItem.left_eye_cyl !== null ? parseFloat(selectedItem.left_eye_cyl) : null,
+          axis: selectedItem.left_eye_axis !== null ? parseInt(selectedItem.left_eye_axis) : null,
+          add_power: selectedItem.left_eye_add_power !== null ? parseFloat(selectedItem.left_eye_add_power) : null,
+          mpd: selectedItem.left_eye_mpd !== null ? parseFloat(selectedItem.left_eye_mpd) : null,
         },
-        pv: selectedItem.pv,
+        pv: selectedItem.pv !== null ? parseFloat(selectedItem.pv) : null,
         v_frame: selectedItem.v_frame,
         f_size: selectedItem.f_size,
-        prism: selectedItem.prism,
-        dbl: selectedItem.dbl,
-      };
-
-      console.log("Resetting form with actual data:", resetData);
-      form.reset(resetData);
+        prism: selectedItem.prism !== null ? parseFloat(selectedItem.prism) : null,
+        dbl: selectedItem.dbl !== null ? parseFloat(selectedItem.dbl) : null,
+      });
     }
-  }, [selectedItem]); // Remove status and form from dependencies
+  }, [selectedItem, form]);
 
   const onSubmit = async (data: FormData) => {
     if (!selectedItem?.id) return;
@@ -136,7 +103,6 @@ export function JobOrderForm({
     try {
       console.log("Submitting update with data:", data);
 
-      // Update invoice_items table with prescription data
       const { error: updateError } = await supabase
         .from("invoice_items")
         .update({
@@ -161,23 +127,12 @@ export function JobOrderForm({
 
       if (updateError) throw updateError;
 
-      // Create tracking record for status update
-      const { error: trackingError } = await supabase
-        .from("job_order_tracking")
-        .insert({
-          item_id: selectedItem.id,
-          status: data.status,
-          created_by: (await supabase.auth.getUser()).data.user?.id,
-        });
-
-      if (trackingError) throw trackingError;
-
-      toast.success("Job order updated successfully");
-      onSuccess(data.status);
+      toast.success("Prescription details updated successfully");
+      onSuccess(selectedItem.status); // Pass current status since we're not changing it
       onClose();
     } catch (error) {
-      console.error("Error updating job order:", error);
-      toast.error("Failed to update job order");
+      console.error("Error updating prescription details:", error);
+      toast.error("Failed to update prescription details");
     } finally {
       setIsSubmitting(false);
     }
@@ -186,69 +141,48 @@ export function JobOrderForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-4">
-          <Select
-            value={form.watch("status")}
-            onValueChange={(value) =>
-              form.setValue(
-                "status",
-                value as "pending" | "ordered" | "completed",
-              )
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="ordered">Ordered</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <div className="space-y-6">
-            <PrescriptionFields form={form} index={0} side="right" />
-            <PrescriptionFields form={form} index={0} side="left" />
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>PV</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...form.register("pv", { valueAsNumber: true })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Prism</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...form.register("prism", { valueAsNumber: true })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>V Frame</Label>
-                  <Input {...form.register("v_frame")} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Frame Size</Label>
-                  <Input {...form.register("f_size")} />
-                </div>
-              </div>
-
+        <div className="space-y-6">
+          <PrescriptionFields form={form} index={0} side="right" />
+          <PrescriptionFields form={form} index={0} side="left" />
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>DBL</Label>
+                <Label>PV</Label>
                 <Input
                   type="number"
                   step="0.01"
-                  {...form.register("dbl", { valueAsNumber: true })}
+                  {...form.register("pv", { valueAsNumber: true })}
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Prism</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  {...form.register("prism", { valueAsNumber: true })}
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>V Frame</Label>
+                <Input {...form.register("v_frame")} />
+              </div>
+              <div className="space-y-2">
+                <Label>Frame Size</Label>
+                <Input {...form.register("f_size")} />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>DBL</Label>
+              <Input
+                type="number"
+                step="0.01"
+                {...form.register("dbl", { valueAsNumber: true })}
+              />
             </div>
           </div>
         </div>

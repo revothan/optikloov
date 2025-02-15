@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { useQueryClient } from "@tanstack/react-query";
 import { JobOrderForm } from "@/components/JobOrderForm"; // We'll create this component separately
+import { JobOrderStatus } from "@/components/job-order/JobOrderStatus";
 
 interface JobOrderTableRowProps {
   invoice: {
@@ -228,17 +229,24 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
                   <DialogHeader>
                     <DialogTitle>Update Job Order</DialogTitle>
                   </DialogHeader>
-                  {selectedItem ? (
-                    <JobOrderForm
-                      selectedItem={selectedItem}
-                      onSuccess={handleUpdateSuccess}
-                      onClose={() => setIsDialogOpen(false)}
+                  <div className="space-y-6">
+                    <JobOrderStatus
+                      itemId={selectedItem?.id}
+                      currentStatus={currentStatus}
+                      onStatusChange={handleUpdateSuccess}
                     />
-                  ) : (
-                    <div className="flex justify-center p-4">
-                      <Loader2 className="h-6 w-6 animate-spin" />
-                    </div>
-                  )}
+                    {selectedItem ? (
+                      <JobOrderForm
+                        selectedItem={selectedItem}
+                        onSuccess={handleUpdateSuccess}
+                        onClose={() => setIsDialogOpen(false)}
+                      />
+                    ) : (
+                      <div className="flex justify-center p-4">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                      </div>
+                    )}
+                  </div>
                 </DialogContent>
               </Dialog>
               <DropdownMenuSeparator />
