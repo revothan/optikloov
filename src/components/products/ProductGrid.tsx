@@ -2,12 +2,33 @@ import { cn } from "@/lib/utils";
 import { ProductCard } from "@/components/ProductCard";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tables } from "@/integrations/supabase/types";
 
-type MinimalProduct = Pick<Tables<"products">, "id" | "name" | "brand" | "image_url" | "online_price" | "category">;
+type Product = {
+  id: string;
+  name: string;
+  brand: string | null;
+  image_url: string | null;
+  online_price: number | null;
+  category: string;
+  // Add all required fields with optional or default values
+  alternative_name?: string | null;
+  alternative_variant_names?: string | null;
+  barcode?: string | null;
+  branch?: string;
+  buy_price?: number | null;
+  classification_id?: number | null;
+  collections?: string | null;
+  comission?: number | null;
+  condition_id?: string | null;
+  description?: string | null;
+  hold_qty?: number | null;
+  weight_kg?: number | null;
+  // Add other required fields with defaults
+  [key: string]: any; // Allow other properties
+};
 
 interface ProductGridProps {
-  products: MinimalProduct[];
+  products: Product[];
   isLoading: boolean;
   error: Error | null;
   view: "grid" | "list";

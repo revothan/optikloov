@@ -1,3 +1,4 @@
+
 import { useFormContext } from "react-hook-form";
 import { FormField } from "@/components/ui/form";
 import { ProductSelect } from "@/components/invoice/ProductSelect";
@@ -5,15 +6,15 @@ import type { InvoiceFormValues } from "./invoiceFormSchema";
 
 interface InvoiceItemFormProps {
   index: number;
-  handleProductSelect: (product: any) => void; // Adjust type as necessary
+  handleProductSelect: (product: any) => void;
 }
 
 export function InvoiceItemForm({
   index,
   handleProductSelect,
 }: InvoiceItemFormProps) {
-  const { control } = useFormContext<InvoiceFormValues>();
-  const { branch } = useFormContext<InvoiceFormValues>();
+  const { control, watch } = useFormContext<InvoiceFormValues>();
+  const branch = watch("branch"); // Get branch from form context
 
   return (
     <div className="space-y-4">
@@ -25,11 +26,10 @@ export function InvoiceItemForm({
             value={field.value}
             onChange={field.onChange}
             onProductSelect={handleProductSelect}
-            branch={branch} // Pass the branch from the form context
+            branch={branch}
           />
         )}
       />
-      {/* Add other form fields as necessary */}
     </div>
   );
 }

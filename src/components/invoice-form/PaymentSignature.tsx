@@ -23,6 +23,7 @@ export function PaymentSignature({ form, totals }) {
     "Restu",
     "Ilham",
     "Tian",
+    "Ani",
   ];
   const [paymentOption, setPaymentOption] = useState("custom");
 

@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useRef, useEffect } from "react";
@@ -7,12 +8,14 @@ interface SearchInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  disabled?: boolean; // Add disabled prop
 }
 
 export function SearchInput({
   value,
   onChange,
   placeholder = "Search...",
+  disabled = false, // Add default value
 }: SearchInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const debouncedValue = useDebounce(value, 300);
@@ -38,9 +41,9 @@ export function SearchInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="pl-10"
+        disabled={disabled}
         autoFocus
       />
     </div>
   );
 }
-
