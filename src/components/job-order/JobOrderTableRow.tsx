@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Download, Printer, MoreHorizontal, Loader2, Edit } from "lucide-react";
+import { Download, Printer, MoreHorizontal, Loader2, Edit, PencilLine } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +25,6 @@ import { Badge } from "@/components/ui/badge";
 import { useQueryClient } from "@tanstack/react-query";
 import { JobOrderForm } from "@/components/JobOrderForm";
 import { JobOrderStatus } from "@/components/job-order/JobOrderStatus";
-import { Separator } from "@/components/ui/separator";
 
 interface JobOrderTableRowProps {
   invoice: {
@@ -60,6 +59,7 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(
     invoice.status || "pending",
   );
@@ -192,7 +192,31 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
       </td>
       <td className="py-4 px-4">{invoice.customer_name}</td>
       <td className="py-4 px-4">
-        <Badge className={getStatusColor(currentStatus)}>{currentStatus}</Badge>
+        <div className="flex items-center gap-2">
+          <Badge className={getStatusColor(currentStatus)}>{currentStatus}</Badge>
+          <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6">
+                <PencilLine className="h-3 w-3" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Update Status</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <JobOrderStatus
+                  itemId={selectedItem?.id}
+                  currentStatus={currentStatus}
+                  onStatusChange={(newStatus) => {
+                    handleUpdateSuccess(newStatus);
+                    setIsStatusDialogOpen(false);
+                  }}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </td>
       <td className="py-4 px-4">
         <div className="flex items-center gap-2 justify-end">
@@ -211,39 +235,25 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
                     }}
                   >
                     <Edit className="mr-2 h-4 w-4" />
-                    Edit Details
+                    Edit Prescription
                   </DropdownMenuItem>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>Update Job Order</DialogTitle>
+                    <DialogTitle>Update Prescription Details</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-medium">Status</h3>
-                      <JobOrderStatus
-                        itemId={selectedItem?.id}
-                        currentStatus={currentStatus}
-                        onStatusChange={handleUpdateSuccess}
+                  <div className="space-y-4">
+                    {selectedItem ? (
+                      <JobOrderForm
+                        selectedItem={selectedItem}
+                        onSuccess={handleUpdateSuccess}
+                        onClose={() => setIsDialogOpen(false)}
                       />
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-medium">Prescription Details</h3>
-                      {selectedItem ? (
-                        <JobOrderForm
-                          selectedItem={selectedItem}
-                          onSuccess={handleUpdateSuccess}
-                          onClose={() => setIsDialogOpen(false)}
-                        />
-                      ) : (
-                        <div className="flex justify-center p-4">
-                          <Loader2 className="h-6 w-4 animate-spin" />
-                        </div>
-                      )}
-                    </div>
+                    ) : (
+                      <div className="flex justify-center p-4">
+                        <Loader2 className="h-6 w-4 animate-spin" />
+                      </div>
+                    )}
                   </div>
                 </DialogContent>
               </Dialog>
