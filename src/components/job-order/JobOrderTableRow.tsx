@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import JobOrderPDF from "@/components/invoice-pdf/JobOrderPDF";
@@ -22,8 +23,9 @@ import { WhatsAppButton } from "@/components/admin/WhatsAppButton";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { useQueryClient } from "@tanstack/react-query";
-import { JobOrderForm } from "@/components/JobOrderForm"; // We'll create this component separately
+import { JobOrderForm } from "@/components/JobOrderForm";
 import { JobOrderStatus } from "@/components/job-order/JobOrderStatus";
+import { Separator } from "@/components/ui/separator";
 
 interface JobOrderTableRowProps {
   invoice: {
@@ -122,6 +124,11 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
     loadInvoiceItems();
   }, [invoice.id]);
 
+  const handleUpdateSuccess = async (newStatus: string) => {
+    setCurrentStatus(newStatus);
+    queryClient.invalidateQueries({ queryKey: ["job-orders"] });
+  };
+
   const handlePrint = async () => {
     if (isPrinting) return;
 
@@ -160,24 +167,6 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
       setIsPrinting(false);
       setIsDropdownOpen(false);
     }
-  };
-
-  const handleUpdateSuccess = async (newStatus: string) => {
-    setCurrentStatus(newStatus);
-    setIsDialogOpen(false);
-
-    // Re-fetch invoice items to get updated data
-    const { data: updatedItems } = await supabase
-      .from("invoice_items")
-      .select("*")
-      .eq("invoice_id", invoice.id);
-
-    if (updatedItems) {
-      setItems(updatedItems);
-      setSelectedItem(updatedItems[0]); // Update selectedItem with latest data
-    }
-
-    queryClient.invalidateQueries({ queryKey: ["job-orders"] });
   };
 
   return (
@@ -230,22 +219,31 @@ export function JobOrderTableRow({ invoice }: JobOrderTableRowProps) {
                     <DialogTitle>Update Job Order</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-6">
-                    <JobOrderStatus
-                      itemId={selectedItem?.id}
-                      currentStatus={currentStatus}
-                      onStatusChange={handleUpdateSuccess}
-                    />
-                    {selectedItem ? (
-                      <JobOrderForm
-                        selectedItem={selectedItem}
-                        onSuccess={handleUpdateSuccess}
-                        onClose={() => setIsDialogOpen(false)}
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-medium">Status</h3>
+                      <JobOrderStatus
+                        itemId={selectedItem?.id}
+                        currentStatus={currentStatus}
+                        onStatusChange={handleUpdateSuccess}
                       />
-                    ) : (
-                      <div className="flex justify-center p-4">
-                        <Loader2 className="h-6 w-6 animate-spin" />
-                      </div>
-                    )}
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-medium">Prescription Details</h3>
+                      {selectedItem ? (
+                        <JobOrderForm
+                          selectedItem={selectedItem}
+                          onSuccess={handleUpdateSuccess}
+                          onClose={() => setIsDialogOpen(false)}
+                        />
+                      ) : (
+                        <div className="flex justify-center p-4">
+                          <Loader2 className="h-6 w-4 animate-spin" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </DialogContent>
               </Dialog>
