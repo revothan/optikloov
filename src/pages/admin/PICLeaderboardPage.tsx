@@ -1,11 +1,16 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { Trophy, Medal, Award, Star, Crown, ListOrdered } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -18,22 +23,15 @@ interface LeaderboardEntry {
   branch: string;
 }
 
-// Define all PICs and their branches
-const ALL_PICS = [
-  { name: "Mira", branch: "Gading Serpong" },
-  { name: "Tian", branch: "Gading Serpong" },
-  { name: "Danny", branch: "Gading Serpong" },
-  { name: "Dzaky", branch: "Gading Serpong" },
-  { name: "Restu", branch: "Kelapa Dua" },
-  { name: "Ilham", branch: "Kelapa Dua" },
-  { name: "Ani", branch: "Kelapa Dua" },
-  { name: "Wulan", branch: "Kelapa Dua" },
-];
+const BRANCHES = ["Gading Serpong", "Kelapa Dua"];
 
 export default function PICLeaderboardPage() {
   const currentDate = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
+  const [selectedMonth, setSelectedMonth] = useState(
+    currentDate.getMonth() + 1,
+  );
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+  const [selectedBranch, setSelectedBranch] = useState(BRANCHES[0]);
 
   const { data: leaderboardData, isLoading } = useQuery({
     queryKey: ["pic-leaderboard", selectedMonth, selectedYear],
@@ -46,24 +44,7 @@ export default function PICLeaderboardPage() {
         .order("sale_amount", { ascending: false });
 
       if (error) throw error;
-
-      // Create a map of existing entries
-      const entriesMap = new Map(
-        (data as LeaderboardEntry[]).map(entry => [entry.pic_name, entry])
-      );
-
-      // Combine with ALL_PICS to include those with no transactions
-      const completeData = ALL_PICS.map(pic => ({
-        pic_name: pic.name,
-        sale_amount: entriesMap.get(pic.name)?.sale_amount || 0,
-        invoice_count: entriesMap.get(pic.name)?.invoice_count || 0,
-        month: selectedMonth,
-        year: selectedYear,
-        branch: pic.branch
-      }));
-
-      // Sort by sale amount
-      return completeData.sort((a, b) => b.sale_amount - a.sale_amount);
+      return data as LeaderboardEntry[];
     },
   });
 
@@ -98,14 +79,18 @@ export default function PICLeaderboardPage() {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      {/* Header with Period Selection */}
+      {/* Header with Period and Branch Selection */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <Crown className="h-8 w-8 text-yellow-500" />
-          {format(new Date(selectedYear, selectedMonth - 1), "MMMM yyyy")} Leaderboard
+          {format(new Date(selectedYear, selectedMonth - 1), "MMMM yyyy")}{" "}
+          Leaderboard
         </h1>
         <div className="flex gap-4">
-          <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
+          <Select
+            value={selectedMonth.toString()}
+            onValueChange={(value) => setSelectedMonth(parseInt(value))}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select month" />
             </SelectTrigger>
@@ -117,7 +102,10 @@ export default function PICLeaderboardPage() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+          <Select
+            value={selectedYear.toString()}
+            onValueChange={(value) => setSelectedYear(parseInt(value))}
+          >
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="Select year" />
             </SelectTrigger>
@@ -129,17 +117,26 @@ export default function PICLeaderboardPage() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select branch" />
+            </SelectTrigger>
+            <SelectContent>
+              {BRANCHES.map((branch) => (
+                <SelectItem key={branch} value={branch}>
+                  {branch}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       {/* Leaderboard List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Gading Serpong Branch */}
+      <div className="space-y-4">
         <div className="space-y-4">
-          <h2 className="text-2xl font-semibold">Gading Serpong</h2>
-          <div className="space-y-4">
-            {isLoading ? (
-              Array.from({ length: 4 }).map((_, i) => (
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
                 <Card key={i} className="relative overflow-hidden">
                   <CardHeader className="pb-2">
                     <Skeleton className="h-6 w-24" />
@@ -150,16 +147,16 @@ export default function PICLeaderboardPage() {
                   </CardContent>
                 </Card>
               ))
-            ) : (
-              leaderboardData?.filter(entry => entry.branch === "Gading Serpong")
+            : leaderboardData
+                ?.filter((entry) => entry.branch === selectedBranch)
                 .map((entry, index) => (
-                  <Card 
-                    key={entry.pic_name} 
+                  <Card
+                    key={entry.pic_name}
                     className={cn(
-                      "relative overflow-hidden transition-transform hover:scale-105",
+                      "relative overflow-hidden transition-all duration-300 ease-in-out hover:scale-[1.02] hover:shadow-lg",
                       index === 0 && "border-yellow-500 shadow-yellow-200",
                       index === 1 && "border-gray-400 shadow-gray-200",
-                      index === 2 && "border-amber-600 shadow-amber-200"
+                      index === 2 && "border-amber-600 shadow-amber-200",
                     )}
                   >
                     <div className="absolute top-4 right-4">
@@ -178,69 +175,16 @@ export default function PICLeaderboardPage() {
                         }).format(entry.sale_amount)}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {entry.invoice_count} {entry.invoice_count === 1 ? "transaction" : "transactions"}
+                        {entry.invoice_count}{" "}
+                        {entry.invoice_count === 1
+                          ? "transaction"
+                          : "transactions"}
                       </p>
                     </CardContent>
                   </Card>
-                ))
-            )}
-          </div>
-        </div>
-
-        {/* Kelapa Dua Branch */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-semibold">Kelapa Dua</h2>
-          <div className="space-y-4">
-            {isLoading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i} className="relative overflow-hidden">
-                  <CardHeader className="pb-2">
-                    <Skeleton className="h-6 w-24" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-12 w-full mb-2" />
-                    <Skeleton className="h-4 w-24" />
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              leaderboardData?.filter(entry => entry.branch === "Kelapa Dua")
-                .map((entry, index) => (
-                  <Card 
-                    key={entry.pic_name} 
-                    className={cn(
-                      "relative overflow-hidden transition-transform hover:scale-105",
-                      index === 0 && "border-yellow-500 shadow-yellow-200",
-                      index === 1 && "border-gray-400 shadow-gray-200",
-                      index === 2 && "border-amber-600 shadow-amber-200"
-                    )}
-                  >
-                    <div className="absolute top-4 right-4">
-                      <RankBadge rank={index + 1} />
-                    </div>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-xl">
-                        {index + 1}. {entry.pic_name}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold mb-2">
-                        {new Intl.NumberFormat("id-ID", {
-                          style: "currency",
-                          currency: "IDR",
-                        }).format(entry.sale_amount)}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {entry.invoice_count} {entry.invoice_count === 1 ? "transaction" : "transactions"}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))
-            )}
-          </div>
+                ))}
         </div>
       </div>
     </div>
   );
 }
-
