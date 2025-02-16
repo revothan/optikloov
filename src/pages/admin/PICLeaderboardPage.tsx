@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { Trophy, Medal, Award, Star, Crown } from "lucide-react";
+import { Trophy, Medal, Award, Star, Crown, ListOrdered } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,6 +17,18 @@ interface LeaderboardEntry {
   year: number;
   branch: string;
 }
+
+// Define all PICs and their branches
+const ALL_PICS = [
+  { name: "Mira", branch: "Gading Serpong" },
+  { name: "Tian", branch: "Gading Serpong" },
+  { name: "Danny", branch: "Gading Serpong" },
+  { name: "Dzaky", branch: "Gading Serpong" },
+  { name: "Restu", branch: "Kelapa Dua" },
+  { name: "Ilham", branch: "Kelapa Dua" },
+  { name: "Ani", branch: "Kelapa Dua" },
+  { name: "Wulan", branch: "Kelapa Dua" },
+];
 
 export default function PICLeaderboardPage() {
   const currentDate = new Date();
@@ -34,7 +46,24 @@ export default function PICLeaderboardPage() {
         .order("sale_amount", { ascending: false });
 
       if (error) throw error;
-      return data as LeaderboardEntry[];
+
+      // Create a map of existing entries
+      const entriesMap = new Map(
+        (data as LeaderboardEntry[]).map(entry => [entry.pic_name, entry])
+      );
+
+      // Combine with ALL_PICS to include those with no transactions
+      const completeData = ALL_PICS.map(pic => ({
+        pic_name: pic.name,
+        sale_amount: entriesMap.get(pic.name)?.sale_amount || 0,
+        invoice_count: entriesMap.get(pic.name)?.invoice_count || 0,
+        month: selectedMonth,
+        year: selectedYear,
+        branch: pic.branch
+      }));
+
+      // Sort by sale amount
+      return completeData.sort((a, b) => b.sale_amount - a.sale_amount);
     },
   });
 
@@ -63,7 +92,7 @@ export default function PICLeaderboardPage() {
       case 3:
         return <Award className="h-8 w-8 text-amber-600" />;
       default:
-        return <Star className="h-8 w-8 text-blue-400" />;
+        return <ListOrdered className="h-8 w-8 text-blue-400" />;
     }
   };
 
@@ -103,64 +132,115 @@ export default function PICLeaderboardPage() {
         </div>
       </div>
 
-      {/* Leaderboard Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isLoading ? (
-          // Loading skeletons
-          Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="relative overflow-hidden">
-              <CardHeader className="pb-2">
-                <Skeleton className="h-6 w-24" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-12 w-full mb-2" />
-                <Skeleton className="h-4 w-24" />
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          // Actual leaderboard entries
-          leaderboardData?.map((entry, index) => (
-            <Card 
-              key={entry.pic_name} 
-              className={cn(
-                "relative overflow-hidden transition-transform hover:scale-105",
-                index === 0 && "border-yellow-500 shadow-yellow-200",
-                index === 1 && "border-gray-400 shadow-gray-200",
-                index === 2 && "border-amber-600 shadow-amber-200"
-              )}
-            >
-              <div className="absolute top-4 right-4">
-                <RankBadge rank={index + 1} />
-              </div>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl">
-                  {entry.pic_name}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">{entry.branch}</p>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold mb-2">
-                  {new Intl.NumberFormat("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                  }).format(entry.sale_amount)}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {entry.invoice_count} invoices this month
-                </p>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+      {/* Leaderboard List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Gading Serpong Branch */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-semibold">Gading Serpong</h2>
+          <div className="space-y-4">
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i} className="relative overflow-hidden">
+                  <CardHeader className="pb-2">
+                    <Skeleton className="h-6 w-24" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-12 w-full mb-2" />
+                    <Skeleton className="h-4 w-24" />
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              leaderboardData?.filter(entry => entry.branch === "Gading Serpong")
+                .map((entry, index) => (
+                  <Card 
+                    key={entry.pic_name} 
+                    className={cn(
+                      "relative overflow-hidden transition-transform hover:scale-105",
+                      index === 0 && "border-yellow-500 shadow-yellow-200",
+                      index === 1 && "border-gray-400 shadow-gray-200",
+                      index === 2 && "border-amber-600 shadow-amber-200"
+                    )}
+                  >
+                    <div className="absolute top-4 right-4">
+                      <RankBadge rank={index + 1} />
+                    </div>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-xl">
+                        {index + 1}. {entry.pic_name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold mb-2">
+                        {new Intl.NumberFormat("id-ID", {
+                          style: "currency",
+                          currency: "IDR",
+                        }).format(entry.sale_amount)}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {entry.invoice_count} {entry.invoice_count === 1 ? "transaction" : "transactions"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))
+            )}
+          </div>
+        </div>
 
-      {/* Empty State */}
-      {!isLoading && (!leaderboardData || leaderboardData.length === 0) && (
-        <Card className="p-8 text-center">
-          <p className="text-muted-foreground">No sales data available for this period.</p>
-        </Card>
-      )}
+        {/* Kelapa Dua Branch */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-semibold">Kelapa Dua</h2>
+          <div className="space-y-4">
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i} className="relative overflow-hidden">
+                  <CardHeader className="pb-2">
+                    <Skeleton className="h-6 w-24" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-12 w-full mb-2" />
+                    <Skeleton className="h-4 w-24" />
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              leaderboardData?.filter(entry => entry.branch === "Kelapa Dua")
+                .map((entry, index) => (
+                  <Card 
+                    key={entry.pic_name} 
+                    className={cn(
+                      "relative overflow-hidden transition-transform hover:scale-105",
+                      index === 0 && "border-yellow-500 shadow-yellow-200",
+                      index === 1 && "border-gray-400 shadow-gray-200",
+                      index === 2 && "border-amber-600 shadow-amber-200"
+                    )}
+                  >
+                    <div className="absolute top-4 right-4">
+                      <RankBadge rank={index + 1} />
+                    </div>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-xl">
+                        {index + 1}. {entry.pic_name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold mb-2">
+                        {new Intl.NumberFormat("id-ID", {
+                          style: "currency",
+                          currency: "IDR",
+                        }).format(entry.sale_amount)}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {entry.invoice_count} {entry.invoice_count === 1 ? "transaction" : "transactions"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+
