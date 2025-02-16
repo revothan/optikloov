@@ -141,6 +141,7 @@ export function InvoiceTableRow({
           payment_type: paymentType,
           payment_date: new Date().toISOString(),
           is_down_payment: false, // This is the final payment
+          branch: invoice.branch, // Add branch information from invoice
         });
 
         if (paymentError) throw paymentError;
@@ -174,7 +175,7 @@ export function InvoiceTableRow({
         setIsDropdownOpen(false);
       }
     },
-    [invoice.id, invoice.grand_total, invoice.remaining_balance, queryClient],
+    [invoice.id, invoice.grand_total, invoice.remaining_balance, invoice.branch, queryClient],
   );
 
   const handlePrint = async () => {
