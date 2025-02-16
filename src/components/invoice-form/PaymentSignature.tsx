@@ -1,3 +1,4 @@
+
 import {
   FormField,
   FormItem,
@@ -44,11 +45,11 @@ export function PaymentSignature({ form, totals }) {
           name="acknowledged_by"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Pemeriksa</FormLabel>
+              <FormLabel>PIC</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Pilih pemeriksa" />
+                    <SelectValue placeholder="Pilih PIC" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
