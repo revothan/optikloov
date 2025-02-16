@@ -1,3 +1,4 @@
+
 import { Text, View, StyleSheet } from "@react-pdf/renderer";
 import { format } from "date-fns";
 
@@ -151,7 +152,7 @@ export function InvoiceHeader({
             </Text>
           </View>
           <View style={styles.rightInfoRow}>
-            <Text style={styles.rightLabel}>Pemeriksa</Text>
+            <Text style={styles.rightLabel}>PIC</Text>
             <Text style={styles.rightColon}>:</Text>
             <Text style={styles.rightValue}>
               {acknowledgedBy || "_________________"}

@@ -623,6 +623,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pic_sales: {
+        Row: {
+          branch: string
+          created_at: string
+          id: string
+          invoice_count: number
+          month: number
+          pic_name: string
+          sale_amount: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          branch: string
+          created_at?: string
+          id?: string
+          invoice_count?: number
+          month: number
+          pic_name: string
+          sale_amount?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          branch?: string
+          created_at?: string
+          id?: string
+          invoice_count?: number
+          month?: number
+          pic_name?: string
+          sale_amount?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       product_variants: {
         Row: {
           created_at: string

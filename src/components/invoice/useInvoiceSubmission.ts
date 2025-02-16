@@ -1,3 +1,4 @@
+
 import { useMemo, useCallback } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -60,23 +61,26 @@ export const useCustomerHandling = () => {
 
         if (existingCustomer) {
           console.log("Updating existing customer:", existingCustomer.id);
+          // Update all fields that are provided
+          const updateData = {
+            name: customerData.name,
+            email: customerData.email || existingCustomer.email,
+            birth_date: customerData.birth_date || existingCustomer.birth_date,
+            address: customerData.address || existingCustomer.address,
+            updated_at: new Date().toISOString(),
+            updated_by: session.user.id,
+          };
+
           const { data: updatedCustomer, error: updateError } = await supabase
             .from("customers")
-            .update({
-              name: customerData.name,
-              email: customerData.email || null,
-              birth_date: customerData.birth_date || null,
-              address: customerData.address || null,
-              updated_at: new Date().toISOString(),
-              updated_by: session.user.id,
-            })
+            .update(updateData)
             .eq("id", existingCustomer.id)
             .select()
             .single();
 
           if (updateError) throw updateError;
           customerId = existingCustomer.id;
-          console.log("Customer updated successfully");
+          console.log("Customer updated successfully:", updatedCustomer);
         } else {
           console.log("Creating new customer");
           const { data: newCustomer, error: createError } = await supabase
@@ -99,14 +103,13 @@ export const useCustomerHandling = () => {
           }
 
           customerId = newCustomer.id;
-          console.log("Customer created successfully");
+          console.log("Customer created successfully:", newCustomer);
         }
 
         return customerId;
       } catch (error) {
         console.error("Error in createOrUpdateCustomer:", error);
-        // Instead of throwing, return null and let the caller handle the error
-        return null;
+        throw error;
       }
     },
     [session],
