@@ -19,6 +19,7 @@ const CustomersPage = lazy(() => import("@/pages/admin/CustomersPage"));
 const JobOrdersPage = lazy(() => import("@/pages/admin/JobOrdersPage"));
 const SalesPage = lazy(() => import("@/pages/admin/SalesPage"));
 const LensStockPage = lazy(() => import("@/pages/admin/LensStockPage"));
+const PICLeaderboardPage = lazy(() => import("@/pages/admin/PICLeaderboardPage"));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -59,6 +60,7 @@ const AdminRoutes = () => (
           />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="job-orders" element={<JobOrdersPage />} />
+          <Route path="leaderboard" element={<PICLeaderboardPage />} />
           <Route
             path="lens-stock"
             element={

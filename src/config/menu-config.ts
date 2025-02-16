@@ -1,21 +1,20 @@
 
-import { FileText, Users, ShoppingBag, ClipboardList, TrendingUp, Glasses } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import {
+  BarChart3,
+  FileText,
+  Package,
+  Users,
+  Briefcase,
+  Crown,
+  Album,
+} from "lucide-react";
 
-export interface MenuItem {
-  id: string;
-  label: string;
-  path: string;
-  icon: LucideIcon;
-  allowedRoles: string[];
-}
-
-export const MENU_ITEMS: MenuItem[] = [
+export const MENU_ITEMS = [
   {
     id: "sales",
     label: "Sales",
     path: "/admin/sales",
-    icon: TrendingUp,
+    icon: BarChart3,
     allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
   },
   {
@@ -29,7 +28,7 @@ export const MENU_ITEMS: MenuItem[] = [
     id: "products",
     label: "Products",
     path: "/admin/products",
-    icon: ShoppingBag,
+    icon: Package,
     allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
   },
   {
@@ -43,14 +42,21 @@ export const MENU_ITEMS: MenuItem[] = [
     id: "job-orders",
     label: "Job Orders",
     path: "/admin/job-orders",
-    icon: ClipboardList,
+    icon: Briefcase,
+    allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
+  },
+  {
+    id: "leaderboard",
+    label: "PIC Leaderboard",
+    path: "/admin/leaderboard",
+    icon: Crown,
     allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
   },
   {
     id: "lens-stock",
     label: "Lens Stock",
     path: "/admin/lens-stock",
-    icon: Glasses,
+    icon: Album,
     allowedRoles: ["admin", "gadingserpongbranch", "kelapaduabranch"],
   },
 ];
