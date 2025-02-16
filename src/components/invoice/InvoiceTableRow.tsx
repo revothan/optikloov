@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { InvoicePDF } from "@/components/InvoicePDF";
 import { formatPrice } from "@/lib/utils";
@@ -25,6 +25,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { PaymentTypeDialog } from "./PaymentTypeDialog";
+import { UserProfileContext } from "@/contexts/UserProfileContext";
 
 const PaymentStatus = ({
   remaining_balance,
@@ -58,6 +59,7 @@ export function InvoiceTableRow({
   const [showPaymentTypeDialog, setShowPaymentTypeDialog] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const userProfile = useContext(UserProfileContext);
 
   const loadInvoiceItems = useCallback(async () => {
     try {
@@ -278,6 +280,8 @@ export function InvoiceTableRow({
     return null;
   }
 
+  const isAdmin = userProfile?.role === 'admin';
+
   return (
     <>
       <tr className="border-b">
@@ -352,14 +356,16 @@ export function InvoiceTableRow({
                     </PDFDownloadLink>
                   </div>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleDeleteWithRefresh}
-                  className="text-red-600 focus:text-red-600"
-                  disabled={isProcessing}
-                >
-                  <Trash className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem
+                    onClick={handleDeleteWithRefresh}
+                    className="text-red-600 focus:text-red-600"
+                    disabled={isProcessing}
+                  >
+                    <Trash className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
             {invoice.customer_phone && (
