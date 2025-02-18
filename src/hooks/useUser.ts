@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -8,20 +7,20 @@ export function useUser() {
     queryKey: ["user-profile"],
     queryFn: async () => {
       try {
-        console.log("Fetching user session...");
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
         if (userError) {
-          console.error("Error fetching user:", userError);
           throw userError;
         }
-        
+
         if (!user) {
           console.log("No user found");
           return null;
         }
 
-        console.log("User found, fetching profile for:", user.id);
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("role, branch")
@@ -31,16 +30,16 @@ export function useUser() {
         if (profileError) {
           console.error("Error fetching user profile:", profileError);
           // If profile not found, we should create one
-          if (profileError.code === 'PGRST116') {
+          if (profileError.code === "PGRST116") {
             console.log("Profile not found, creating new profile...");
             const { data: newProfile, error: createError } = await supabase
               .from("profiles")
               .insert([
-                { 
+                {
                   id: user.id,
                   email: user.email,
-                  role: 'user' 
-                }
+                  role: "user",
+                },
               ])
               .select()
               .single();
@@ -53,7 +52,7 @@ export function useUser() {
             return {
               id: user.id,
               email: user.email,
-              ...newProfile
+              ...newProfile,
             };
           }
           throw profileError;
@@ -64,8 +63,7 @@ export function useUser() {
           email: user.email,
           ...profile,
         };
-        
-        console.log("User data:", userData);
+
         return userData;
       } catch (error) {
         console.error("Error in useUser hook:", error);

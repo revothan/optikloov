@@ -36,45 +36,17 @@ import {
   startOfMonth,
   endOfMonth,
 } from "date-fns";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
+type BranchCode = "GS" | "KD";
+
 interface SalesReportProps {
-  userBranch?: string;
+  userBranch?: BranchCode | "Admin"; // Now explicitly typing possible values
   isAdmin?: boolean;
   dailyTarget: number;
 }
 
-function getBranchCode(identifier?: string): string {
-  if (!identifier) return "";
-
-  // Normalize identifier to lowercase for case-insensitive comparison
-  const normalizedIdentifier = identifier.toLowerCase().trim();
-
-  // Map all possible identifiers to full branch names
-  const branchMap: Record<string, string> = {
-    gs: "Gading Serpong",
-    kd: "Kelapa Dua",
-    gadingserpongbranch: "Gading Serpong",
-    kelapaduabranch: "Kelapa Dua",
-    "gading serpong": "Gading Serpong",
-    "kelapa dua": "Kelapa Dua",
-  };
-
-  return branchMap[normalizedIdentifier] || identifier;
-}
-
-function getBranchDisplayName(code: string): string {
-  // Since we're now using full names in the database, we can simplify this
-  const displayNames: Record<string, string> = {
-    "Gading Serpong": "Gading Serpong",
-    "Kelapa Dua": "Kelapa Dua",
-    // Keep the code mappings for backward compatibility
-    GS: "Gading Serpong",
-    KD: "Kelapa Dua",
-  };
-  return displayNames[code] || code;
-}
 export function SalesReport({
   userBranch,
   isAdmin,
@@ -88,23 +60,39 @@ export function SalesReport({
     to: startOfToday(),
   });
 
-  console.log("SalesReport received props:", {
-    userBranch,
-    isAdmin,
-    dailyTarget,
-  });
+  const [selectedBranch, setSelectedBranch] = useState<BranchCode | null>(
+    () => {
+      // Initialize with proper branch code, handling 'Admin' case
+      if (!userBranch || userBranch === "Admin") return null;
+      return userBranch;
+    },
+  );
 
+  const branchMap = {
+    GS: "Gading Serpong",
+    KD: "Kelapa Dua",
+  } as const;
+
+  const effectiveBranch = useMemo(() => {
+    if (!isAdmin) return userBranch === "Admin" ? null : userBranch;
+    return selectedBranch;
+  }, [isAdmin, userBranch, selectedBranch]);
+
+  const reverseBranchMap = Object.entries(branchMap).reduce(
+    (acc, [code, name]) => {
+      acc[name] = code;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
+
+  const getBranchDisplayName = (code: BranchCode | null) => {
+    if (!code) return "All Branches";
+    return branchMap[code];
+  };
   const { data: salesData, isLoading } = useQuery({
-    queryKey: ["sales-report", dateRange, userBranch],
+    queryKey: ["sales-report", dateRange, effectiveBranch],
     queryFn: async () => {
-      // Get the branch code for filtering
-      const branchCode = getBranchCode(userBranch);
-      console.log("Processing branch filter:", {
-        originalBranch: userBranch,
-        normalizedBranch: branchCode,
-        isAdmin,
-      });
-
       let query = supabase
         .from("payments")
         .select(
@@ -126,10 +114,8 @@ export function SalesReport({
         .lte("payment_date", endOfDay(dateRange.to).toISOString())
         .order("payment_date", { ascending: false });
 
-      // Apply branch filter if user is not admin and we have a valid branch code
-      if (!isAdmin && branchCode) {
-        console.log("Applying branch filter:", branchCode);
-        query = query.eq("branch", branchCode);
+      if (effectiveBranch) {
+        query = query.eq("branch", branchMap[effectiveBranch]);
       }
 
       const { data: payments, error: paymentsError } = await query;
@@ -139,19 +125,10 @@ export function SalesReport({
         throw paymentsError;
       }
 
-      console.log("Query results:", {
-        dateRange,
-        userBranch,
-        branchCode,
-        isAdmin,
-        resultCount: payments?.length,
-        firstPayment: payments?.[0],
-      });
-
       return payments || [];
     },
-    enabled: isAdmin || Boolean(userBranch), // Only run query when we have branch data or user is admin
-    staleTime: 30000, // Consider data fresh for 30 seconds
+    enabled: true,
+    staleTime: 30000,
     refetchOnWindowFocus: true,
   });
 
@@ -253,19 +230,40 @@ export function SalesReport({
         </CardContent>
       </Card>
 
-      {/* Branch indicator for admin */}
-      {isAdmin ? (
-        <div className="text-sm text-muted-foreground">
-          Showing sales data for all branches
-        </div>
-      ) : (
-        userBranch && (
+      {/* Branch filter - only show for admin users */}
+
+      {isAdmin && (
+        <div className="flex items-center gap-4">
+          <Select
+            value={selectedBranch || "all"}
+            onValueChange={(value) =>
+              setSelectedBranch(value === "all" ? null : (value as BranchCode))
+            }
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select branch" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Branches</SelectItem>
+              <SelectItem value="GS">Gading Serpong</SelectItem>
+              <SelectItem value="KD">Kelapa Dua</SelectItem>
+            </SelectContent>
+          </Select>
+
           <div className="text-sm text-muted-foreground">
-            Showing sales data for {getBranchDisplayName(userBranch)}
+            {`Showing sales data for ${getBranchDisplayName(selectedBranch)}`}
           </div>
-        )
+        </div>
       )}
 
+      {/* Branch indicator for non-admin users */}
+
+      {!isAdmin && userBranch && userBranch !== "Admin" && (
+        <div className="text-sm text-muted-foreground">
+          Showing sales data for{" "}
+          {getBranchDisplayName(userBranch as BranchCode)}
+        </div>
+      )}
       {/* Date Range Controls */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex gap-2">
@@ -387,14 +385,14 @@ export function SalesReport({
               <TableHead>Payment Type</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Payment Category</TableHead>
-              {isAdmin && <TableHead>Branch</TableHead>}
+              {(isAdmin || !selectedBranch) && <TableHead>Branch</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={isAdmin ? 8 : 7}
+                  colSpan={isAdmin || !selectedBranch ? 8 : 7}
                   className="text-center py-4"
                 >
                   <div className="flex justify-center">
@@ -426,13 +424,15 @@ export function SalesReport({
                   <TableCell>
                     {payment.is_down_payment ? "Down Payment" : "Final Payment"}
                   </TableCell>
-                  {isAdmin && <TableCell>{payment.branch}</TableCell>}
+                  {(isAdmin || !selectedBranch) && (
+                    <TableCell>{payment.branch}</TableCell>
+                  )}
                 </TableRow>
               ))
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={isAdmin ? 8 : 7}
+                  colSpan={isAdmin || !selectedBranch ? 8 : 7}
                   className="text-center py-4"
                 >
                   No transactions found for the selected period
