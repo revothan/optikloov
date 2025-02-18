@@ -13,7 +13,6 @@ export function useUser() {
         } = await supabase.auth.getUser();
 
         if (userError) {
-          console.error("Error fetching user:", userError);
           throw userError;
         }
 
