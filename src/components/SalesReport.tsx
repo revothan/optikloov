@@ -36,7 +36,7 @@ import {
   startOfMonth,
   endOfMonth,
 } from "date-fns";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 interface SalesReportProps {
@@ -88,6 +88,14 @@ export function SalesReport({
     to: startOfToday(),
   });
 
+  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+
+  // If user is not admin, force their branch, otherwise use selected branch
+  const effectiveBranch = useMemo(() => {
+    if (!isAdmin) return userBranch;
+    return selectedBranch;
+  }, [isAdmin, userBranch, selectedBranch]);
+
   console.log("SalesReport received props:", {
     userBranch,
     isAdmin,
@@ -95,7 +103,7 @@ export function SalesReport({
   });
 
   const { data: salesData, isLoading } = useQuery({
-    queryKey: ["sales-report", dateRange, userBranch],
+    queryKey: ["sales-report", dateRange, effectiveBranch],
     queryFn: async () => {
       // Get the branch code for filtering
       const branchCode = getBranchCode(userBranch);
@@ -126,10 +134,9 @@ export function SalesReport({
         .lte("payment_date", endOfDay(dateRange.to).toISOString())
         .order("payment_date", { ascending: false });
 
-      // Apply branch filter if user is not admin and we have a valid branch code
-      if (!isAdmin && branchCode) {
-        console.log("Applying branch filter:", branchCode);
-        query = query.eq("branch", branchCode);
+      // Apply branch filter if selected or if user is not admin
+      if (effectiveBranch) {
+        query = query.eq("branch", effectiveBranch);
       }
 
       const { data: payments, error: paymentsError } = await query;
@@ -150,8 +157,8 @@ export function SalesReport({
 
       return payments || [];
     },
-    enabled: isAdmin || Boolean(userBranch), // Only run query when we have branch data or user is admin
-    staleTime: 30000, // Consider data fresh for 30 seconds
+    enabled: true,
+    staleTime: 30000,
     refetchOnWindowFocus: true,
   });
 
@@ -253,17 +260,28 @@ export function SalesReport({
         </CardContent>
       </Card>
 
-      {/* Branch indicator for admin */}
-      {isAdmin ? (
-        <div className="text-sm text-muted-foreground">
-          Showing sales data for all branches
-        </div>
-      ) : (
-        userBranch && (
+      {/* Branch filter for admin users */}
+      {isAdmin && (
+        <div className="flex items-center gap-4">
+          <Select
+            value={selectedBranch || "all"}
+            onValueChange={(value) => setSelectedBranch(value === "all" ? null : value)}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select branch" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Branches</SelectItem>
+              <SelectItem value="Gading Serpong">Gading Serpong</SelectItem>
+              <SelectItem value="Kelapa Dua">Kelapa Dua</SelectItem>
+            </SelectContent>
+          </Select>
           <div className="text-sm text-muted-foreground">
-            Showing sales data for {getBranchDisplayName(userBranch)}
+            {selectedBranch
+              ? `Showing sales data for ${selectedBranch}`
+              : "Showing sales data for all branches"}
           </div>
-        )
+        </div>
       )}
 
       {/* Date Range Controls */}
@@ -387,14 +405,14 @@ export function SalesReport({
               <TableHead>Payment Type</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Payment Category</TableHead>
-              {isAdmin && <TableHead>Branch</TableHead>}
+              {(isAdmin || !selectedBranch) && <TableHead>Branch</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={isAdmin ? 8 : 7}
+                  colSpan={isAdmin || !selectedBranch ? 8 : 7}
                   className="text-center py-4"
                 >
                   <div className="flex justify-center">
@@ -426,13 +444,13 @@ export function SalesReport({
                   <TableCell>
                     {payment.is_down_payment ? "Down Payment" : "Final Payment"}
                   </TableCell>
-                  {isAdmin && <TableCell>{payment.branch}</TableCell>}
+                  {(isAdmin || !selectedBranch) && <TableCell>{payment.branch}</TableCell>}
                 </TableRow>
               ))
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={isAdmin ? 8 : 7}
+                  colSpan={isAdmin || !selectedBranch ? 8 : 7}
                   className="text-center py-4"
                 >
                   No transactions found for the selected period
