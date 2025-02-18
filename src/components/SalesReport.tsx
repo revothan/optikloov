@@ -45,36 +45,6 @@ interface SalesReportProps {
   dailyTarget: number;
 }
 
-function getBranchCode(identifier?: string): string {
-  if (!identifier) return "";
-
-  // Normalize identifier to lowercase for case-insensitive comparison
-  const normalizedIdentifier = identifier.toLowerCase().trim();
-
-  // Map all possible identifiers to full branch names
-  const branchMap: Record<string, string> = {
-    gs: "Gading Serpong",
-    kd: "Kelapa Dua",
-    gadingserpongbranch: "Gading Serpong",
-    kelapaduabranch: "Kelapa Dua",
-    "gading serpong": "Gading Serpong",
-    "kelapa dua": "Kelapa Dua",
-  };
-
-  return branchMap[normalizedIdentifier] || identifier;
-}
-
-function getBranchDisplayName(code: string): string {
-  // Since we're now using full names in the database, we can simplify this
-  const displayNames: Record<string, string> = {
-    "Gading Serpong": "Gading Serpong",
-    "Kelapa Dua": "Kelapa Dua",
-    // Keep the code mappings for backward compatibility
-    GS: "Gading Serpong",
-    KD: "Kelapa Dua",
-  };
-  return displayNames[code] || code;
-}
 export function SalesReport({
   userBranch,
   isAdmin,
@@ -88,7 +58,9 @@ export function SalesReport({
     to: startOfToday(),
   });
 
-  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<string | null>(
+    userBranch || null
+  );
 
   // If user is not admin, force their branch, otherwise use selected branch
   const effectiveBranch = useMemo(() => {
@@ -100,19 +72,12 @@ export function SalesReport({
     userBranch,
     isAdmin,
     dailyTarget,
+    effectiveBranch,
   });
 
   const { data: salesData, isLoading } = useQuery({
     queryKey: ["sales-report", dateRange, effectiveBranch],
     queryFn: async () => {
-      // Get the branch code for filtering
-      const branchCode = getBranchCode(userBranch);
-      console.log("Processing branch filter:", {
-        originalBranch: userBranch,
-        normalizedBranch: branchCode,
-        isAdmin,
-      });
-
       let query = supabase
         .from("payments")
         .select(
@@ -134,8 +99,9 @@ export function SalesReport({
         .lte("payment_date", endOfDay(dateRange.to).toISOString())
         .order("payment_date", { ascending: false });
 
-      // Apply branch filter if selected or if user is not admin
+      // Always apply branch filter for non-admin users or when a branch is selected
       if (effectiveBranch) {
+        console.log("Applying branch filter:", effectiveBranch);
         query = query.eq("branch", effectiveBranch);
       }
 
@@ -148,8 +114,7 @@ export function SalesReport({
 
       console.log("Query results:", {
         dateRange,
-        userBranch,
-        branchCode,
+        effectiveBranch,
         isAdmin,
         resultCount: payments?.length,
         firstPayment: payments?.[0],
@@ -260,7 +225,7 @@ export function SalesReport({
         </CardContent>
       </Card>
 
-      {/* Branch filter for admin users */}
+      {/* Branch filter - only show for admin users */}
       {isAdmin && (
         <div className="flex items-center gap-4">
           <Select
@@ -281,6 +246,13 @@ export function SalesReport({
               ? `Showing sales data for ${selectedBranch}`
               : "Showing sales data for all branches"}
           </div>
+        </div>
+      )}
+
+      {/* Branch indicator for non-admin users */}
+      {!isAdmin && userBranch && (
+        <div className="text-sm text-muted-foreground">
+          Showing sales data for {userBranch}
         </div>
       )}
 
@@ -424,10 +396,7 @@ export function SalesReport({
               salesData.map((payment) => (
                 <TableRow key={payment.id}>
                   <TableCell>
-                    {format(
-                      new Date(payment.payment_date),
-                      "dd MMM yyyy HH:mm",
-                    )}
+                    {format(new Date(payment.payment_date), "dd MMM yyyy HH:mm")}
                   </TableCell>
                   <TableCell>{payment.invoices?.invoice_number}</TableCell>
                   <TableCell>{payment.invoices?.customer_name}</TableCell>
