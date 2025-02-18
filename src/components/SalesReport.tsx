@@ -39,8 +39,10 @@ import {
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
+type BranchCode = "GS" | "KD";
+
 interface SalesReportProps {
-  userBranch?: string;
+  userBranch?: BranchCode | "Admin"; // Now explicitly typing possible values
   isAdmin?: boolean;
   dailyTarget: number;
 }
@@ -58,23 +60,36 @@ export function SalesReport({
     to: startOfToday(),
   });
 
-  const [selectedBranch, setSelectedBranch] = useState<string | null>(
-    userBranch || null
+  const [selectedBranch, setSelectedBranch] = useState<BranchCode | null>(
+    () => {
+      // Initialize with proper branch code, handling 'Admin' case
+      if (!userBranch || userBranch === "Admin") return null;
+      return userBranch;
+    },
   );
 
-  // If user is not admin, force their branch, otherwise use selected branch
+  const branchMap = {
+    GS: "Gading Serpong",
+    KD: "Kelapa Dua",
+  } as const;
+
   const effectiveBranch = useMemo(() => {
-    if (!isAdmin) return userBranch;
+    if (!isAdmin) return userBranch === "Admin" ? null : userBranch;
     return selectedBranch;
   }, [isAdmin, userBranch, selectedBranch]);
 
-  console.log("SalesReport received props:", {
-    userBranch,
-    isAdmin,
-    dailyTarget,
-    effectiveBranch,
-  });
+  const reverseBranchMap = Object.entries(branchMap).reduce(
+    (acc, [code, name]) => {
+      acc[name] = code;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
 
+  const getBranchDisplayName = (code: BranchCode | null) => {
+    if (!code) return "All Branches";
+    return branchMap[code];
+  };
   const { data: salesData, isLoading } = useQuery({
     queryKey: ["sales-report", dateRange, effectiveBranch],
     queryFn: async () => {
@@ -99,10 +114,8 @@ export function SalesReport({
         .lte("payment_date", endOfDay(dateRange.to).toISOString())
         .order("payment_date", { ascending: false });
 
-      // Always apply branch filter for non-admin users or when a branch is selected
       if (effectiveBranch) {
-        console.log("Applying branch filter:", effectiveBranch);
-        query = query.eq("branch", effectiveBranch);
+        query = query.eq("branch", branchMap[effectiveBranch]);
       }
 
       const { data: payments, error: paymentsError } = await query;
@@ -111,14 +124,6 @@ export function SalesReport({
         console.error("Error fetching payments:", paymentsError);
         throw paymentsError;
       }
-
-      console.log("Query results:", {
-        dateRange,
-        effectiveBranch,
-        isAdmin,
-        resultCount: payments?.length,
-        firstPayment: payments?.[0],
-      });
 
       return payments || [];
     },
@@ -226,36 +231,39 @@ export function SalesReport({
       </Card>
 
       {/* Branch filter - only show for admin users */}
+
       {isAdmin && (
         <div className="flex items-center gap-4">
           <Select
             value={selectedBranch || "all"}
-            onValueChange={(value) => setSelectedBranch(value === "all" ? null : value)}
+            onValueChange={(value) =>
+              setSelectedBranch(value === "all" ? null : (value as BranchCode))
+            }
           >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select branch" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Branches</SelectItem>
-              <SelectItem value="Gading Serpong">Gading Serpong</SelectItem>
-              <SelectItem value="Kelapa Dua">Kelapa Dua</SelectItem>
+              <SelectItem value="GS">Gading Serpong</SelectItem>
+              <SelectItem value="KD">Kelapa Dua</SelectItem>
             </SelectContent>
           </Select>
+
           <div className="text-sm text-muted-foreground">
-            {selectedBranch
-              ? `Showing sales data for ${selectedBranch}`
-              : "Showing sales data for all branches"}
+            {`Showing sales data for ${getBranchDisplayName(selectedBranch)}`}
           </div>
         </div>
       )}
 
       {/* Branch indicator for non-admin users */}
-      {!isAdmin && userBranch && (
+
+      {!isAdmin && userBranch && userBranch !== "Admin" && (
         <div className="text-sm text-muted-foreground">
-          Showing sales data for {userBranch}
+          Showing sales data for{" "}
+          {getBranchDisplayName(userBranch as BranchCode)}
         </div>
       )}
-
       {/* Date Range Controls */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex gap-2">
@@ -396,7 +404,10 @@ export function SalesReport({
               salesData.map((payment) => (
                 <TableRow key={payment.id}>
                   <TableCell>
-                    {format(new Date(payment.payment_date), "dd MMM yyyy HH:mm")}
+                    {format(
+                      new Date(payment.payment_date),
+                      "dd MMM yyyy HH:mm",
+                    )}
                   </TableCell>
                   <TableCell>{payment.invoices?.invoice_number}</TableCell>
                   <TableCell>{payment.invoices?.customer_name}</TableCell>
@@ -413,7 +424,9 @@ export function SalesReport({
                   <TableCell>
                     {payment.is_down_payment ? "Down Payment" : "Final Payment"}
                   </TableCell>
-                  {(isAdmin || !selectedBranch) && <TableCell>{payment.branch}</TableCell>}
+                  {(isAdmin || !selectedBranch) && (
+                    <TableCell>{payment.branch}</TableCell>
+                  )}
                 </TableRow>
               ))
             ) : (
