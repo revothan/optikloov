@@ -38,11 +38,21 @@ import {
 } from "date-fns";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 type BranchCode = "GS" | "KD";
 
 interface SalesReportProps {
-  userBranch?: BranchCode | "Admin"; // Now explicitly typing possible values
+  userBranch?: BranchCode | "Admin";
   isAdmin?: boolean;
   dailyTarget: number;
 }
@@ -195,6 +205,40 @@ export function SalesReport({
     }
   };
 
+  // Query to get branch comparison data
+  const { data: branchComparisonData } = useQuery({
+    queryKey: ["branch-comparison", dateRange],
+    queryFn: async () => {
+      const { data: payments, error } = await supabase
+        .from("payments")
+        .select("amount, branch")
+        .gte("payment_date", startOfDay(dateRange.from).toISOString())
+        .lte("payment_date", endOfDay(dateRange.to).toISOString());
+
+      if (error) throw error;
+
+      const branchSales = {
+        "Gading Serpong": 0,
+        "Kelapa Dua": 0,
+      };
+
+      payments?.forEach((payment) => {
+        if (payment.branch in branchSales) {
+          branchSales[payment.branch as keyof typeof branchSales] += Number(payment.amount) || 0;
+        }
+      });
+
+      return [
+        {
+          name: "Branch Sales Comparison",
+          "Gading Serpong": branchSales["Gading Serpong"],
+          "Kelapa Dua": branchSales["Kelapa Dua"],
+        },
+      ];
+    },
+    enabled: isAdmin,
+  });
+
   return (
     <div className="space-y-6">
       {/* Progress indicator for today's target */}
@@ -230,8 +274,49 @@ export function SalesReport({
         </CardContent>
       </Card>
 
-      {/* Branch filter - only show for admin users */}
+      {/* Branch Comparison Chart for Admin Users */}
+      {isAdmin && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Branch Sales Comparison</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={branchComparisonData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis
+                    tickFormatter={(value) => 
+                      new Intl.NumberFormat('id-ID', {
+                        notation: 'compact',
+                        compactDisplay: 'short',
+                        maximumFractionDigits: 1,
+                      }).format(value)
+                    }
+                  />
+                  <Tooltip 
+                    formatter={(value) => formatPrice(value as number)}
+                  />
+                  <Legend />
+                  <Bar 
+                    dataKey="Gading Serpong" 
+                    fill="#4f46e5" 
+                    name="Gading Serpong"
+                  />
+                  <Bar 
+                    dataKey="Kelapa Dua" 
+                    fill="#06b6d4" 
+                    name="Kelapa Dua"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
+      {/* Branch filter - only show for admin users */}
       {isAdmin && (
         <div className="flex items-center gap-4">
           <Select
@@ -257,7 +342,6 @@ export function SalesReport({
       )}
 
       {/* Branch indicator for non-admin users */}
-
       {!isAdmin && userBranch && userBranch !== "Admin" && (
         <div className="text-sm text-muted-foreground">
           Showing sales data for{" "}
