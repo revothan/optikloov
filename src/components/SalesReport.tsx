@@ -90,42 +90,78 @@ export function SalesReport({
     return branchMap[code];
   };
 
+  const handleRangeSelect = (value: string) => {
+    const today = new Date();
+    switch (value) {
+      case "today":
+        setDateRange({ from: startOfToday(), to: startOfToday() });
+        break;
+      case "yesterday":
+        const yesterday = sub(today, { days: 1 });
+        setDateRange({ from: startOfDay(yesterday), to: endOfDay(yesterday) });
+        break;
+      case "last7days":
+        setDateRange({
+          from: startOfDay(sub(today, { days: 6 })),
+          to: endOfDay(today),
+        });
+        break;
+      case "thisWeek":
+        setDateRange({
+          from: startOfWeek(today, { weekStartsOn: 1 }),
+          to: endOfWeek(today, { weekStartsOn: 1 }),
+        });
+        break;
+      case "thisMonth":
+        setDateRange({
+          from: startOfMonth(today),
+          to: endOfMonth(today),
+        });
+        break;
+    }
+  };
+
   const { data: salesData, isLoading } = useQuery({
     queryKey: ["sales-report", dateRange, effectiveBranch],
     queryFn: async () => {
-      let query = supabase
-        .from("payments")
-        .select(
-          `
-          *,
-          invoices (
-            id,
-            invoice_number,
-            customer_name,
-            invoice_items (
-              products (
-                name
+      try {
+        let query = supabase
+          .from("payments")
+          .select(
+            `
+            *,
+            invoices (
+              id,
+              invoice_number,
+              customer_name,
+              invoice_items (
+                products (
+                  name
+                )
               )
             )
+          `,
           )
-        `,
-        )
-        .gte("payment_date", startOfDay(dateRange.from).toISOString())
-        .lte("payment_date", endOfDay(dateRange.to).toISOString())
-        .order("payment_date", { ascending: false });
+          .gte("payment_date", startOfDay(dateRange.from).toISOString())
+          .lte("payment_date", endOfDay(dateRange.to).toISOString())
+          .order("payment_date", { ascending: false });
 
-      if (effectiveBranch) {
-        query = query.eq("branch", branchMap[effectiveBranch]);
+        if (effectiveBranch) {
+          query = query.eq("branch", branchMap[effectiveBranch]);
+        }
+
+        const { data: payments, error: paymentsError } = await query;
+
+        if (paymentsError) {
+          console.error("Error fetching payments:", paymentsError);
+          throw paymentsError;
+        }
+
+        return payments || [];
+      } catch (error) {
+        console.error("Error in salesData query:", error);
+        return [];
       }
-
-      const { data: payments, error: paymentsError } = await query;
-
-      if (paymentsError) {
-        console.error("Error fetching payments:", paymentsError);
-        throw paymentsError;
-      }
-
-      return payments || [];
     },
     enabled: true,
     staleTime: 30000,
