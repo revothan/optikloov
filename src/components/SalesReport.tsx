@@ -89,6 +89,7 @@ export function SalesReport({
     if (!code) return "All Branches";
     return branchMap[code];
   };
+
   const { data: salesData, isLoading } = useQuery({
     queryKey: ["sales-report", dateRange, effectiveBranch],
     queryFn: async () => {
@@ -157,53 +158,25 @@ export function SalesReport({
       const isToday = paymentDate.toDateString() === new Date().toDateString();
       
       if (isToday) {
-        const branch = payment.branch;
-        acc[branch] = (acc[branch] || 0) + (payment.amount || 0);
+        // Convert full branch name to code for consistency
+        const branchCode = reverseBranchMap[payment.branch] as BranchCode;
+        if (branchCode) {
+          acc[branchCode] = (acc[branchCode] || 0) + (payment.amount || 0);
+        }
       }
       return acc;
-    }, {} as Record<string, number>) || {};
+    }, {} as Record<BranchCode, number>) || {};
 
     return {
-      "Gading Serpong": todaysSales["Gading Serpong"] || 0,
-      "Kelapa Dua": todaysSales["Kelapa Dua"] || 0,
+      GS: todaysSales.GS || 0,
+      KD: todaysSales.KD || 0,
     };
-  }, [salesData]);
+  }, [salesData, reverseBranchMap]);
 
   // Calculate achievement percentages for each branch
   const branchAchievements = {
-    "Gading Serpong": Math.min((branchSales["Gading Serpong"] / dailyTarget) * 100, 100),
-    "Kelapa Dua": Math.min((branchSales["Kelapa Dua"] / dailyTarget) * 100, 100),
-  };
-
-  const handleRangeSelect = (range: string) => {
-    const today = new Date();
-    switch (range) {
-      case "today":
-        setDateRange({ from: startOfToday(), to: startOfToday() });
-        break;
-      case "yesterday":
-        const yesterday = sub(today, { days: 1 });
-        setDateRange({ from: startOfDay(yesterday), to: endOfDay(yesterday) });
-        break;
-      case "last7days":
-        setDateRange({
-          from: startOfDay(sub(today, { days: 6 })),
-          to: endOfDay(today),
-        });
-        break;
-      case "thisWeek":
-        setDateRange({
-          from: startOfWeek(today, { weekStartsOn: 1 }),
-          to: endOfWeek(today, { weekStartsOn: 1 }),
-        });
-        break;
-      case "thisMonth":
-        setDateRange({
-          from: startOfMonth(today),
-          to: endOfMonth(today),
-        });
-        break;
-    }
+    GS: Math.min((branchSales.GS / dailyTarget) * 100, 100),
+    KD: Math.min((branchSales.KD / dailyTarget) * 100, 100),
   };
 
   return (
@@ -221,7 +194,7 @@ export function SalesReport({
                 <div className="flex justify-between items-baseline">
                   <div className="text-right">
                     <span className="text-2xl font-bold text-blue-600">
-                      {formatPrice(branchSales["Gading Serpong"])}
+                      {formatPrice(branchSales.GS)}
                     </span>
                     <span className="text-sm text-gray-500 ml-2">
                       of {formatPrice(dailyTarget)}
@@ -231,15 +204,15 @@ export function SalesReport({
                 <div className="relative h-4 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
-                    style={{ width: `${branchAchievements["Gading Serpong"]}%` }}
+                    style={{ width: `${branchAchievements.GS}%` }}
                   />
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">
-                    {branchAchievements["Gading Serpong"].toFixed(1)}% achieved
+                    {branchAchievements.GS.toFixed(1)}% achieved
                   </span>
                   <span className="text-gray-600">
-                    {formatPrice(Math.max(dailyTarget - branchSales["Gading Serpong"], 0))} to go
+                    {formatPrice(Math.max(dailyTarget - branchSales.GS, 0))} to go
                   </span>
                 </div>
               </div>
@@ -255,7 +228,7 @@ export function SalesReport({
                 <div className="flex justify-between items-baseline">
                   <div className="text-right">
                     <span className="text-2xl font-bold text-blue-600">
-                      {formatPrice(branchSales["Kelapa Dua"])}
+                      {formatPrice(branchSales.KD)}
                     </span>
                     <span className="text-sm text-gray-500 ml-2">
                       of {formatPrice(dailyTarget)}
@@ -265,15 +238,15 @@ export function SalesReport({
                 <div className="relative h-4 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
-                    style={{ width: `${branchAchievements["Kelapa Dua"]}%` }}
+                    style={{ width: `${branchAchievements.KD}%` }}
                   />
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">
-                    {branchAchievements["Kelapa Dua"].toFixed(1)}% achieved
+                    {branchAchievements.KD.toFixed(1)}% achieved
                   </span>
                   <span className="text-gray-600">
-                    {formatPrice(Math.max(dailyTarget - branchSales["Kelapa Dua"], 0))} to go
+                    {formatPrice(Math.max(dailyTarget - branchSales.KD, 0))} to go
                   </span>
                 </div>
               </div>
@@ -289,7 +262,7 @@ export function SalesReport({
                 <h3 className="text-lg font-medium">Today's Progress</h3>
                 <div className="text-right">
                   <span className="text-2xl font-bold text-blue-600">
-                    {formatPrice(branchSales[userBranch || ""])}
+                    {formatPrice(userBranch ? branchSales[userBranch] : 0)}
                   </span>
                   <span className="text-sm text-gray-500 ml-2">
                     of {formatPrice(dailyTarget)}
@@ -308,10 +281,10 @@ export function SalesReport({
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">
                   {userBranch ? 
-                    (branchSales[userBranch] / dailyTarget * 100).toFixed(1) : 0}% achieved
+                    ((branchSales[userBranch] / dailyTarget) * 100).toFixed(1) : 0}% achieved
                 </span>
                 <span className="text-gray-600">
-                  {formatPrice(Math.max(dailyTarget - (branchSales[userBranch || ""] || 0), 0))} to go
+                  {formatPrice(Math.max(dailyTarget - (userBranch ? branchSales[userBranch] : 0), 0))} to go
                 </span>
               </div>
             </div>
