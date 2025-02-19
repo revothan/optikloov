@@ -38,16 +38,6 @@ import {
 } from "date-fns";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 
 type BranchCode = "GS" | "KD";
 
@@ -72,7 +62,6 @@ export function SalesReport({
 
   const [selectedBranch, setSelectedBranch] = useState<BranchCode | null>(
     () => {
-      // Initialize with proper branch code, handling 'Admin' case
       if (!userBranch || userBranch === "Admin") return null;
       return userBranch;
     },
@@ -161,18 +150,30 @@ export function SalesReport({
       ) || 0,
   };
 
-  // Calculate target achievement percentage for today
-  const todaysSales =
-    salesData?.reduce((sum, payment) => {
+  // Calculate sales for each branch for today
+  const branchSales = useMemo(() => {
+    const todaysSales = salesData?.reduce((acc, payment) => {
       const paymentDate = new Date(payment.payment_date);
       const isToday = paymentDate.toDateString() === new Date().toDateString();
-      return isToday ? sum + (payment.amount || 0) : sum;
-    }, 0) || 0;
+      
+      if (isToday) {
+        const branch = payment.branch;
+        acc[branch] = (acc[branch] || 0) + (payment.amount || 0);
+      }
+      return acc;
+    }, {} as Record<string, number>) || {};
 
-  const achievementPercentage = Math.min(
-    (todaysSales / dailyTarget) * 100,
-    100,
-  );
+    return {
+      "Gading Serpong": todaysSales["Gading Serpong"] || 0,
+      "Kelapa Dua": todaysSales["Kelapa Dua"] || 0,
+    };
+  }, [salesData]);
+
+  // Calculate achievement percentages for each branch
+  const branchAchievements = {
+    "Gading Serpong": Math.min((branchSales["Gading Serpong"] / dailyTarget) * 100, 100),
+    "Kelapa Dua": Math.min((branchSales["Kelapa Dua"] / dailyTarget) * 100, 100),
+  };
 
   const handleRangeSelect = (range: string) => {
     const today = new Date();
@@ -205,112 +206,114 @@ export function SalesReport({
     }
   };
 
-  // Query to get branch comparison data
-  const { data: branchComparisonData } = useQuery({
-    queryKey: ["branch-comparison", dateRange],
-    queryFn: async () => {
-      const { data: payments, error } = await supabase
-        .from("payments")
-        .select("amount, branch")
-        .gte("payment_date", startOfDay(dateRange.from).toISOString())
-        .lte("payment_date", endOfDay(dateRange.to).toISOString());
-
-      if (error) throw error;
-
-      const branchSales = {
-        "Gading Serpong": 0,
-        "Kelapa Dua": 0,
-      };
-
-      payments?.forEach((payment) => {
-        if (payment.branch in branchSales) {
-          branchSales[payment.branch as keyof typeof branchSales] += Number(payment.amount) || 0;
-        }
-      });
-
-      return [
-        {
-          name: "Branch Sales Comparison",
-          "Gading Serpong": branchSales["Gading Serpong"],
-          "Kelapa Dua": branchSales["Kelapa Dua"],
-        },
-      ];
-    },
-    enabled: isAdmin,
-  });
-
   return (
     <div className="space-y-6">
-      {/* Progress indicator for today's target */}
-      <Card className="mb-4">
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div className="flex justify-between items-baseline">
-              <h3 className="text-lg font-medium">Today's Progress</h3>
-              <div className="text-right">
-                <span className="text-2xl font-bold text-blue-600">
-                  {formatPrice(todaysSales)}
+      {/* Progress indicators for today's target */}
+      {isAdmin ? (
+        // Show both branch progress bars for admin
+        <div className="space-y-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>Today's Progress - Gading Serpong</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between items-baseline">
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-blue-600">
+                      {formatPrice(branchSales["Gading Serpong"])}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      of {formatPrice(dailyTarget)}
+                    </span>
+                  </div>
+                </div>
+                <div className="relative h-4 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
+                    style={{ width: `${branchAchievements["Gading Serpong"]}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">
+                    {branchAchievements["Gading Serpong"].toFixed(1)}% achieved
+                  </span>
+                  <span className="text-gray-600">
+                    {formatPrice(Math.max(dailyTarget - branchSales["Gading Serpong"], 0))} to go
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>Today's Progress - Kelapa Dua</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between items-baseline">
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-blue-600">
+                      {formatPrice(branchSales["Kelapa Dua"])}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      of {formatPrice(dailyTarget)}
+                    </span>
+                  </div>
+                </div>
+                <div className="relative h-4 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
+                    style={{ width: `${branchAchievements["Kelapa Dua"]}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">
+                    {branchAchievements["Kelapa Dua"].toFixed(1)}% achieved
+                  </span>
+                  <span className="text-gray-600">
+                    {formatPrice(Math.max(dailyTarget - branchSales["Kelapa Dua"], 0))} to go
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        // Show single branch progress bar for non-admin users
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <div className="flex justify-between items-baseline">
+                <h3 className="text-lg font-medium">Today's Progress</h3>
+                <div className="text-right">
+                  <span className="text-2xl font-bold text-blue-600">
+                    {formatPrice(branchSales[userBranch || ""])}
+                  </span>
+                  <span className="text-sm text-gray-500 ml-2">
+                    of {formatPrice(dailyTarget)}
+                  </span>
+                </div>
+              </div>
+              <div className="relative h-4 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
+                  style={{ 
+                    width: `${userBranch ? 
+                      Math.min((branchSales[userBranch] / dailyTarget) * 100, 100) : 0}%` 
+                  }}
+                />
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">
+                  {userBranch ? 
+                    (branchSales[userBranch] / dailyTarget * 100).toFixed(1) : 0}% achieved
                 </span>
-                <span className="text-sm text-gray-500 ml-2">
-                  of {formatPrice(dailyTarget)}
+                <span className="text-gray-600">
+                  {formatPrice(Math.max(dailyTarget - (branchSales[userBranch || ""] || 0), 0))} to go
                 </span>
               </div>
-            </div>
-            <div className="relative h-4 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
-                style={{ width: `${achievementPercentage}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">
-                {achievementPercentage.toFixed(1)}% achieved
-              </span>
-              <span className="text-gray-600">
-                {formatPrice(Math.max(dailyTarget - todaysSales, 0))} to go
-              </span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Branch Comparison Chart for Admin Users */}
-      {isAdmin && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Branch Sales Comparison</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={branchComparisonData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis
-                    tickFormatter={(value) => 
-                      new Intl.NumberFormat('id-ID', {
-                        notation: 'compact',
-                        compactDisplay: 'short',
-                        maximumFractionDigits: 1,
-                      }).format(value)
-                    }
-                  />
-                  <Tooltip 
-                    formatter={(value) => formatPrice(value as number)}
-                  />
-                  <Legend />
-                  <Bar 
-                    dataKey="Gading Serpong" 
-                    fill="#4f46e5" 
-                    name="Gading Serpong"
-                  />
-                  <Bar 
-                    dataKey="Kelapa Dua" 
-                    fill="#06b6d4" 
-                    name="Kelapa Dua"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
