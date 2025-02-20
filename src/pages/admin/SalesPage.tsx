@@ -10,8 +10,8 @@ export default function SalesPage() {
   const { data: user } = useUser();
   
   const isAdmin = user?.role === "admin";
-  // Pass the branch code directly from the profile
-  const userBranch = user?.branch || "";
+  // Convert the branch string to the correct type
+  const userBranch = user?.branch as "GS" | "KD" | "Admin" | undefined;
 
   return (
     <div className="p-8">

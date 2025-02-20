@@ -47,6 +47,11 @@ interface SalesReportProps {
   dailyTarget: number;
 }
 
+interface BranchSales {
+  GS: number;
+  KD: number;
+}
+
 export function SalesReport({
   userBranch,
   isAdmin,
@@ -189,6 +194,8 @@ export function SalesReport({
 
   // Calculate sales for each branch for today
   const branchSales = useMemo(() => {
+    const initialSales: BranchSales = { GS: 0, KD: 0 };
+    
     const todaysSales = salesData?.reduce((acc, payment) => {
       const paymentDate = new Date(payment.payment_date);
       const isToday = paymentDate.toDateString() === new Date().toDateString();
@@ -201,12 +208,9 @@ export function SalesReport({
         }
       }
       return acc;
-    }, {} as Record<BranchCode, number>) || {};
+    }, initialSales) || initialSales;
 
-    return {
-      GS: todaysSales.GS || 0,
-      KD: todaysSales.KD || 0,
-    };
+    return todaysSales;
   }, [salesData, reverseBranchMap]);
 
   // Calculate achievement percentages for each branch
