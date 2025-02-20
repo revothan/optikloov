@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -43,6 +44,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     received_by: "",
     notes: "",
     branch: "",
+    branch_prefix: "",
     items: [],
   };
 
@@ -130,6 +132,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     if (userProfile?.branch) {
       const normalizedBranch = normalizeBranchName(userProfile.branch);
       form.setValue("branch", normalizedBranch);
+      form.setValue("branch_prefix", userProfile.branch === "Gading Serpong" ? "GS" : "KD");
     }
     if (nextInvoiceNumber) {
       form.setValue("invoice_number", nextInvoiceNumber);
@@ -144,13 +147,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
     setSubmitting(true);
     try {
-      const invoiceData = {
-        ...values,
-        branch: userProfile.branch,
-        branch_prefix: userProfile.branch === "Gading Serpong" ? "GS" : "KD",
-      };
-
-      const result = await submitInvoice(invoiceData, calculateTotals());
+      const result = await submitInvoice(values, calculateTotals());
       if (result) {
         toast.success("Invoice created successfully");
         if (userProfile?.branch) {

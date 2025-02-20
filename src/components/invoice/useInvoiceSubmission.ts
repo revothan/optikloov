@@ -105,6 +105,11 @@ export function useInvoiceSubmission(onSuccess?: () => void) {
 
   const submitInvoice = async (invoiceData: InvoiceData, totals: Totals) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) {
+        throw new Error("User not authenticated");
+      }
+
       // Create or update customer
       const customerData: CustomerData = {
         name: invoiceData.customer_name,
@@ -120,6 +125,7 @@ export function useInvoiceSubmission(onSuccess?: () => void) {
       const { data: newInvoice, error: invoiceError } = await supabase
         .from("invoices")
         .insert({
+          user_id: user.id,
           invoice_number: invoiceData.invoice_number,
           sale_date: invoiceData.sale_date,
           customer_name: invoiceData.customer_name,
