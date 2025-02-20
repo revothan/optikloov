@@ -1,9 +1,9 @@
+
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { normalizeBranchName } from "@/lib/branch-utils";
-import { Tables } from "@/integrations/supabase/types";
+import type { Tables } from "@/integrations/supabase/types";
 
 interface Totals {
   totalAmount: number;
@@ -15,28 +15,49 @@ interface Totals {
 
 interface CustomerData {
   name: string;
-  phone: string;
+  phone?: string;
   email?: string;
   birth_date?: string;
   address?: string;
 }
 
-interface InvoiceData {
+export interface InvoiceData {
   invoice_number: string;
   sale_date: string;
   customer_name: string;
-  customer_email: string;
-  customer_birth_date: string;
-  customer_phone: string;
-  customer_address: string;
+  customer_email?: string;
+  customer_birth_date?: string;
+  customer_phone?: string;
+  customer_address?: string;
   payment_type: string;
   down_payment: string;
-  acknowledged_by: string;
-  received_by: string;
-  notes: string;
+  acknowledged_by?: string;
+  received_by?: string;
+  notes?: string;
   branch: string;
   branch_prefix: string;
-  items: any[];
+  items: Array<{
+    product_id: string;
+    quantity: number;
+    price: number;
+    discount?: number;
+    lens_stock_id?: string | null;
+    lens_type_id?: string | null;
+    left_eye?: {
+      sph?: number | null;
+      cyl?: number | null;
+      axis?: number | null;
+      add_power?: number | null;
+      mpd?: number | null;
+    } | null;
+    right_eye?: {
+      sph?: number | null;
+      cyl?: number | null;
+      axis?: number | null;
+      add_power?: number | null;
+      mpd?: number | null;
+    } | null;
+  }>;
 }
 
 export function useInvoiceSubmission(onSuccess?: () => void) {
@@ -57,29 +78,23 @@ export function useInvoiceSubmission(onSuccess?: () => void) {
       }
 
       if (existingCustomer) {
-        // Update existing customer
         const { data: updatedCustomer, error: updateError } = await supabase
           .from("customers")
-          .update({ ...customerData })
+          .update(customerData)
           .eq("id", existingCustomer.id)
           .select()
           .single();
 
-        if (updateError) {
-          throw updateError;
-        }
+        if (updateError) throw updateError;
         return updatedCustomer;
       } else {
-        // Create new customer
         const { data: newCustomer, error: createError } = await supabase
           .from("customers")
-          .insert([{ ...customerData }])
+          .insert([customerData])
           .select()
           .single();
 
-        if (createError) {
-          throw createError;
-        }
+        if (createError) throw createError;
         return newCustomer;
       }
     } catch (error) {
@@ -88,83 +103,9 @@ export function useInvoiceSubmission(onSuccess?: () => void) {
     }
   };
 
-  const checkStockAvailability = async (items: any[]) => {
-    setIsCheckingStock(true);
-    try {
-      for (const item of items) {
-        if (!item.product_id) continue;
-
-        const { data: product, error: productError } = await supabase
-          .from("products")
-          .select("name, track_inventory, stock_qty")
-          .eq("id", item.product_id)
-          .single();
-
-        if (productError) {
-          console.error("Error fetching product:", productError);
-          throw new Error(
-            `Error fetching product ${item.product_id}: ${productError.message}`,
-          );
-        }
-
-        if (product && product.track_inventory) {
-          const currentStock = product.stock_qty || 0;
-          if (item.quantity > currentStock) {
-            throw new Error(
-              `Insufficient stock for product ${product.name}. Available: ${currentStock}, Requested: ${item.quantity}`,
-            );
-          }
-        }
-      }
-    } finally {
-      setIsCheckingStock(false);
-    }
-  };
-
-  const updateStockQuantities = async (items: any[]) => {
-    try {
-      for (const item of items) {
-        if (!item.product_id) continue;
-
-        const { data: product, error: productError } = await supabase
-          .from("products")
-          .select("name, track_inventory, stock_qty")
-          .eq("id", item.product_id)
-          .single();
-
-        if (productError) {
-          console.error("Error fetching product:", productError);
-          throw new Error(
-            `Error fetching product ${item.product_id}: ${productError.message}`,
-          );
-        }
-
-        if (product && product.track_inventory) {
-          const currentStock = product.stock_qty || 0;
-          const newStock = currentStock - item.quantity;
-
-          const { error: updateError } = await supabase
-            .from("products")
-            .update({ stock_qty: newStock })
-            .eq("id", item.product_id);
-
-          if (updateError) {
-            console.error("Error updating stock:", updateError);
-            throw new Error(
-              `Error updating stock for product ${product.name}: ${updateError.message}`,
-            );
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Stock update failed:", error);
-      throw error;
-    }
-  };
-
   const submitInvoice = async (invoiceData: InvoiceData, totals: Totals) => {
     try {
-      // 1. Create or update customer
+      // Create or update customer
       const customerData: CustomerData = {
         name: invoiceData.customer_name,
         phone: invoiceData.customer_phone,
@@ -175,82 +116,63 @@ export function useInvoiceSubmission(onSuccess?: () => void) {
 
       const customer = await createOrUpdateCustomer(customerData);
 
-      // 2. Check stock availability
-      await checkStockAvailability(invoiceData.items);
-
-      // 3. Insert invoice
+      // Insert invoice
       const { data: newInvoice, error: invoiceError } = await supabase
         .from("invoices")
-        .insert([
-          {
-            invoice_number: invoiceData.invoice_number,
-            sale_date: invoiceData.sale_date,
-            customer_id: customer.id,
-            payment_type: invoiceData.payment_type,
-            down_payment: parseFloat(invoiceData.down_payment),
-            acknowledged_by: invoiceData.acknowledged_by,
-            received_by: invoiceData.received_by,
-            notes: invoiceData.notes,
-            total_amount: totals.totalAmount,
-            discount_amount: totals.discountAmount,
-            grand_total: totals.grandTotal,
-            remaining_balance: totals.remainingBalance,
-            branch: invoiceData.branch,
-            branch_prefix: invoiceData.branch_prefix,
-          },
-        ])
+        .insert({
+          invoice_number: invoiceData.invoice_number,
+          sale_date: invoiceData.sale_date,
+          customer_name: invoiceData.customer_name,
+          customer_phone: invoiceData.customer_phone,
+          customer_email: invoiceData.customer_email,
+          customer_birth_date: invoiceData.customer_birth_date,
+          customer_address: invoiceData.customer_address,
+          payment_type: invoiceData.payment_type,
+          down_payment: parseFloat(invoiceData.down_payment),
+          acknowledged_by: invoiceData.acknowledged_by,
+          received_by: invoiceData.received_by,
+          notes: invoiceData.notes,
+          total_amount: totals.totalAmount,
+          discount_amount: totals.discountAmount,
+          grand_total: totals.grandTotal,
+          remaining_balance: totals.remainingBalance,
+          branch: invoiceData.branch,
+          branch_prefix: invoiceData.branch_prefix,
+        })
         .select()
         .single();
 
-      if (invoiceError) {
-        throw invoiceError;
-      }
+      if (invoiceError) throw invoiceError;
 
-      // 4. Insert invoice items
+      // Insert invoice items
       for (const item of invoiceData.items) {
-        if (!item.product_id) continue;
-
-        const { data: product, error: productError } = await supabase
-          .from("products")
-          .select("name, track_inventory, stock_qty")
-          .eq("id", item.product_id)
-          .single();
-
-        if (productError) {
-          console.error("Error fetching product:", productError);
-          throw new Error(
-            `Error fetching product ${item.product_id}: ${productError.message}`,
-          );
-        }
-
         const { error: invoiceItemError } = await supabase
           .from("invoice_items")
-          .insert([
-            {
-              invoice_id: newInvoice.id,
-              product_id: item.product_id,
-              quantity: item.quantity,
-              price: item.price,
-              discount: item.discount,
-              display_name: item.display_name || product.name,
-              lens_stock_id: item.lens_stock_id || null,
-              lens_type_id: item.lens_type_id || null,
-            },
-          ]);
+          .insert({
+            invoice_id: newInvoice.id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: item.price,
+            discount: item.discount || 0,
+            total: item.quantity * item.price - (item.discount || 0),
+            lens_stock_id: item.lens_stock_id,
+            lens_type_id: item.lens_type_id,
+            left_eye_sph: item.left_eye?.sph,
+            left_eye_cyl: item.left_eye?.cyl,
+            left_eye_axis: item.left_eye?.axis,
+            left_eye_add_power: item.left_eye?.add_power,
+            left_eye_mpd: item.left_eye?.mpd,
+            right_eye_sph: item.right_eye?.sph,
+            right_eye_cyl: item.right_eye?.cyl,
+            right_eye_axis: item.right_eye?.axis,
+            right_eye_add_power: item.right_eye?.add_power,
+            right_eye_mpd: item.right_eye?.mpd,
+          });
 
-        if (invoiceItemError) {
-          throw invoiceItemError;
-        }
+        if (invoiceItemError) throw invoiceItemError;
       }
 
-      // 5. Update stock quantities
-      await updateStockQuantities(invoiceData.items);
-
-      // Invalidate queries
       await queryClient.invalidateQueries({ queryKey: ["invoices"] });
-      await queryClient.invalidateQueries({ queryKey: ["products"] });
-
-      // 6. Handle success callback
       onSuccess?.();
       return true;
     } catch (error) {

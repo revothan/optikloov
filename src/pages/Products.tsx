@@ -1,195 +1,132 @@
-
-import { useState, useEffect } from "react";
+import type { Tables } from "@/integrations/supabase/types";
+import { ProductGrid } from "@/components/products/ProductGrid";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ProductFilters } from "@/components/products/ProductFilters";
-import { ProductGrid } from "@/components/products/ProductGrid";
-import { ViewToggle } from "@/components/products/ViewToggle";
-import { Pagination } from "@/components/products/Pagination";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { useDebounce } from "@/hooks/useDebounce";
 
-const ITEMS_PER_PAGE = 10;
+type Product = Tables<"products">;
 
-const getBranchName = (branchCode: string | null) => {
-  switch (branchCode) {
-    case 'GS':
-      return 'Gading Serpong';
-    case 'KD':
-      return 'Kelapa Dua';
-    default:
-      return null;
-  }
-};
-
-export default function ProductsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState("all");
-  const [selectedBrand, setSelectedBrand] = useState("all");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [sortBy, setSortBy] = useState("latest");
+export default function Products() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [view, setView] = useState<"grid" | "list">("grid");
-  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [category, setCategory] = useState<string | null>(null);
 
-  // Get user profile to determine branch
-  const { data: userProfile } = useQuery({
-    queryKey: ["userProfile"],
+  const { data: products, isLoading } = useQuery({
+    queryKey: ["products", currentPage, category],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("branch")
-        .eq("id", user.id)
-        .single();
-
-      return profile;
-    },
-  });
-
-  // Debounce the search query
-  const debouncedSearch = useDebounce(searchQuery, 300);
-
-  // Reset page when search changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearch, selectedCategory]);
-
-  const {
-    data: productsData,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["products", debouncedSearch, selectedType, selectedBrand, selectedCategory, sortBy, userProfile?.branch],
-    queryFn: async () => {
-      try {
-        const branchName = getBranchName(userProfile?.branch);
-        
-        let query = supabase
-          .from("products")
-          .select("id, name, brand, image_url, online_price, category")
-          .not("image_url", "is", null);
-
-        // Only filter by branch if user has a branch assigned
-        if (branchName) {
-          query = query.eq("branch", branchName);
-        }
-
-        if (debouncedSearch) {
-          query = query.ilike("name", `%${debouncedSearch}%`);
-        }
-        if (selectedType !== "all") {
-          query = query.eq("category", selectedType);
-        }
-        if (selectedBrand !== "all") {
-          query = query.ilike("brand", selectedBrand);
-        }
-        if (selectedCategory !== "all") {
-          query = query.eq("category", selectedCategory);
-        }
-        if (sortBy === "price_asc") {
-          query = query.order("online_price", { ascending: true });
-        } else if (sortBy === "price_desc") {
-          query = query.order("online_price", { ascending: false });
-        } else {
-          query = query.order("created_at", { ascending: false });
-        }
-
-        const { data, error } = await query;
-        
-        if (error) {
-          console.error("Supabase query error:", error);
-          throw error;
-        }
-        
-        return data || [];
-      } catch (err) {
-        console.error("Failed to fetch products:", err);
-        throw err;
-      }
-    },
-    enabled: !!userProfile,
-  });
-
-  const { data: brands = [] } = useQuery({
-    queryKey: ["brands", userProfile?.branch],
-    queryFn: async () => {
-      const branchName = getBranchName(userProfile?.branch);
       let query = supabase
         .from("products")
-        .select("brand")
-        .not("brand", "is", null)
-        .not("image_url", "is", null);
+        .select("*")
+        .order("created_at", { ascending: false });
 
-      if (branchName) {
-        query = query.eq("branch", branchName);
+      if (category) {
+        query = query.eq("category", category);
       }
 
       const { data, error } = await query;
       if (error) throw error;
-
-      return [...new Set(data.map((item) => item.brand))]
-        .filter(Boolean)
-        .sort();
+      return data as Product[];
     },
-    enabled: !!userProfile,
   });
 
-  // Calculate pagination
-  const totalProducts = productsData?.length || 0;
-  const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const displayedProducts = productsData?.slice(startIndex, startIndex + ITEMS_PER_PAGE) || [];
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleCategoryChange = (newCategory: string | null) => {
+    setCategory(newCategory);
+    setCurrentPage(1); // Reset to the first page when the category changes
+  };
+
+  const productsPerPage = 12;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <div className="container mx-auto py-8">
+      <h1 className="text-2xl font-bold mb-4">Products</h1>
 
-      <main className="flex-grow pt-24 pb-16">
-        <div className="container mx-auto px-4">
-          <ProductFilters
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectedType={selectedType}
-            setSelectedType={setSelectedType}
-            selectedBrand={selectedBrand}
-            setSelectedBrand={setSelectedBrand}
-            selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            brands={brands}
-            isFilterSheetOpen={isFilterSheetOpen}
-            setIsFilterSheetOpen={setIsFilterSheetOpen}
-          />
+      {/* Category Filters */}
+      <div className="mb-4">
+        <button
+          className={`mr-2 px-4 py-2 rounded ${
+            category === null
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+          onClick={() => handleCategoryChange(null)}
+        >
+          All
+        </button>
+        <button
+          className={`mr-2 px-4 py-2 rounded ${
+            category === "Frame"
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+          onClick={() => handleCategoryChange("Frame")}
+        >
+          Frame
+        </button>
+        <button
+          className={`mr-2 px-4 py-2 rounded ${
+            category === "Lens"
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+          onClick={() => handleCategoryChange("Lens")}
+        >
+          Lens
+        </button>
+        <button
+          className={`mr-2 px-4 py-2 rounded ${
+            category === "Contact Lens"
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+          onClick={() => handleCategoryChange("Contact Lens")}
+        >
+          Contact Lens
+        </button>
+        <button
+          className={`mr-2 px-4 py-2 rounded ${
+            category === "Accessories"
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+          onClick={() => handleCategoryChange("Accessories")}
+        >
+          Accessories
+        </button>
+      </div>
 
-          <div className="mb-6 flex justify-end">
-            <ViewToggle view={view} setView={setView} />
-          </div>
+      {/* Product Grid */}
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : products ? (
+        <ProductGrid products={products} />
+      ) : (
+        <p>No products found.</p>
+      )}
 
-          <ProductGrid
-            products={displayedProducts}
-            isLoading={isLoading}
-            error={error}
-            view={view}
-            refetch={refetch}
-          />
-
-          {!isLoading && !error && totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          )}
+      {/* Pagination */}
+      {products && products.length > 0 && (
+        <div className="flex justify-center mt-8">
+          {Array.from(
+            { length: Math.ceil(products.length / productsPerPage) },
+            (_, i) => i + 1
+          ).map((page) => (
+            <button
+              key={page}
+              className={`mx-1 px-4 py-2 rounded ${
+                currentPage === page
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+              onClick={() => handlePageChange(page)}
+            >
+              {page}
+            </button>
+          ))}
         </div>
-      </main>
-
-      <Footer />
+      )}
     </div>
   );
 }
