@@ -23,11 +23,13 @@ export const schema = z.object({
   received_by: z.string().optional(),
   notes: z.string().optional(),
   branch: z.string().min(1, "Branch is required"),
+  branch_prefix: z.string().min(1, "Branch prefix is required"),
   items: z
     .array(
       z.object({
         product_id: z.string().min(1, "Product is required"),
         lens_stock_id: z.string().optional().nullable(),
+        lens_type_id: z.string().optional().nullable(),
         quantity: z.number().min(1, "Quantity must be at least 1"),
         price: z.number().min(0, "Price cannot be negative"),
         discount: z.number().min(0, "Discount cannot be negative").optional(),

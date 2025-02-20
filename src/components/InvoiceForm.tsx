@@ -30,7 +30,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const { submitInvoice } = useInvoiceSubmission(onSuccess);
 
-  const defaultValues = {
+  const defaultValues: FormData = {
     invoice_number: "",
     sale_date: new Date().toISOString().split("T")[0],
     customer_name: "",
@@ -131,8 +131,10 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   useEffect(() => {
     if (userProfile?.branch) {
       const normalizedBranch = normalizeBranchName(userProfile.branch);
+      const prefix = userProfile.branch === "Gading Serpong" ? "GS" : "KD";
+      
       form.setValue("branch", normalizedBranch);
-      form.setValue("branch_prefix", userProfile.branch === "Gading Serpong" ? "GS" : "KD");
+      form.setValue("branch_prefix", prefix);
     }
     if (nextInvoiceNumber) {
       form.setValue("invoice_number", nextInvoiceNumber);
